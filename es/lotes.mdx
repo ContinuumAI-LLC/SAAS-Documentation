@@ -1,0 +1,323 @@
+---
+title: 'Lotes'
+description: 'Procesamiento por lotes para solicitudes masivas a la API de Continuum AI'
+---
+
+## Procesamiento por lotes
+
+La API de Lotes (Batch API) te permite enviar grandes volumenes de solicitudes para procesamiento asincrono. Las solicitudes por lotes se procesan en segundo plano con un descuento significativo respecto al precio en tiempo real.
+
+<Info>
+  Los lotes son ideales para tareas que no requieren respuesta inmediata: clasificacion masiva de textos, generacion de embeddings para bases de datos completas, procesamiento de registros historicos, etc.
+</Info>
+
+## Ventajas del procesamiento por lotes
+
+| Caracteristica | Tiempo real | Por lotes |
+|----------------|-------------|-----------|
+| Latencia | Milisegundos | Hasta 24 horas |
+| Costo | Precio estandar | 50% de descuento |
+| Limite de solicitudes | Rate limit normal | 2x el rate limit |
+| Uso recomendado | Interaccion directa | Procesamiento masivo |
+
+<Tip>
+  Si tu caso de uso puede tolerar una espera de hasta 24 horas, el procesamiento por lotes te permite ahorrar un 50% en costos.
+</Tip>
+
+## Flujo de trabajo
+
+<Steps>
+  <Step title="Preparar el archivo de solicitudes">
+    Crea un archivo JSONL donde cada linea es una solicitud independiente con un ID personalizado.
+  </Step>
+  <Step title="Subir el archivo">
+    Sube el archivo usando la API de archivos con `purpose: "batch"`.
+  </Step>
+  <Step title="Crear el lote">
+    Inicia el procesamiento del lote especificando el archivo y el endpoint destino.
+  </Step>
+  <Step title="Consultar el estado">
+    Monitorea el progreso hasta que el lote se complete.
+  </Step>
+  <Step title="Descargar resultados">
+    Descarga el archivo de resultados con todas las respuestas.
+  </Step>
+</Steps>
+
+## Formato del archivo de solicitudes
+
+Cada linea del archivo JSONL debe contener una solicitud con el siguiente formato:
+
+```jsonl
+{"custom_id": "req-001", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "continuum-turbo", "messages": [{"role": "user", "content": "Resume este texto: La inteligencia artificial..."}], "max_tokens": 200}}
+{"custom_id": "req-002", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "continuum-turbo", "messages": [{"role": "user", "content": "Clasifica el sentimiento: Me encanta este producto."}], "max_tokens": 50}}
+{"custom_id": "req-003", "method": "POST", "url": "/v1/embeddings", "body": {"model": "continuum-embed-3", "input": "Texto para convertir en embedding."}}
+```
+
+<Note>
+  Cada solicitud debe incluir un `custom_id` unico que te permitira asociar las respuestas con las solicitudes originales.
+</Note>
+
+## Endpoints
+
+### Crear un lote
+
+**POST /v1/batches**
+
+Inicia el procesamiento de un lote de solicitudes.
+
+<ParamField body="input_file_id" type="string" required>
+  ID del archivo JSONL con las solicitudes. Debe estar subido con `purpose: "batch"`.
+</ParamField>
+
+<ParamField body="endpoint" type="string" required>
+  Endpoint al que se dirigen las solicitudes. Opciones: `/v1/chat/completions`, `/v1/embeddings`.
+</ParamField>
+
+<ParamField body="completion_window" type="string" required>
+  Ventana de tiempo para completar el lote. Actualmente solo se admite `"24h"`.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Metadatos personalizados para el lote.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+# 1. Subir el archivo de solicitudes
+curl https://api.continuum-ai.com/v1/files \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -F file="@solicitudes_lote.jsonl" \
+  -F purpose="batch"
+
+# 2. Crear el lote
+curl https://api.continuum-ai.com/v1/batches \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_file_id": "file-batch123",
+    "endpoint": "/v1/chat/completions",
+    "completion_window": "24h",
+    "metadata": {
+      "description": "Clasificacion de sentimientos - Marzo 2026"
+    }
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+# 1. Subir el archivo
+with open("solicitudes_lote.jsonl", "rb") as f:
+    batch_file = client.files.create(file=f, purpose="batch")
+
+# 2. Crear el lote
+batch = client.batches.create(
+    input_file_id=batch_file.id,
+    endpoint="/v1/chat/completions",
+    completion_window="24h",
+    metadata={
+        "description": "Clasificacion de sentimientos - Marzo 2026"
+    }
+)
+
+print(f"Lote creado: {batch.id}")
+print(f"Estado: {batch.status}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+import fs from "fs";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+// 1. Subir el archivo
+const batchFile = await client.files.create({
+  file: fs.createReadStream("solicitudes_lote.jsonl"),
+  purpose: "batch",
+});
+
+// 2. Crear el lote
+const batch = await client.batches.create({
+  input_file_id: batchFile.id,
+  endpoint: "/v1/chat/completions",
+  completion_window: "24h",
+  metadata: {
+    description: "Clasificacion de sentimientos - Marzo 2026",
+  },
+});
+
+console.log(`Lote creado: ${batch.id}`);
+console.log(`Estado: ${batch.status}`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "batch_abc123",
+  "object": "batch",
+  "endpoint": "/v1/chat/completions",
+  "input_file_id": "file-batch123",
+  "completion_window": "24h",
+  "status": "validating",
+  "created_at": 1711152000,
+  "request_counts": {
+    "total": 3,
+    "completed": 0,
+    "failed": 0
+  },
+  "metadata": {
+    "description": "Clasificacion de sentimientos - Marzo 2026"
+  }
+}
+```
+
+---
+
+### Obtener estado de un lote
+
+**GET /v1/batches/{batch_id}**
+
+Consulta el estado actual y el progreso de un lote.
+
+<ParamField path="batch_id" type="string" required>
+  Identificador del lote.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/batches/batch_abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+batch = client.batches.retrieve("batch_abc123")
+
+print(f"Estado: {batch.status}")
+print(f"Progreso: {batch.request_counts.completed}/{batch.request_counts.total}")
+
+if batch.status == "completed":
+    print(f"Archivo de resultados: {batch.output_file_id}")
+```
+
+```javascript Node.js
+const batch = await client.batches.retrieve("batch_abc123");
+
+console.log(`Estado: ${batch.status}`);
+console.log(`Progreso: ${batch.request_counts.completed}/${batch.request_counts.total}`);
+
+if (batch.status === "completed") {
+  console.log(`Archivo de resultados: ${batch.output_file_id}`);
+}
+```
+
+</CodeGroup>
+
+### Estados de un lote
+
+| Estado | Descripcion |
+|--------|-------------|
+| `validating` | Validando el archivo de solicitudes. |
+| `in_progress` | Procesando las solicitudes. |
+| `finalizing` | Todas las solicitudes completadas, preparando resultados. |
+| `completed` | Lote completado. Resultados disponibles para descarga. |
+| `failed` | El lote fallo durante la validacion. |
+| `expired` | El lote no se completo en la ventana de tiempo. |
+| `cancelling` | Cancelacion en progreso. |
+| `cancelled` | El lote fue cancelado. |
+
+---
+
+### Listar lotes
+
+**GET /v1/batches**
+
+Obtiene la lista de todos los lotes de tu organizacion.
+
+<ParamField query="limit" type="integer" default="20">
+  Numero maximo de resultados.
+</ParamField>
+
+<ParamField query="after" type="string">
+  Cursor de paginacion.
+</ParamField>
+
+```python Python
+batches = client.batches.list(limit=10)
+
+for b in batches.data:
+    completed = b.request_counts.completed
+    total = b.request_counts.total
+    print(f"{b.id} - {b.status} - {completed}/{total} solicitudes")
+```
+
+---
+
+### Cancelar un lote
+
+**POST /v1/batches/{batch_id}/cancel**
+
+Cancela un lote en progreso. Las solicitudes ya completadas no se revierten y estaran disponibles en el archivo de resultados.
+
+<ParamField path="batch_id" type="string" required>
+  Identificador del lote a cancelar.
+</ParamField>
+
+```python Python
+cancelled = client.batches.cancel("batch_abc123")
+print(f"Estado: {cancelled.status}")  # "cancelling"
+```
+
+<Note>
+  La cancelacion no es instantanea. El estado cambiara a `cancelling` y luego a `cancelled` cuando todas las solicitudes en vuelo terminen.
+</Note>
+
+## Descargar resultados
+
+Una vez que el lote tiene estado `completed`, descarga el archivo de resultados:
+
+```python Python
+# Obtener el lote completado
+batch = client.batches.retrieve("batch_abc123")
+
+if batch.status == "completed" and batch.output_file_id:
+    # Descargar el archivo de resultados
+    content = client.files.content(batch.output_file_id)
+
+    # Procesar cada resultado
+    import json
+    for line in content.text.strip().split("\n"):
+        result = json.loads(line)
+        custom_id = result["custom_id"]
+        response = result["response"]
+
+        if response["status_code"] == 200:
+            body = response["body"]
+            print(f"{custom_id}: {body['choices'][0]['message']['content'][:100]}...")
+        else:
+            print(f"{custom_id}: Error {response['status_code']}")
+```
+
+**Formato del archivo de resultados:**
+
+```jsonl
+{"id": "batch_req_001", "custom_id": "req-001", "response": {"status_code": 200, "body": {"id": "chatcmpl-abc", "choices": [{"message": {"content": "El texto habla sobre..."}}], "usage": {"total_tokens": 85}}}}
+{"id": "batch_req_002", "custom_id": "req-002", "response": {"status_code": 200, "body": {"id": "chatcmpl-def", "choices": [{"message": {"content": "Sentimiento: Positivo"}}], "usage": {"total_tokens": 32}}}}
+```
+
+<Warning>
+  Si algunas solicitudes fallan, sus errores apareceran en el archivo referenciado por `error_file_id`. Verifica siempre ambos archivos (resultados y errores) para un procesamiento completo.
+</Warning>

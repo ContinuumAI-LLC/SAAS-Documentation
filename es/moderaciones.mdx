@@ -1,0 +1,266 @@
+---
+title: 'Moderaciones'
+description: 'Analiza contenido para detectar material inapropiado o potencialmente danino'
+---
+
+## POST /v1/moderations
+
+El endpoint de moderaciones analiza texto para identificar contenido que pueda ser inapropiado, danino o que viole las politicas de uso. Devuelve clasificaciones detalladas por categoria.
+
+<Info>
+  Las solicitudes de moderacion son **gratuitas** y no consumen tokens de tu cuota. Usalas sin restricciones para filtrar contenido antes de procesarlo con otros modelos.
+</Info>
+
+## Modelos de moderacion
+
+| Modelo | Descripcion |
+|--------|-------------|
+| `continuum-shield` | Ultima version del modelo de moderacion con las categorias mas recientes. |
+| `continuum-shield-stable` | Version estable anterior. Util si necesitas consistencia entre versiones. |
+
+## Parametros de la solicitud
+
+<ParamField body="input" type="string | array" required>
+  Texto o lista de textos a analizar. Maximo 32,768 caracteres por texto.
+</ParamField>
+
+<ParamField body="model" type="string" default="continuum-shield">
+  Modelo de moderacion a utilizar.
+</ParamField>
+
+## Ejemplo basico
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/moderations \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-shield",
+    "input": "Este es un texto de ejemplo para analizar."
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.moderations.create(
+    model="continuum-shield",
+    input="Este es un texto de ejemplo para analizar."
+)
+
+result = response.results[0]
+print(f"Marcado: {result.flagged}")
+
+# Revisar cada categoria
+for category, flagged in result.categories:
+    if flagged:
+        score = result.category_scores[category]
+        print(f"  {category}: {score:.4f}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.moderations.create({
+  model: "continuum-shield",
+  input: "Este es un texto de ejemplo para analizar.",
+});
+
+const result = response.results[0];
+console.log(`Marcado: ${result.flagged}`);
+
+for (const [category, flagged] of Object.entries(result.categories)) {
+  if (flagged) {
+    console.log(`  ${category}: ${result.category_scores[category].toFixed(4)}`);
+  }
+}
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "modr-abc123",
+  "model": "continuum-shield",
+  "results": [
+    {
+      "flagged": false,
+      "categories": {
+        "sexual": false,
+        "hate": false,
+        "harassment": false,
+        "self-harm": false,
+        "sexual/minors": false,
+        "hate/threatening": false,
+        "violence/graphic": false,
+        "self-harm/intent": false,
+        "self-harm/instructions": false,
+        "harassment/threatening": false,
+        "violence": false
+      },
+      "category_scores": {
+        "sexual": 0.0001,
+        "hate": 0.0002,
+        "harassment": 0.0003,
+        "self-harm": 0.0001,
+        "sexual/minors": 0.0001,
+        "hate/threatening": 0.0001,
+        "violence/graphic": 0.0001,
+        "self-harm/intent": 0.0001,
+        "self-harm/instructions": 0.0001,
+        "harassment/threatening": 0.0001,
+        "violence": 0.0002
+      }
+    }
+  ]
+}
+```
+
+## Categorias de moderacion
+
+| Categoria | Descripcion |
+|-----------|-------------|
+| `sexual` | Contenido de naturaleza sexual. |
+| `sexual/minors` | Contenido sexual que involucra menores. |
+| `hate` | Discurso de odio hacia grupos protegidos. |
+| `hate/threatening` | Discurso de odio con amenazas de violencia. |
+| `harassment` | Acoso dirigido a individuos. |
+| `harassment/threatening` | Acoso con amenazas explicitas. |
+| `violence` | Contenido que describe o promueve violencia. |
+| `violence/graphic` | Descripciones graficas y detalladas de violencia. |
+| `self-harm` | Contenido relacionado con autolesion. |
+| `self-harm/intent` | Expresion de intencion de autolesionarse. |
+| `self-harm/instructions` | Instrucciones para autolesionarse. |
+
+<ResponseField name="flagged" type="boolean">
+  `true` si el contenido fue marcado en al menos una categoria. `false` si el contenido es seguro.
+</ResponseField>
+
+<ResponseField name="categories" type="object">
+  Diccionario con cada categoria y un valor booleano que indica si fue detectada.
+</ResponseField>
+
+<ResponseField name="category_scores" type="object">
+  Diccionario con cada categoria y un valor numerico entre 0 y 1 que indica la confianza del modelo. Valores mas altos indican mayor probabilidad de contenido inapropiado.
+</ResponseField>
+
+## Moderacion de multiples textos
+
+Puedes analizar multiples textos en una sola solicitud:
+
+```python Python
+texts = [
+    "Buenos dias, como estas?",
+    "Este producto es genial, lo recomiendo mucho.",
+    "Texto potencialmente problematico aqui..."
+]
+
+response = client.moderations.create(
+    model="continuum-shield",
+    input=texts
+)
+
+for i, result in enumerate(response.results):
+    status = "MARCADO" if result.flagged else "OK"
+    print(f"Texto {i + 1}: {status}")
+
+    if result.flagged:
+        # Mostrar categorias detectadas
+        for category, flagged in result.categories.items() if hasattr(result.categories, 'items') else []:
+            if flagged:
+                score = getattr(result.category_scores, category, 0)
+                print(f"  - {category}: {score:.4f}")
+```
+
+## Integracion en el flujo de trabajo
+
+<Steps>
+  <Step title="Recibir contenido del usuario">
+    Captura el texto enviado por el usuario antes de procesarlo.
+  </Step>
+  <Step title="Analizar con moderacion">
+    Envia el texto al endpoint de moderaciones para verificar que sea apropiado.
+  </Step>
+  <Step title="Evaluar resultados">
+    Revisa el campo `flagged` y los `category_scores` para decidir si procesar el contenido.
+  </Step>
+  <Step title="Actuar segun el resultado">
+    Si el contenido es seguro, procesalo normalmente. Si esta marcado, rechazalo o escalalo para revision manual.
+  </Step>
+</Steps>
+
+### Ejemplo de integracion completa
+
+```python Python
+def process_user_message(user_input: str) -> str:
+    """Procesa un mensaje del usuario con moderacion previa."""
+
+    # 1. Verificar el contenido con moderacion
+    moderation = client.moderations.create(
+        model="continuum-shield",
+        input=user_input
+    )
+
+    if moderation.results[0].flagged:
+        # Contenido inapropiado detectado
+        return "Lo siento, tu mensaje contiene contenido que no podemos procesar. Por favor, reformula tu solicitud."
+
+    # 2. Contenido seguro: procesar con el modelo de chat
+    response = client.chat.completions.create(
+        model="continuum-turbo",
+        messages=[
+            {"role": "system", "content": "Eres un asistente util."},
+            {"role": "user", "content": user_input}
+        ]
+    )
+
+    return response.choices[0].message.content
+```
+
+<Tip>
+  Dado que las solicitudes de moderacion son gratuitas, es buena practica moderar **todo** el contenido generado por usuarios antes de enviarlo a modelos de chat. Esto previene el uso indebido de tu API key y protege tu aplicacion.
+</Tip>
+
+## Umbrales personalizados
+
+Los `category_scores` te permiten definir tus propios umbrales de sensibilidad en lugar de depender unicamente del campo `flagged`:
+
+```python Python
+# Umbrales personalizados por categoria
+THRESHOLDS = {
+    "sexual": 0.3,
+    "hate": 0.2,
+    "violence": 0.4,
+    "harassment": 0.3,
+    "self-harm": 0.1,  # Umbral mas bajo para mayor sensibilidad
+}
+
+def is_content_safe(moderation_result) -> bool:
+    """Evalua si el contenido es seguro segun umbrales personalizados."""
+    scores = moderation_result.category_scores
+
+    for category, threshold in THRESHOLDS.items():
+        score = getattr(scores, category, 0)
+        if score > threshold:
+            return False
+
+    return True
+```
+
+<Note>
+  Los umbrales predeterminados del campo `flagged` estan calibrados para un equilibrio general. Ajusta los umbrales segun las necesidades de tu aplicacion: mas estrictos para contenido infantil, mas permisivos para contextos adultos controlados.
+</Note>

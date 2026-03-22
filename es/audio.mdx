@@ -1,0 +1,346 @@
+---
+title: 'Audio'
+description: 'Transcripcion, traduccion y sintesis de voz con los modelos de audio de Continuum AI'
+---
+
+## Modelos de audio
+
+Continuum AI ofrece modelos especializados para trabajar con audio: transcripcion de voz a texto, traduccion de audio y sintesis de texto a voz.
+
+| Modelo | Tipo | Descripcion |
+|--------|------|-------------|
+| `continuum-listen` | Voz a texto | Transcripcion y traduccion de audio con alta precision en multiples idiomas |
+| `continuum-voice` | Texto a voz | Sintesis de voz natural con multiples voces predefinidas |
+| `continuum-voice-hd` | Texto a voz | Voz de alta definicion con entonacion y prosodia mejoradas |
+
+<Tabs>
+  <Tab title="Transcripcion">
+    ## POST /v1/audio/transcriptions
+
+    Convierte audio en texto. Soporta multiples idiomas y formatos de audio.
+
+    ### Parametros
+
+    <ParamField body="file" type="file" required>
+      Archivo de audio a transcribir. Formatos soportados: `mp3`, `mp4`, `mpeg`, `mpga`, `m4a`, `wav`, `webm`. Tamano maximo: 25 MB.
+    </ParamField>
+
+    <ParamField body="model" type="string" required>
+      Modelo a utilizar. Usa `continuum-listen`.
+    </ParamField>
+
+    <ParamField body="language" type="string">
+      Idioma del audio en formato ISO 639-1 (ej. `es`, `en`, `fr`). Si se omite, el modelo detecta el idioma automaticamente.
+    </ParamField>
+
+    <ParamField body="prompt" type="string">
+      Texto opcional que guia el estilo de la transcripcion. Util para incluir terminologia especifica o nombres propios.
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="json">
+      Formato de la respuesta: `json`, `text`, `srt`, `verbose_json`, `vtt`.
+    </ParamField>
+
+    <ParamField body="temperature" type="number" default="0">
+      Controla la aleatoriedad de la transcripcion. Valores entre 0 y 1.
+    </ParamField>
+
+    <ParamField body="timestamp_granularities" type="array">
+      Nivel de detalle de las marcas de tiempo: `word` (por palabra) y/o `segment` (por segmento).
+    </ParamField>
+
+    ### Ejemplos
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.continuum-ai.com/v1/audio/transcriptions \
+      -H "Authorization: Bearer sk-proj-tu-api-key" \
+      -F file="@grabacion.mp3" \
+      -F model="continuum-listen" \
+      -F language="es" \
+      -F response_format="verbose_json" \
+      -F "timestamp_granularities[]=word"
+    ```
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-tu-api-key",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    with open("grabacion.mp3", "rb") as audio_file:
+        transcription = client.audio.transcriptions.create(
+            model="continuum-listen",
+            file=audio_file,
+            language="es",
+            response_format="verbose_json",
+            timestamp_granularities=["word"]
+        )
+
+    print(transcription.text)
+
+    # Acceder a las marcas de tiempo por palabra
+    for word in transcription.words:
+        print(f"{word.start:.2f}s - {word.end:.2f}s: {word.word}")
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+    import fs from "fs";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-tu-api-key",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const transcription = await client.audio.transcriptions.create({
+      model: "continuum-listen",
+      file: fs.createReadStream("grabacion.mp3"),
+      language: "es",
+      response_format: "verbose_json",
+      timestamp_granularities: ["word"],
+    });
+
+    console.log(transcription.text);
+    ```
+
+    </CodeGroup>
+
+    **Respuesta (verbose_json):**
+
+    ```json
+    {
+      "task": "transcribe",
+      "language": "es",
+      "duration": 45.5,
+      "text": "Buenos dias. En esta reunion vamos a revisar los resultados del trimestre...",
+      "words": [
+        {"word": "Buenos", "start": 0.0, "end": 0.5},
+        {"word": "dias.", "start": 0.5, "end": 1.1},
+        {"word": "En", "start": 1.5, "end": 1.7}
+      ],
+      "segments": [
+        {
+          "id": 0,
+          "start": 0.0,
+          "end": 5.2,
+          "text": "Buenos dias. En esta reunion vamos a revisar los resultados del trimestre."
+        }
+      ]
+    }
+    ```
+
+    <Tip>
+      Especifica el parametro `language` cuando conozcas el idioma del audio. Esto mejora la precision y velocidad de la transcripcion.
+    </Tip>
+  </Tab>
+
+  <Tab title="Traduccion">
+    ## POST /v1/audio/translations
+
+    Traduce audio en cualquier idioma a texto en ingles. Combina transcripcion y traduccion en un solo paso.
+
+    ### Parametros
+
+    <ParamField body="file" type="file" required>
+      Archivo de audio a traducir. Mismos formatos y limites que la transcripcion.
+    </ParamField>
+
+    <ParamField body="model" type="string" required>
+      Modelo a utilizar. Usa `continuum-listen`.
+    </ParamField>
+
+    <ParamField body="prompt" type="string">
+      Texto opcional para guiar el estilo de la traduccion.
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="json">
+      Formato de la respuesta: `json`, `text`, `srt`, `verbose_json`, `vtt`.
+    </ParamField>
+
+    ### Ejemplo
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.continuum-ai.com/v1/audio/translations \
+      -H "Authorization: Bearer sk-proj-tu-api-key" \
+      -F file="@audio_espanol.mp3" \
+      -F model="continuum-listen"
+    ```
+
+    ```python Python
+    with open("audio_espanol.mp3", "rb") as audio_file:
+        translation = client.audio.translations.create(
+            model="continuum-listen",
+            file=audio_file
+        )
+
+    # El resultado siempre esta en ingles
+    print(translation.text)
+    ```
+
+    ```javascript Node.js
+    const translation = await client.audio.translations.create({
+      model: "continuum-listen",
+      file: fs.createReadStream("audio_espanol.mp3"),
+    });
+
+    console.log(translation.text);
+    ```
+
+    </CodeGroup>
+
+    **Respuesta:**
+
+    ```json
+    {
+      "text": "Good morning. In this meeting we will review the quarterly results..."
+    }
+    ```
+
+    <Note>
+      Actualmente, la traduccion de audio solo esta disponible hacia ingles. Para otros idiomas de destino, transcribe el audio primero y luego usa el modelo de chat para traducir el texto.
+    </Note>
+  </Tab>
+
+  <Tab title="Sintesis de voz">
+    ## POST /v1/audio/speech
+
+    Convierte texto en audio hablado con voces naturales de alta calidad.
+
+    ### Parametros
+
+    <ParamField body="model" type="string" required>
+      Modelo de sintesis. Opciones: `continuum-voice` (rapido) o `continuum-voice-hd` (alta definicion).
+    </ParamField>
+
+    <ParamField body="input" type="string" required>
+      Texto a convertir en voz. Maximo 4,096 caracteres.
+    </ParamField>
+
+    <ParamField body="voice" type="string" required>
+      Voz a utilizar. Opciones disponibles: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`.
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="mp3">
+      Formato del audio: `mp3`, `opus`, `aac`, `flac`, `wav`, `pcm`.
+    </ParamField>
+
+    <ParamField body="speed" type="number" default="1.0">
+      Velocidad de la voz. Valores entre `0.25` (muy lenta) y `4.0` (muy rapida).
+    </ParamField>
+
+    ### Voces disponibles
+
+    | Voz | Descripcion |
+    |-----|-------------|
+    | `alloy` | Neutra y versatil, ideal para uso general |
+    | `echo` | Masculina, tono calido y profesional |
+    | `fable` | Expresiva y narrativa, ideal para cuentos |
+    | `onyx` | Masculina, grave y autoritativa |
+    | `nova` | Femenina, energica y amigable |
+    | `shimmer` | Femenina, suave y calmada |
+
+    ### Ejemplos
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.continuum-ai.com/v1/audio/speech \
+      -H "Authorization: Bearer sk-proj-tu-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-voice-hd",
+        "input": "Bienvenido a Continuum AI. Estamos encantados de tenerte aqui.",
+        "voice": "nova",
+        "response_format": "mp3",
+        "speed": 1.0
+      }' \
+      --output bienvenida.mp3
+    ```
+
+    ```python Python
+    response = client.audio.speech.create(
+        model="continuum-voice-hd",
+        input="Bienvenido a Continuum AI. Estamos encantados de tenerte aqui.",
+        voice="nova",
+        response_format="mp3",
+        speed=1.0
+    )
+
+    # Guardar el audio en un archivo
+    with open("bienvenida.mp3", "wb") as f:
+        for chunk in response.iter_bytes():
+            f.write(chunk)
+
+    print("Audio guardado en bienvenida.mp3")
+    ```
+
+    ```javascript Node.js
+    import fs from "fs";
+
+    const response = await client.audio.speech.create({
+      model: "continuum-voice-hd",
+      input: "Bienvenido a Continuum AI. Estamos encantados de tenerte aqui.",
+      voice: "nova",
+      response_format: "mp3",
+      speed: 1.0,
+    });
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    fs.writeFileSync("bienvenida.mp3", buffer);
+    console.log("Audio guardado en bienvenida.mp3");
+    ```
+
+    </CodeGroup>
+
+    <Tip>
+      La respuesta es un stream binario de audio, no JSON. Guardalo directamente en un archivo o envilo al cliente como stream. Usa `continuum-voice-hd` para produccion y `continuum-voice` para previsualizacion rapida.
+    </Tip>
+
+    ### Streaming en tiempo real
+
+    Para aplicaciones interactivas, puedes reproducir el audio mientras se genera:
+
+    ```python Python
+    import pyaudio
+
+    response = client.audio.speech.create(
+        model="continuum-voice",
+        input="Este audio se reproduce mientras se genera, token por token.",
+        voice="alloy",
+        response_format="pcm"
+    )
+
+    # Reproducir audio en tiempo real
+    player = pyaudio.PyAudio()
+    stream = player.open(format=pyaudio.paInt16, channels=1, rate=24000, output=True)
+
+    for chunk in response.iter_bytes(chunk_size=1024):
+        stream.write(chunk)
+
+    stream.stop_stream()
+    stream.close()
+    player.terminate()
+    ```
+  </Tab>
+</Tabs>
+
+## Formatos de audio soportados
+
+| Formato | Extension | Uso recomendado |
+|---------|-----------|-----------------|
+| MP3 | `.mp3` | Uso general, buena compresion |
+| Opus | `.opus` | Streaming y baja latencia |
+| AAC | `.aac` | Dispositivos Apple, streaming |
+| FLAC | `.flac` | Audio sin perdida, archivo |
+| WAV | `.wav` | Procesamiento posterior, maxima calidad |
+| PCM | `.pcm` | Streaming en tiempo real, reproduccion directa |
+
+<Warning>
+  Para la transcripcion, el archivo de audio no debe exceder los 25 MB. Si tu archivo es mas grande, dividelo en segmentos mas pequenos antes de procesarlo.
+</Warning>

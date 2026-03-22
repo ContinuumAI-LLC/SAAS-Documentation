@@ -1,11 +1,15 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Continuum",
+  "name": "Continuum AI",
   "colors": {
     "primary": "#9bff8b",
     "light": "#7fe86d",
-    "dark": "#9bff8b"
+    "dark": "#9bff8b",
+    "background": {
+      "light": "#ffffff",
+      "dark": "#1a1a1a"
+    }
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -48,10 +52,10 @@
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
               "api-reference/introduction",
               "api-reference/authentication",
@@ -60,24 +64,101 @@
             ]
           },
           {
-            "group": "Endpoints",
+            "group": "Text generation",
             "pages": [
-              "api-reference/threads",
-              "api-reference/files",
-              "api-reference/fine-tuning",
-              "api-reference/vector-stores",
-              "api-reference/batches",
-              "api-reference/moderations",
-              "api-reference/usage-billing"
+              "api-reference/responses",
+              "api-reference/chat-completions"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Embeddings & search",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/embeddings",
+              "api-reference/vector-stores"
+            ]
+          },
+          {
+            "group": "Media",
+            "pages": [
+              "api-reference/images",
+              "api-reference/audio"
+            ]
+          },
+          {
+            "group": "Conversations",
+            "pages": [
+              "api-reference/threads"
+            ]
+          },
+          {
+            "group": "Data & training",
+            "pages": [
+              "api-reference/files",
+              "api-reference/fine-tuning",
+              "api-reference/batches"
+            ]
+          },
+          {
+            "group": "Safety & usage",
+            "pages": [
+              "api-reference/moderations",
+              "api-reference/usage-billing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API en Español",
+        "groups": [
+          {
+            "group": "Descripción general",
+            "pages": [
+              "es/introduccion",
+              "es/autenticacion",
+              "es/modelos",
+              "es/errores"
+            ]
+          },
+          {
+            "group": "Generación de texto",
+            "pages": [
+              "es/responses",
+              "es/chat-completions"
+            ]
+          },
+          {
+            "group": "Embeddings y búsqueda",
+            "pages": [
+              "es/embeddings",
+              "es/vector-stores"
+            ]
+          },
+          {
+            "group": "Media",
+            "pages": [
+              "es/imagenes",
+              "es/audio"
+            ]
+          },
+          {
+            "group": "Conversaciones",
+            "pages": [
+              "es/threads"
+            ]
+          },
+          {
+            "group": "Datos y entrenamiento",
+            "pages": [
+              "es/archivos",
+              "es/fine-tuning",
+              "es/lotes"
+            ]
+          },
+          {
+            "group": "Seguridad y uso",
+            "pages": [
+              "es/moderaciones",
+              "es/uso-facturacion"
             ]
           }
         ]
@@ -86,14 +167,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "API Reference",
+          "href": "/api-reference/introduction",
+          "icon": "code"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Status",
+          "href": "https://status.continuum-ai.com",
+          "icon": "signal"
         }
       ]
     }
@@ -106,32 +187,32 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@continuum-ai.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://app.continuum-ai.com"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/continuum_ai",
+      "github": "https://github.com/continuum-ai",
+      "linkedin": "https://linkedin.com/company/continuum-ai"
     }
   }
 }

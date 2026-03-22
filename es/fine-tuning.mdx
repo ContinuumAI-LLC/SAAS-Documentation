@@ -1,0 +1,343 @@
+---
+title: 'Fine-Tuning'
+description: 'Personaliza modelos de Continuum AI con tus propios datos de entrenamiento'
+---
+
+## Fine-Tuning de modelos
+
+El fine-tuning te permite personalizar los modelos de Continuum AI con tus propios datos de entrenamiento. Esto produce un modelo especializado que entiende mejor tu dominio, tu tono de comunicacion y tus casos de uso especificos.
+
+<Info>
+  El fine-tuning es ideal cuando necesitas que el modelo siga un formato de respuesta muy especifico, utilice terminologia de tu industria, o se comporte de una manera particular que no se puede lograr solo con el prompt de sistema.
+</Info>
+
+## Cuando usar fine-tuning
+
+<AccordionGroup>
+  <Accordion title="Usa fine-tuning cuando...">
+    - Necesitas un formato de respuesta consistente y especifico.
+    - El modelo necesita conocimiento especializado de tu dominio.
+    - Quieres reducir el tamano del prompt de sistema.
+    - Necesitas mayor precision en tareas de clasificacion.
+    - Quieres replicar un tono o estilo de comunicacion particular.
+  </Accordion>
+  <Accordion title="No uses fine-tuning cuando...">
+    - Un buen prompt de sistema resuelve tu caso de uso.
+    - Necesitas acceso a informacion actualizada (usa RAG en su lugar).
+    - Tienes menos de 10 ejemplos de entrenamiento.
+    - La tarea cambia frecuentemente y necesitas flexibilidad.
+  </Accordion>
+</AccordionGroup>
+
+## Flujo de trabajo
+
+<Steps>
+  <Step title="Preparar los datos">
+    Crea un archivo JSONL con ejemplos de conversacion que representen el comportamiento deseado. Consulta la seccion de [Archivos](/es/archivos) para el formato requerido.
+  </Step>
+  <Step title="Subir el archivo">
+    Sube el archivo de entrenamiento usando la API de archivos con `purpose: "fine-tune"`.
+  </Step>
+  <Step title="Crear el job de fine-tuning">
+    Inicia el proceso de entrenamiento especificando el modelo base y el archivo de datos.
+  </Step>
+  <Step title="Monitorear el progreso">
+    Consulta el estado del job hasta que se complete. El entrenamiento puede tardar desde minutos hasta horas segun el tamano de los datos.
+  </Step>
+  <Step title="Usar el modelo personalizado">
+    Una vez completado, usa el ID del modelo fine-tuned en tus solicitudes como cualquier otro modelo.
+  </Step>
+</Steps>
+
+## Endpoints
+
+### Crear un job de fine-tuning
+
+**POST /v1/fine_tuning/jobs**
+
+Inicia un nuevo job de fine-tuning con el archivo de entrenamiento especificado.
+
+<ParamField body="training_file" type="string" required>
+  ID del archivo de entrenamiento subido previamente (formato JSONL).
+</ParamField>
+
+<ParamField body="model" type="string" required>
+  Modelo base a personalizar. Opciones: `continuum-turbo`, `continuum-pro`, `continuum-lite`.
+</ParamField>
+
+<ParamField body="hyperparameters" type="object">
+  Hiperparametros de entrenamiento opcionales.
+</ParamField>
+
+<Expandable title="Hiperparametros disponibles">
+  <ParamField body="hyperparameters.n_epochs" type="integer | string" default="auto">
+    Numero de epocas de entrenamiento. Usa `"auto"` para que el sistema determine el valor optimo.
+  </ParamField>
+
+  <ParamField body="hyperparameters.batch_size" type="integer | string" default="auto">
+    Tamano del lote de entrenamiento.
+  </ParamField>
+
+  <ParamField body="hyperparameters.learning_rate_multiplier" type="number | string" default="auto">
+    Multiplicador de la tasa de aprendizaje.
+  </ParamField>
+</Expandable>
+
+<ParamField body="validation_file" type="string">
+  ID de un archivo de validacion opcional para evaluar el rendimiento durante el entrenamiento.
+</ParamField>
+
+<ParamField body="suffix" type="string">
+  Sufijo personalizado para el nombre del modelo resultante. Maximo 18 caracteres alfanumericos.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/fine_tuning/jobs \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "training_file": "file-abc123",
+    "model": "continuum-turbo",
+    "suffix": "soporte-v1",
+    "hyperparameters": {
+      "n_epochs": 3,
+      "learning_rate_multiplier": 0.1
+    }
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+job = client.fine_tuning.jobs.create(
+    training_file="file-abc123",
+    model="continuum-turbo",
+    suffix="soporte-v1",
+    hyperparameters={
+        "n_epochs": 3,
+        "learning_rate_multiplier": 0.1
+    }
+)
+
+print(f"Job creado: {job.id}")
+print(f"Estado: {job.status}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const job = await client.fineTuning.jobs.create({
+  training_file: "file-abc123",
+  model: "continuum-turbo",
+  suffix: "soporte-v1",
+  hyperparameters: {
+    n_epochs: 3,
+    learning_rate_multiplier: 0.1,
+  },
+});
+
+console.log(`Job creado: ${job.id}`);
+console.log(`Estado: ${job.status}`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "ftjob-abc123",
+  "object": "fine_tuning.job",
+  "created_at": 1711152000,
+  "model": "continuum-turbo",
+  "training_file": "file-abc123",
+  "status": "validating_files",
+  "fine_tuned_model": null,
+  "hyperparameters": {
+    "n_epochs": 3,
+    "batch_size": "auto",
+    "learning_rate_multiplier": 0.1
+  },
+  "suffix": "soporte-v1"
+}
+```
+
+---
+
+### Listar jobs de fine-tuning
+
+**GET /v1/fine_tuning/jobs**
+
+Obtiene la lista de todos los jobs de fine-tuning de tu organizacion.
+
+<ParamField query="limit" type="integer" default="20">
+  Numero maximo de resultados.
+</ParamField>
+
+<ParamField query="after" type="string">
+  Cursor de paginacion. ID del ultimo job de la pagina anterior.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/fine_tuning/jobs?limit=10 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+jobs = client.fine_tuning.jobs.list(limit=10)
+
+for job in jobs.data:
+    print(f"{job.id} - {job.model} - {job.status}")
+    if job.fine_tuned_model:
+        print(f"  Modelo resultante: {job.fine_tuned_model}")
+```
+
+```javascript Node.js
+const jobs = await client.fineTuning.jobs.list({ limit: 10 });
+
+for (const job of jobs.data) {
+  console.log(`${job.id} - ${job.model} - ${job.status}`);
+  if (job.fine_tuned_model) {
+    console.log(`  Modelo resultante: ${job.fine_tuned_model}`);
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+### Obtener detalles de un job
+
+**GET /v1/fine_tuning/jobs/{job_id}**
+
+Recupera el estado actual y los detalles de un job de fine-tuning.
+
+<ParamField path="job_id" type="string" required>
+  Identificador del job.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/fine_tuning/jobs/ftjob-abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+job = client.fine_tuning.jobs.retrieve("ftjob-abc123")
+
+print(f"Estado: {job.status}")
+print(f"Modelo base: {job.model}")
+
+if job.status == "succeeded":
+    print(f"Modelo personalizado: {job.fine_tuned_model}")
+    print(f"Tokens entrenados: {job.trained_tokens}")
+```
+
+```javascript Node.js
+const job = await client.fineTuning.jobs.retrieve("ftjob-abc123");
+
+console.log(`Estado: ${job.status}`);
+if (job.status === "succeeded") {
+  console.log(`Modelo personalizado: ${job.fine_tuned_model}`);
+}
+```
+
+</CodeGroup>
+
+**Respuesta (completado):**
+
+```json
+{
+  "id": "ftjob-abc123",
+  "object": "fine_tuning.job",
+  "created_at": 1711152000,
+  "finished_at": 1711155600,
+  "model": "continuum-turbo",
+  "fine_tuned_model": "ft:continuum-turbo:tu-org:soporte-v1:abc123",
+  "status": "succeeded",
+  "training_file": "file-abc123",
+  "trained_tokens": 48576,
+  "result_files": ["file-result789"],
+  "hyperparameters": {
+    "n_epochs": 3,
+    "batch_size": 4,
+    "learning_rate_multiplier": 0.1
+  }
+}
+```
+
+### Estados de un job
+
+| Estado | Descripcion |
+|--------|-------------|
+| `validating_files` | Validando el formato de los archivos de entrenamiento. |
+| `queued` | En cola, esperando recursos de entrenamiento. |
+| `running` | El entrenamiento esta en progreso. |
+| `succeeded` | El entrenamiento se completo correctamente. |
+| `failed` | El entrenamiento fallo. Consulta `error` para mas detalles. |
+| `cancelled` | El job fue cancelado por el usuario. |
+
+---
+
+### Cancelar un job
+
+**POST /v1/fine_tuning/jobs/{job_id}/cancel**
+
+Cancela un job de fine-tuning que este en cola o en progreso.
+
+<ParamField path="job_id" type="string" required>
+  Identificador del job a cancelar.
+</ParamField>
+
+```python Python
+cancelled_job = client.fine_tuning.jobs.cancel("ftjob-abc123")
+print(f"Estado: {cancelled_job.status}")  # "cancelled"
+```
+
+## Usar el modelo personalizado
+
+Una vez que el job de fine-tuning se completa exitosamente, puedes usar el modelo resultante como cualquier otro modelo:
+
+```python Python
+# Usar el modelo fine-tuned
+response = client.chat.completions.create(
+    model="ft:continuum-turbo:tu-org:soporte-v1:abc123",
+    messages=[
+        {"role": "user", "content": "Mi aplicacion no carga las imagenes."}
+    ]
+)
+
+print(response.choices[0].message.content)
+```
+
+<Tip>
+  El modelo fine-tuned hereda todas las capacidades del modelo base (streaming, tool calling, JSON mode, etc.) pero con el comportamiento personalizado que aprendio de tus datos de entrenamiento.
+</Tip>
+
+## Buenas practicas
+
+<Warning>
+  No incluyas informacion sensible o confidencial (como contrasenas, datos personales o secretos comerciales) en los datos de entrenamiento. Los datos se procesan en nuestros servidores de forma segura, pero es mejor minimizar la exposicion de informacion sensible.
+</Warning>
+
+- **Calidad sobre cantidad**: 50 ejemplos excelentes producen mejores resultados que 500 mediocres.
+- **Diversidad**: Incluye variaciones en la forma de preguntar y responder para que el modelo generalice mejor.
+- **Consistencia**: Mantiene un estilo uniforme en todas las respuestas de ejemplo.
+- **Validacion**: Separa un 10-20% de tus datos como conjunto de validacion para evaluar el rendimiento.
+- **Iteracion**: Empieza con pocos datos, evalua los resultados y anade mas ejemplos donde el modelo falle.

@@ -1,0 +1,405 @@
+---
+title: 'Uso y Facturacion'
+description: 'Consulta tu consumo, costos y limites de uso en Continuum AI'
+---
+
+## Uso y facturacion
+
+La API de Continuum AI te permite consultar el consumo detallado de tokens, costos y limites de uso de tu organizacion. Usa estos endpoints para monitorear gastos, establecer alertas y optimizar el uso de tus recursos.
+
+<Info>
+  El uso se rastrea por proyecto y por modelo, lo que te permite identificar exactamente donde se consumen tus recursos y optimizar costos de forma granular.
+</Info>
+
+## Endpoints
+
+### Obtener resumen de uso
+
+**GET /v1/usage**
+
+Obtiene un resumen del consumo de tu organizacion en un periodo de tiempo.
+
+<ParamField query="start_date" type="string" required>
+  Fecha de inicio en formato `YYYY-MM-DD`. Ejemplo: `2026-03-01`.
+</ParamField>
+
+<ParamField query="end_date" type="string" required>
+  Fecha de fin en formato `YYYY-MM-DD`. Ejemplo: `2026-03-22`.
+</ParamField>
+
+<ParamField query="project_id" type="string">
+  Filtrar por proyecto especifico.
+</ParamField>
+
+<ParamField query="group_by" type="string">
+  Agrupar resultados por: `model`, `project`, `day`.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl "https://api.continuum-ai.com/v1/usage?start_date=2026-03-01&end_date=2026-03-22&group_by=model" \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+from openai import OpenAI
+import requests
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+# Consulta directa al endpoint de uso
+headers = {"Authorization": "Bearer sk-proj-tu-api-key"}
+params = {
+    "start_date": "2026-03-01",
+    "end_date": "2026-03-22",
+    "group_by": "model"
+}
+
+response = requests.get(
+    "https://api.continuum-ai.com/v1/usage",
+    headers=headers,
+    params=params
+)
+
+usage = response.json()
+for entry in usage["data"]:
+    print(f"Modelo: {entry['model']}")
+    print(f"  Solicitudes: {entry['total_requests']}")
+    print(f"  Tokens entrada: {entry['input_tokens']:,}")
+    print(f"  Tokens salida: {entry['output_tokens']:,}")
+    print(f"  Costo: ${entry['cost']:.4f}")
+```
+
+```javascript Node.js
+const response = await fetch(
+  "https://api.continuum-ai.com/v1/usage?start_date=2026-03-01&end_date=2026-03-22&group_by=model",
+  {
+    headers: {
+      Authorization: "Bearer sk-proj-tu-api-key",
+    },
+  }
+);
+
+const usage = await response.json();
+for (const entry of usage.data) {
+  console.log(`Modelo: ${entry.model}`);
+  console.log(`  Solicitudes: ${entry.total_requests}`);
+  console.log(`  Tokens entrada: ${entry.input_tokens.toLocaleString()}`);
+  console.log(`  Tokens salida: ${entry.output_tokens.toLocaleString()}`);
+  console.log(`  Costo: $${entry.cost.toFixed(4)}`);
+}
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "data": [
+    {
+      "model": "continuum-ultra",
+      "total_requests": 1250,
+      "input_tokens": 2500000,
+      "output_tokens": 875000,
+      "total_tokens": 3375000,
+      "cost": 42.50
+    },
+    {
+      "model": "continuum-turbo",
+      "total_requests": 8430,
+      "input_tokens": 5200000,
+      "output_tokens": 2100000,
+      "total_tokens": 7300000,
+      "cost": 18.25
+    },
+    {
+      "model": "continuum-embed-3",
+      "total_requests": 3200,
+      "input_tokens": 1600000,
+      "output_tokens": 0,
+      "total_tokens": 1600000,
+      "cost": 1.60
+    }
+  ],
+  "total_cost": 62.35,
+  "period": {
+    "start": "2026-03-01",
+    "end": "2026-03-22"
+  },
+  "status": 200
+}
+```
+
+<ResponseField name="total_requests" type="integer">
+  Numero total de solicitudes realizadas en el periodo.
+</ResponseField>
+
+<ResponseField name="input_tokens" type="integer">
+  Total de tokens de entrada consumidos.
+</ResponseField>
+
+<ResponseField name="output_tokens" type="integer">
+  Total de tokens de salida generados.
+</ResponseField>
+
+<ResponseField name="cost" type="number">
+  Costo en dolares (USD) del consumo.
+</ResponseField>
+
+---
+
+### Obtener limites de uso
+
+**GET /v1/usage/limits**
+
+Consulta los limites de uso activos para tu organizacion y el consumo actual respecto a esos limites.
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/usage/limits \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+headers = {"Authorization": "Bearer sk-proj-tu-api-key"}
+response = requests.get(
+    "https://api.continuum-ai.com/v1/usage/limits",
+    headers=headers
+)
+
+limits = response.json()
+print(f"Plan: {limits['data']['plan']}")
+print(f"Limite mensual: ${limits['data']['monthly_limit']}")
+print(f"Consumo actual: ${limits['data']['current_usage']}")
+print(f"Porcentaje usado: {limits['data']['usage_percentage']:.1f}%")
+```
+
+```javascript Node.js
+const response = await fetch("https://api.continuum-ai.com/v1/usage/limits", {
+  headers: {
+    Authorization: "Bearer sk-proj-tu-api-key",
+  },
+});
+
+const limits = await response.json();
+console.log(`Plan: ${limits.data.plan}`);
+console.log(`Limite mensual: $${limits.data.monthly_limit}`);
+console.log(`Consumo actual: $${limits.data.current_usage}`);
+console.log(`Porcentaje usado: ${limits.data.usage_percentage.toFixed(1)}%`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "data": {
+    "plan": "pro",
+    "monthly_limit": 500.00,
+    "current_usage": 62.35,
+    "usage_percentage": 12.47,
+    "rate_limits": {
+      "requests_per_minute": 600,
+      "tokens_per_minute": 400000,
+      "requests_per_day": 50000
+    },
+    "reset_date": "2026-04-01"
+  },
+  "status": 200
+}
+```
+
+---
+
+### Obtener desglose de costos
+
+**GET /v1/usage/costs**
+
+Obtiene un desglose detallado de costos por modelo, incluyendo precios por millon de tokens.
+
+<ParamField query="start_date" type="string" required>
+  Fecha de inicio.
+</ParamField>
+
+<ParamField query="end_date" type="string" required>
+  Fecha de fin.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl "https://api.continuum-ai.com/v1/usage/costs?start_date=2026-03-01&end_date=2026-03-22" \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+headers = {"Authorization": "Bearer sk-proj-tu-api-key"}
+params = {"start_date": "2026-03-01", "end_date": "2026-03-22"}
+
+response = requests.get(
+    "https://api.continuum-ai.com/v1/usage/costs",
+    headers=headers,
+    params=params
+)
+
+costs = response.json()
+for model in costs["data"]["models"]:
+    print(f"\n{model['model']}:")
+    print(f"  Precio entrada: ${model['input_price_per_1m']} / 1M tokens")
+    print(f"  Precio salida: ${model['output_price_per_1m']} / 1M tokens")
+    print(f"  Costo total: ${model['total_cost']:.4f}")
+```
+
+```javascript Node.js
+const response = await fetch(
+  "https://api.continuum-ai.com/v1/usage/costs?start_date=2026-03-01&end_date=2026-03-22",
+  {
+    headers: { Authorization: "Bearer sk-proj-tu-api-key" },
+  }
+);
+
+const costs = await response.json();
+for (const model of costs.data.models) {
+  console.log(`\n${model.model}:`);
+  console.log(`  Precio entrada: $${model.input_price_per_1m} / 1M tokens`);
+  console.log(`  Precio salida: $${model.output_price_per_1m} / 1M tokens`);
+  console.log(`  Costo total: $${model.total_cost.toFixed(4)}`);
+}
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "data": {
+    "models": [
+      {
+        "model": "continuum-ultra",
+        "input_price_per_1m": 10.00,
+        "output_price_per_1m": 30.00,
+        "input_tokens": 2500000,
+        "output_tokens": 875000,
+        "total_cost": 51.25
+      },
+      {
+        "model": "continuum-turbo",
+        "input_price_per_1m": 1.00,
+        "output_price_per_1m": 3.00,
+        "input_tokens": 5200000,
+        "output_tokens": 2100000,
+        "total_cost": 11.50
+      },
+      {
+        "model": "continuum-pro",
+        "input_price_per_1m": 5.00,
+        "output_price_per_1m": 15.00,
+        "input_tokens": 800000,
+        "output_tokens": 320000,
+        "total_cost": 8.80
+      },
+      {
+        "model": "continuum-lite",
+        "input_price_per_1m": 0.30,
+        "output_price_per_1m": 0.60,
+        "input_tokens": 3000000,
+        "output_tokens": 1500000,
+        "total_cost": 1.80
+      },
+      {
+        "model": "continuum-embed-3",
+        "input_price_per_1m": 0.10,
+        "output_price_per_1m": 0,
+        "input_tokens": 1600000,
+        "output_tokens": 0,
+        "total_cost": 0.16
+      }
+    ],
+    "total_cost": 73.51,
+    "period": {
+      "start": "2026-03-01",
+      "end": "2026-03-22"
+    }
+  },
+  "status": 200
+}
+```
+
+## Precios por modelo
+
+<Tabs>
+  <Tab title="Chat">
+    | Modelo | Entrada (1M tokens) | Salida (1M tokens) |
+    |--------|---------------------|---------------------|
+    | `continuum-ultra` | $10.00 | $30.00 |
+    | `continuum-ultra-mini` | $5.00 | $15.00 |
+    | `continuum-turbo` | $1.00 | $3.00 |
+    | `continuum-pro` | $5.00 | $15.00 |
+    | `continuum-lite` | $0.30 | $0.60 |
+    | `continuum-reason` | $12.00 | $36.00 |
+    | `continuum-reason-mini` | $2.00 | $6.00 |
+  </Tab>
+  <Tab title="Embeddings">
+    | Modelo | Precio (1M tokens) |
+    |--------|---------------------|
+    | `continuum-embed-3` | $0.10 |
+    | `continuum-embed-3-large` | $0.13 |
+    | `continuum-embed-2` | $0.10 |
+  </Tab>
+  <Tab title="Imagenes">
+    | Modelo | Calidad | Tamano | Precio/imagen |
+    |--------|---------|--------|---------------|
+    | `continuum-vision-hd` | HD | 1024x1024 | $0.080 |
+    | `continuum-vision-hd` | HD | 1024x1792 | $0.120 |
+    | `continuum-vision` | Standard | 1024x1024 | $0.040 |
+    | `continuum-vision` | Standard | 512x512 | $0.020 |
+  </Tab>
+  <Tab title="Audio">
+    | Modelo | Tipo | Precio |
+    |--------|------|--------|
+    | `continuum-listen` | Transcripcion | $0.006 / minuto |
+    | `continuum-voice` | Sintesis | $15.00 / 1M caracteres |
+    | `continuum-voice-hd` | Sintesis HD | $30.00 / 1M caracteres |
+  </Tab>
+</Tabs>
+
+<Note>
+  Los modelos de moderacion (`continuum-shield`, `continuum-shield-stable`) son **completamente gratuitos** y no se incluyen en la facturacion.
+</Note>
+
+## Alertas de uso
+
+<Tip>
+  Configura alertas de uso desde el panel de administracion para recibir notificaciones cuando alcances ciertos umbrales de consumo (por ejemplo, 50%, 80% y 100% de tu limite mensual). Esto te ayuda a evitar interrupciones inesperadas del servicio.
+</Tip>
+
+## Optimizacion de costos
+
+<AccordionGroup>
+  <Accordion title="Elige el modelo adecuado">
+    No uses `continuum-ultra` para tareas simples. Para clasificacion basica, resumen corto o respuestas de formato fijo, `continuum-lite` o `continuum-turbo` son significativamente mas economicos y suficientemente capaces.
+  </Accordion>
+  <Accordion title="Usa procesamiento por lotes">
+    Si no necesitas respuestas inmediatas, la [API de Lotes](/es/lotes) ofrece un 50% de descuento. Ideal para procesamiento nocturno o tareas de ETL.
+  </Accordion>
+  <Accordion title="Optimiza tus prompts">
+    Prompts mas cortos y directos consumen menos tokens de entrada. Elimina instrucciones redundantes y usa el campo `system` de forma eficiente.
+  </Accordion>
+  <Accordion title="Establece max_tokens">
+    Siempre configura `max_tokens` para evitar respuestas innecesariamente largas. Esto limita el costo maximo por solicitud.
+  </Accordion>
+  <Accordion title="Cachea respuestas frecuentes">
+    Si multiples usuarios hacen las mismas preguntas, implementa una capa de cache para evitar solicitudes repetidas a la API.
+  </Accordion>
+  <Accordion title="Reduce dimensiones de embeddings">
+    Usa el parametro `dimensions` con modelos `embed-3` para generar vectores mas pequenos. 256 o 512 dimensiones suelen ser suficientes para la mayoria de casos.
+  </Accordion>
+</AccordionGroup>

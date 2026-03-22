@@ -1,0 +1,346 @@
+---
+title: 'Errores'
+description: 'Manejo de errores, codigos de estado y estrategias de reintento para la API de Continuum AI'
+---
+
+## Manejo de errores
+
+La API de Continuum AI utiliza codigos de estado HTTP estandar para indicar el resultado de cada solicitud. Todas las respuestas de error incluyen un cuerpo JSON con informacion detallada sobre el problema.
+
+## Formato de error
+
+Todas las respuestas de error siguen este formato consistente:
+
+```json
+{
+  "error": {
+    "message": "Descripcion legible del error.",
+    "type": "invalid_request_error",
+    "code": "INVALID_API_KEY",
+    "param": "model"
+  },
+  "status": 400
+}
+```
+
+<ResponseField name="message" type="string">
+  Descripcion legible del error. Incluye detalles especificos sobre que salio mal.
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Categoria del error. Ver la tabla de tipos mas abajo.
+</ResponseField>
+
+<ResponseField name="code" type="string">
+  Codigo unico del error para manejo programatico.
+</ResponseField>
+
+<ResponseField name="param" type="string">
+  Parametro especifico que causo el error (cuando aplica).
+</ResponseField>
+
+## Codigos de estado HTTP
+
+| Codigo | Estado | Descripcion |
+|--------|--------|-------------|
+| `200` | OK | Solicitud exitosa. |
+| `201` | Created | Recurso creado exitosamente. |
+| `400` | Bad Request | La solicitud tiene un formato invalido o faltan parametros requeridos. |
+| `401` | Unauthorized | API key invalida, faltante o revocada. |
+| `403` | Forbidden | No tienes permisos para acceder a este recurso. |
+| `404` | Not Found | El recurso solicitado no existe. |
+| `409` | Conflict | Conflicto con el estado actual del recurso. |
+| `422` | Unprocessable Entity | Los parametros son validos sintacticamente pero semanticamente incorrectos. |
+| `429` | Too Many Requests | Se excedio el limite de tasa. Espera antes de reintentar. |
+| `500` | Internal Server Error | Error interno del servidor. Reintenta la solicitud. |
+| `502` | Bad Gateway | El servidor recibio una respuesta invalida de un servicio upstream. |
+| `503` | Service Unavailable | El servicio esta temporalmente no disponible. Reintenta mas tarde. |
+
+## Tipos de error
+
+| Tipo | Descripcion |
+|------|-------------|
+| `invalid_request_error` | La solicitud esta malformada o contiene parametros invalidos. |
+| `authentication_error` | Problemas con la autenticacion (key invalida o faltante). |
+| `permission_error` | La key no tiene permisos para la operacion solicitada. |
+| `not_found_error` | El recurso solicitado no existe. |
+| `rate_limit_error` | Se excedieron los limites de tasa. |
+| `api_error` | Error interno del servidor. |
+| `overloaded_error` | Los servidores estan temporalmente saturados. |
+
+## Codigos de error comunes
+
+<AccordionGroup>
+  <Accordion title="INVALID_API_KEY (401)">
+    **Causa:** La API key proporcionada no es valida, esta mal formateada o ha sido revocada.
+
+    **Solucion:**
+    - Verifica que la key comience con `sk-proj-`.
+    - Asegurate de que no haya espacios en blanco al inicio o final.
+    - Comprueba que el proyecto asociado este activo.
+    - Si la key fue rotada, usa la nueva key.
+
+    ```json
+    {
+      "error": {
+        "message": "API key invalida. Verifica que tu key sea correcta.",
+        "type": "authentication_error",
+        "code": "INVALID_API_KEY"
+      },
+      "status": 401
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="MISSING_API_KEY (401)">
+    **Causa:** No se incluyo ninguna API key en la solicitud.
+
+    **Solucion:** Anade el encabezado `Authorization: Bearer sk-proj-...` o `X-API-Key: sk-proj-...` a tu solicitud.
+  </Accordion>
+
+  <Accordion title="RATE_LIMIT_EXCEEDED (429)">
+    **Causa:** Se excedio el numero maximo de solicitudes o tokens por minuto.
+
+    **Solucion:** Implementa backoff exponencial y respeta el encabezado `Retry-After`.
+
+    ```json
+    {
+      "error": {
+        "message": "Limite de tasa excedido. Intenta nuevamente en 2 segundos.",
+        "type": "rate_limit_error",
+        "code": "RATE_LIMIT_EXCEEDED"
+      },
+      "status": 429
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="MODEL_NOT_FOUND (404)">
+    **Causa:** El modelo especificado no existe o no esta disponible para tu cuenta.
+
+    **Solucion:** Verifica el nombre del modelo en la [referencia de modelos](/es/modelos). Los nombres son sensibles a mayusculas.
+  </Accordion>
+
+  <Accordion title="INVALID_PARAMETER (400)">
+    **Causa:** Un parametro tiene un valor fuera de rango o un tipo incorrecto.
+
+    **Solucion:** Revisa el campo `param` de la respuesta de error para identificar el parametro problematico.
+
+    ```json
+    {
+      "error": {
+        "message": "El parametro 'temperature' debe estar entre 0 y 2. Valor recibido: 5.",
+        "type": "invalid_request_error",
+        "code": "INVALID_PARAMETER",
+        "param": "temperature"
+      },
+      "status": 400
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="CONTEXT_LENGTH_EXCEEDED (400)">
+    **Causa:** La solicitud excede el limite de contexto del modelo.
+
+    **Solucion:** Reduce el numero de tokens en los mensajes o usa un modelo con mayor ventana de contexto.
+
+    ```json
+    {
+      "error": {
+        "message": "La solicitud contiene 135,000 tokens, que excede el limite de 128,000 del modelo continuum-ultra.",
+        "type": "invalid_request_error",
+        "code": "CONTEXT_LENGTH_EXCEEDED"
+      },
+      "status": 400
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="PROJECT_INACTIVE (403)">
+    **Causa:** El proyecto asociado a la API key esta pausado o desactivado.
+
+    **Solucion:** Reactiva el proyecto desde el panel de administracion.
+  </Accordion>
+
+  <Accordion title="INSUFFICIENT_QUOTA (429)">
+    **Causa:** Se agoto la cuota de uso mensual de tu plan.
+
+    **Solucion:** Actualiza tu plan o espera al proximo ciclo de facturacion.
+  </Accordion>
+
+  <Accordion title="SERVER_ERROR (500)">
+    **Causa:** Error interno del servidor. No es culpa de tu solicitud.
+
+    **Solucion:** Reintenta la solicitud con backoff exponencial. Si el error persiste, contacta a soporte.
+  </Accordion>
+</AccordionGroup>
+
+## Estrategia de reintentos
+
+<Info>
+  No todos los errores deben reintentarse. Los errores `4xx` (excepto `429` y `409`) generalmente indican un problema con tu solicitud que no se resolvera reintentando.
+</Info>
+
+### Errores que debes reintentar
+
+| Codigo | Reintentar | Razon |
+|--------|------------|-------|
+| `429` | Si | Limite de tasa temporal. Espera y reintenta. |
+| `500` | Si | Error del servidor. Probablemente transitorio. |
+| `502` | Si | Error de gateway. Probablemente transitorio. |
+| `503` | Si | Servicio no disponible. Reintenta mas tarde. |
+
+### Errores que NO debes reintentar
+
+| Codigo | Reintentar | Razon |
+|--------|------------|-------|
+| `400` | No | Solicitud malformada. Corrige los parametros. |
+| `401` | No | Credenciales invalidas. Verifica tu API key. |
+| `403` | No | Sin permisos. Verifica tu proyecto y plan. |
+| `404` | No | Recurso no encontrado. Verifica el ID o endpoint. |
+| `422` | No | Parametros semanticamente incorrectos. |
+
+### Implementacion de backoff exponencial
+
+<CodeGroup>
+
+```python Python
+import time
+import random
+from openai import OpenAI, RateLimitError, APIError
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+def call_with_retry(func, max_retries=5, base_delay=1.0):
+    """Ejecuta una funcion con reintentos y backoff exponencial."""
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except RateLimitError as e:
+            if attempt == max_retries - 1:
+                raise
+            # Backoff exponencial con jitter
+            delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+            print(f"Rate limit alcanzado. Reintentando en {delay:.1f}s... (intento {attempt + 1})")
+            time.sleep(delay)
+        except APIError as e:
+            if e.status_code in [500, 502, 503] and attempt < max_retries - 1:
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                print(f"Error del servidor ({e.status_code}). Reintentando en {delay:.1f}s...")
+                time.sleep(delay)
+            else:
+                raise
+
+# Uso
+response = call_with_retry(
+    lambda: client.chat.completions.create(
+        model="continuum-turbo",
+        messages=[{"role": "user", "content": "Hola, como estas?"}]
+    )
+)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+async function callWithRetry(fn, maxRetries = 5, baseDelay = 1000) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const status = error.status;
+      const isRetryable = [429, 500, 502, 503].includes(status);
+
+      if (!isRetryable || attempt === maxRetries - 1) {
+        throw error;
+      }
+
+      // Backoff exponencial con jitter
+      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+      console.log(
+        `Error ${status}. Reintentando en ${(delay / 1000).toFixed(1)}s... (intento ${attempt + 1})`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
+// Uso
+const response = await callWithRetry(() =>
+  client.chat.completions.create({
+    model: "continuum-turbo",
+    messages: [{ role: "user", content: "Hola, como estas?" }],
+  })
+);
+```
+
+```go Go
+package main
+
+import (
+    "context"
+    "fmt"
+    "math"
+    "math/rand"
+    "time"
+
+    openai "github.com/sashabaranov/go-openai"
+)
+
+func callWithRetry(client *openai.Client, req openai.ChatCompletionRequest, maxRetries int) (openai.ChatCompletionResponse, error) {
+    var lastErr error
+    for attempt := 0; attempt < maxRetries; attempt++ {
+        resp, err := client.CreateChatCompletion(context.Background(), req)
+        if err == nil {
+            return resp, nil
+        }
+
+        lastErr = err
+        // Backoff exponencial con jitter
+        delay := time.Duration(math.Pow(2, float64(attempt)))*time.Second +
+            time.Duration(rand.Intn(1000))*time.Millisecond
+        fmt.Printf("Error. Reintentando en %v... (intento %d)\n", delay, attempt+1)
+        time.Sleep(delay)
+    }
+    return openai.ChatCompletionResponse{}, lastErr
+}
+```
+
+</CodeGroup>
+
+## Encabezados utiles
+
+La API incluye encabezados informativos en las respuestas de error:
+
+| Encabezado | Descripcion |
+|------------|-------------|
+| `Retry-After` | Segundos a esperar antes de reintentar (en errores `429`). |
+| `X-Request-ID` | Identificador unico de la solicitud. Util para soporte tecnico. |
+| `X-RateLimit-Limit` | Limite maximo de solicitudes por minuto. |
+| `X-RateLimit-Remaining` | Solicitudes restantes en la ventana actual. |
+| `X-RateLimit-Reset` | Marca de tiempo Unix cuando se reinicia el contador. |
+
+<Tip>
+  Siempre incluye el `X-Request-ID` cuando contactes al soporte tecnico de Continuum AI. Esto permite a nuestro equipo localizar rapidamente los logs de tu solicitud.
+</Tip>
+
+## Buenas practicas
+
+<Warning>
+  Nunca expongas mensajes de error de la API directamente a tus usuarios finales. Los mensajes pueden contener informacion tecnica que no es relevante para ellos. Traduce los errores a mensajes amigables en tu aplicacion.
+</Warning>
+
+- **Implementa reintentos**: Siempre usa backoff exponencial para errores transitorios.
+- **Registra los errores**: Guarda logs de todos los errores con el `X-Request-ID` para facilitar la depuracion.
+- **Maneja errores especificos**: Trata cada tipo de error de forma diferente en tu codigo.
+- **Establece timeouts**: Configura timeouts razonables (30-60 segundos) para evitar solicitudes colgadas.
+- **Valida antes de enviar**: Verifica los parametros de la solicitud antes de enviarla para evitar errores `400`.
+- **Monitorea tu uso**: Consulta regularmente el [endpoint de limites](/es/uso-facturacion) para anticipar errores de cuota.

@@ -1,0 +1,298 @@
+---
+title: 'Archivos'
+description: 'Sube, lista y gestiona archivos para fine-tuning, asistentes y otros usos'
+---
+
+## Gestion de archivos
+
+La API de Archivos te permite subir y administrar archivos que se utilizan en otras funcionalidades de Continuum AI, como fine-tuning de modelos, almacenes vectoriales y asistentes.
+
+<Info>
+  Los archivos subidos se almacenan de forma segura y estan asociados a tu organizacion. Solo las API keys de tu tenant pueden acceder a ellos.
+</Info>
+
+## Endpoints
+
+### Subir un archivo
+
+**POST /v1/files**
+
+Sube un archivo al servidor de Continuum AI. El proposito del archivo (`purpose`) determina los formatos y validaciones que se aplican.
+
+<ParamField body="file" type="file" required>
+  Archivo a subir. Tamano maximo: 512 MB (puede variar segun el proposito).
+</ParamField>
+
+<ParamField body="purpose" type="string" required>
+  Proposito del archivo. Opciones:
+  - `fine-tune` — Datos de entrenamiento para fine-tuning (formato JSONL).
+  - `assistants` — Archivos para asistentes y almacenes vectoriales.
+  - `batch` — Solicitudes para procesamiento por lotes (formato JSONL).
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/files \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -F file="@datos_entrenamiento.jsonl" \
+  -F purpose="fine-tune"
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+with open("datos_entrenamiento.jsonl", "rb") as f:
+    file = client.files.create(
+        file=f,
+        purpose="fine-tune"
+    )
+
+print(f"Archivo subido: {file.id}")
+print(f"Tamano: {file.bytes} bytes")
+print(f"Estado: {file.status}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+import fs from "fs";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const file = await client.files.create({
+  file: fs.createReadStream("datos_entrenamiento.jsonl"),
+  purpose: "fine-tune",
+});
+
+console.log(`Archivo subido: ${file.id}`);
+console.log(`Tamano: ${file.bytes} bytes`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "file-abc123",
+  "object": "file",
+  "bytes": 245890,
+  "created_at": 1711152000,
+  "filename": "datos_entrenamiento.jsonl",
+  "purpose": "fine-tune",
+  "status": "processed"
+}
+```
+
+<ResponseField name="id" type="string">
+  Identificador unico del archivo. Usa este ID para referenciar el archivo en otras operaciones.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Estado del procesamiento: `uploaded`, `processed` o `error`.
+</ResponseField>
+
+---
+
+### Listar archivos
+
+**GET /v1/files**
+
+Obtiene la lista de todos los archivos subidos por tu organizacion.
+
+<ParamField query="purpose" type="string">
+  Filtra archivos por proposito. Ejemplo: `fine-tune`, `assistants`, `batch`.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/files \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+files = client.files.list()
+
+for f in files.data:
+    print(f"{f.id} - {f.filename} ({f.bytes} bytes) - {f.purpose}")
+```
+
+```javascript Node.js
+const files = await client.files.list();
+
+for (const f of files.data) {
+  console.log(`${f.id} - ${f.filename} (${f.bytes} bytes) - ${f.purpose}`);
+}
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "data": [
+    {
+      "id": "file-abc123",
+      "object": "file",
+      "bytes": 245890,
+      "created_at": 1711152000,
+      "filename": "datos_entrenamiento.jsonl",
+      "purpose": "fine-tune",
+      "status": "processed"
+    },
+    {
+      "id": "file-def456",
+      "object": "file",
+      "bytes": 1024000,
+      "created_at": 1711238400,
+      "filename": "manual_producto.pdf",
+      "purpose": "assistants",
+      "status": "processed"
+    }
+  ],
+  "object": "list"
+}
+```
+
+---
+
+### Obtener informacion de un archivo
+
+**GET /v1/files/{file_id}**
+
+Recupera los metadatos de un archivo especifico.
+
+<ParamField path="file_id" type="string" required>
+  Identificador del archivo.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/files/file-abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+file = client.files.retrieve("file-abc123")
+print(f"Archivo: {file.filename}")
+print(f"Proposito: {file.purpose}")
+print(f"Estado: {file.status}")
+```
+
+```javascript Node.js
+const file = await client.files.retrieve("file-abc123");
+console.log(`Archivo: ${file.filename}`);
+console.log(`Proposito: ${file.purpose}`);
+```
+
+</CodeGroup>
+
+---
+
+### Descargar contenido de un archivo
+
+**GET /v1/files/{file_id}/content**
+
+Descarga el contenido de un archivo subido previamente.
+
+<ParamField path="file_id" type="string" required>
+  Identificador del archivo a descargar.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/files/file-abc123/content \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  --output datos_descargados.jsonl
+```
+
+```python Python
+content = client.files.content("file-abc123")
+
+# Guardar en disco
+with open("datos_descargados.jsonl", "wb") as f:
+    f.write(content.read())
+
+print("Archivo descargado correctamente.")
+```
+
+```javascript Node.js
+const content = await client.files.content("file-abc123");
+const text = await content.text();
+
+import fs from "fs";
+fs.writeFileSync("datos_descargados.jsonl", text);
+console.log("Archivo descargado correctamente.");
+```
+
+</CodeGroup>
+
+---
+
+### Eliminar un archivo
+
+**DELETE /v1/files/{file_id}**
+
+Elimina un archivo del servidor de forma permanente.
+
+<ParamField path="file_id" type="string" required>
+  Identificador del archivo a eliminar.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl -X DELETE https://api.continuum-ai.com/v1/files/file-abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+```python Python
+result = client.files.delete("file-abc123")
+print(f"Eliminado: {result.deleted}")
+```
+
+```javascript Node.js
+const result = await client.files.delete("file-abc123");
+console.log(`Eliminado: ${result.deleted}`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "file-abc123",
+  "object": "file",
+  "deleted": true
+}
+```
+
+<Warning>
+  La eliminacion es permanente. Si el archivo esta siendo utilizado por un job de fine-tuning o un almacen vectorial, debes desvincularlo primero.
+</Warning>
+
+## Formato JSONL para fine-tuning
+
+Los archivos de entrenamiento para fine-tuning deben estar en formato JSONL (JSON Lines), con una conversacion de ejemplo por linea:
+
+```jsonl
+{"messages": [{"role": "system", "content": "Eres un asistente de soporte tecnico."}, {"role": "user", "content": "Mi impresora no funciona."}, {"role": "assistant", "content": "Entiendo tu frustracion. Vamos a resolver esto paso a paso. Primero, verifica que la impresora este encendida y conectada..."}]}
+{"messages": [{"role": "system", "content": "Eres un asistente de soporte tecnico."}, {"role": "user", "content": "No puedo conectarme al WiFi."}, {"role": "assistant", "content": "Vamos a diagnosticar el problema. Primero, reinicia tu router desconectandolo durante 30 segundos..."}]}
+```
+
+<Tip>
+  Se recomienda un minimo de 10 ejemplos para fine-tuning, pero 50-100 ejemplos suelen producir resultados significativamente mejores. Asegurate de que cada ejemplo refleje el comportamiento que deseas que el modelo aprenda.
+</Tip>

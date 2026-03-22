@@ -1,0 +1,483 @@
+---
+title: 'Threads'
+description: 'Gestiona conversaciones persistentes con historial de mensajes en Continuum AI'
+---
+
+## Conversaciones persistentes
+
+Los Threads (hilos de conversacion) permiten gestionar conversaciones con estado en el servidor. En lugar de enviar todo el historial de mensajes en cada solicitud, creas un thread y el servidor se encarga de mantener el contexto.
+
+<Info>
+  Los Threads son ideales para construir asistentes de chat, agentes conversacionales y cualquier aplicacion que requiera conversaciones multiturno con persistencia.
+</Info>
+
+## Flujo de trabajo
+
+<Steps>
+  <Step title="Crear un Thread">
+    Crea un nuevo hilo de conversacion. Opcionalmente puedes incluir mensajes iniciales.
+  </Step>
+  <Step title="Agregar mensajes">
+    Anade mensajes del usuario al thread existente.
+  </Step>
+  <Step title="Crear un Run">
+    Ejecuta el modelo sobre el thread para generar una respuesta del asistente.
+  </Step>
+  <Step title="Leer la respuesta">
+    Recupera los mensajes del thread para obtener la respuesta generada.
+  </Step>
+  <Step title="Continuar la conversacion">
+    Repite los pasos 2-4 para mantener la conversacion de forma indefinida.
+  </Step>
+</Steps>
+
+## Endpoints
+
+### Crear un Thread
+
+**POST /v1/threads**
+
+Crea un nuevo hilo de conversacion vacio o con mensajes iniciales.
+
+<ParamField body="messages" type="array">
+  Lista opcional de mensajes iniciales para el thread.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Metadatos personalizados asociados al thread. Maximo 16 pares clave-valor.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/threads \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hola, necesito ayuda con mi proyecto de Python."
+      }
+    ],
+    "metadata": {
+      "user_id": "usr_123",
+      "topic": "python-help"
+    }
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+thread = client.beta.threads.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Hola, necesito ayuda con mi proyecto de Python."
+        }
+    ],
+    metadata={
+        "user_id": "usr_123",
+        "topic": "python-help"
+    }
+)
+
+print(f"Thread creado: {thread.id}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const thread = await client.beta.threads.create({
+  messages: [
+    {
+      role: "user",
+      content: "Hola, necesito ayuda con mi proyecto de Python.",
+    },
+  ],
+  metadata: {
+    user_id: "usr_123",
+    topic: "python-help",
+  },
+});
+
+console.log(`Thread creado: ${thread.id}`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "thread_abc123",
+  "object": "thread",
+  "created_at": 1711152000,
+  "metadata": {
+    "user_id": "usr_123",
+    "topic": "python-help"
+  }
+}
+```
+
+---
+
+### Obtener un Thread
+
+**GET /v1/threads/{thread_id}**
+
+Recupera la informacion de un thread existente.
+
+<ParamField path="thread_id" type="string" required>
+  Identificador del thread.
+</ParamField>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/threads/thread_abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+---
+
+### Modificar un Thread
+
+**POST /v1/threads/{thread_id}**
+
+Actualiza los metadatos de un thread.
+
+<ParamField path="thread_id" type="string" required>
+  Identificador del thread a modificar.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Nuevos metadatos. Se reemplazan los existentes por completo.
+</ParamField>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/threads/thread_abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  -d '{
+    "metadata": {
+      "user_id": "usr_123",
+      "topic": "python-help",
+      "status": "active"
+    }
+  }'
+```
+
+---
+
+### Eliminar un Thread
+
+**DELETE /v1/threads/{thread_id}**
+
+Elimina un thread y todos sus mensajes de forma permanente.
+
+<ParamField path="thread_id" type="string" required>
+  Identificador del thread a eliminar.
+</ParamField>
+
+```bash curl
+curl -X DELETE https://api.continuum-ai.com/v1/threads/thread_abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+<Warning>
+  La eliminacion es permanente e irreversible. Todos los mensajes y runs asociados al thread seran eliminados.
+</Warning>
+
+---
+
+### Crear un mensaje
+
+**POST /v1/threads/{thread_id}/messages**
+
+Anade un nuevo mensaje a un thread existente.
+
+<ParamField path="thread_id" type="string" required>
+  Identificador del thread.
+</ParamField>
+
+<ParamField body="role" type="string" required>
+  Rol del mensaje. Opciones: `user`, `assistant`.
+</ParamField>
+
+<ParamField body="content" type="string | array" required>
+  Contenido del mensaje. Puede ser texto simple o contenido multimodal.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Metadatos opcionales del mensaje.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/threads/thread_abc123/messages \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "user",
+    "content": "Como puedo leer un archivo CSV con pandas?"
+  }'
+```
+
+```python Python
+message = client.beta.threads.messages.create(
+    thread_id="thread_abc123",
+    role="user",
+    content="Como puedo leer un archivo CSV con pandas?"
+)
+
+print(f"Mensaje creado: {message.id}")
+```
+
+```javascript Node.js
+const message = await client.beta.threads.messages.create("thread_abc123", {
+  role: "user",
+  content: "Como puedo leer un archivo CSV con pandas?",
+});
+
+console.log(`Mensaje creado: ${message.id}`);
+```
+
+</CodeGroup>
+
+---
+
+### Listar mensajes
+
+**GET /v1/threads/{thread_id}/messages**
+
+Obtiene todos los mensajes de un thread, ordenados del mas reciente al mas antiguo.
+
+<ParamField path="thread_id" type="string" required>
+  Identificador del thread.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Numero maximo de mensajes a devolver. Entre 1 y 100.
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  Orden de los resultados: `asc` (antiguo primero) o `desc` (reciente primero).
+</ParamField>
+
+```python Python
+messages = client.beta.threads.messages.list(
+    thread_id="thread_abc123",
+    order="asc"
+)
+
+for msg in messages.data:
+    print(f"[{msg.role}] {msg.content[0].text.value}")
+```
+
+---
+
+### Crear un Run
+
+**POST /v1/threads/{thread_id}/runs**
+
+Ejecuta el modelo sobre el thread completo para generar una respuesta. El modelo procesa todos los mensajes del thread y genera una respuesta del asistente.
+
+<ParamField path="thread_id" type="string" required>
+  Identificador del thread.
+</ParamField>
+
+<ParamField body="model" type="string" required>
+  Modelo a utilizar para la generacion.
+</ParamField>
+
+<ParamField body="instructions" type="string">
+  Instrucciones del sistema para esta ejecucion.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  Herramientas disponibles para el modelo durante la ejecucion.
+</ParamField>
+
+<ParamField body="stream" type="boolean" default="false">
+  Habilita streaming de eventos durante la ejecucion.
+</ParamField>
+
+<ParamField body="max_completion_tokens" type="integer">
+  Numero maximo de tokens en la respuesta.
+</ParamField>
+
+<ParamField body="temperature" type="number">
+  Controla la aleatoriedad de la respuesta.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/threads/thread_abc123/runs \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "instructions": "Eres un experto en Python. Responde con ejemplos de codigo claros y explicaciones concisas.",
+    "temperature": 0.7
+  }'
+```
+
+```python Python
+run = client.beta.threads.runs.create(
+    thread_id="thread_abc123",
+    model="continuum-ultra",
+    instructions="Eres un experto en Python. Responde con ejemplos de codigo claros y explicaciones concisas.",
+    temperature=0.7
+)
+
+print(f"Run creado: {run.id} - Estado: {run.status}")
+```
+
+```javascript Node.js
+const run = await client.beta.threads.runs.create("thread_abc123", {
+  model: "continuum-ultra",
+  instructions:
+    "Eres un experto en Python. Responde con ejemplos de codigo claros y explicaciones concisas.",
+  temperature: 0.7,
+});
+
+console.log(`Run creado: ${run.id} - Estado: ${run.status}`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "run_xyz789",
+  "object": "thread.run",
+  "created_at": 1711152000,
+  "thread_id": "thread_abc123",
+  "model": "continuum-ultra",
+  "status": "queued",
+  "instructions": "Eres un experto en Python...",
+  "usage": null
+}
+```
+
+### Estados de un Run
+
+| Estado | Descripcion |
+|--------|-------------|
+| `queued` | En cola, esperando a ser procesado. |
+| `in_progress` | El modelo esta generando la respuesta. |
+| `requires_action` | El modelo necesita que ejecutes una herramienta. |
+| `completed` | La generacion ha finalizado correctamente. |
+| `failed` | Ocurrio un error durante la generacion. |
+| `cancelled` | El run fue cancelado por el usuario. |
+| `expired` | El run expiro sin completarse. |
+
+---
+
+### Run con streaming
+
+Para recibir la respuesta en tiempo real, usa el parametro `stream: true`:
+
+```python Python
+# Crear un run con streaming
+with client.beta.threads.runs.stream(
+    thread_id="thread_abc123",
+    model="continuum-turbo",
+    instructions="Eres un asistente amable y conciso."
+) as stream:
+    for text in stream.text_deltas:
+        print(text, end="", flush=True)
+```
+
+```javascript Node.js
+const stream = await client.beta.threads.runs.create("thread_abc123", {
+  model: "continuum-turbo",
+  instructions: "Eres un asistente amable y conciso.",
+  stream: true,
+});
+
+for await (const event of stream) {
+  if (event.event === "thread.message.delta") {
+    const content = event.data.delta.content[0];
+    if (content.type === "text") {
+      process.stdout.write(content.text.value);
+    }
+  }
+}
+```
+
+---
+
+### Obtener estado de un Run
+
+**GET /v1/threads/{thread_id}/runs/{run_id}**
+
+Consulta el estado actual de un run en ejecucion.
+
+```python Python
+run = client.beta.threads.runs.retrieve(
+    thread_id="thread_abc123",
+    run_id="run_xyz789"
+)
+
+print(f"Estado: {run.status}")
+if run.status == "completed":
+    print(f"Tokens usados: {run.usage.total_tokens}")
+```
+
+## Ejemplo completo: Asistente de chat
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+# 1. Crear el thread
+thread = client.beta.threads.create()
+
+# 2. Bucle de conversacion
+while True:
+    user_input = input("\nTu: ")
+    if user_input.lower() in ["salir", "exit", "quit"]:
+        break
+
+    # 3. Agregar mensaje del usuario
+    client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=user_input
+    )
+
+    # 4. Ejecutar el modelo con streaming
+    print("\nAsistente: ", end="")
+    with client.beta.threads.runs.stream(
+        thread_id=thread.id,
+        model="continuum-turbo",
+        instructions="Eres un asistente amable. Responde en espanol de forma clara y concisa."
+    ) as stream:
+        for text in stream.text_deltas:
+            print(text, end="", flush=True)
+
+print("\n\nConversacion finalizada.")
+```
+
+<Tip>
+  Los Threads se almacenan en el servidor de forma indefinida. Puedes retomar cualquier conversacion en cualquier momento usando el `thread_id` original.
+</Tip>

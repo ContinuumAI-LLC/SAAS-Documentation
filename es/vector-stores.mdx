@@ -1,0 +1,371 @@
+---
+title: 'Vector Stores'
+description: 'Almacenes vectoriales para busqueda por similitud semantica a escala'
+---
+
+## Almacenes vectoriales
+
+Los Vector Stores de Continuum AI te permiten almacenar, indexar y buscar documentos usando embeddings vectoriales. Son la base para construir sistemas de busqueda semantica, Retrieval-Augmented Generation (RAG) y bases de conocimiento inteligentes.
+
+<Info>
+  Los Vector Stores procesan automaticamente los archivos subidos: extraen el texto, lo dividen en fragmentos, generan embeddings y los indexan para busqueda rapida.
+</Info>
+
+## Endpoints
+
+### Crear un almacen vectorial
+
+**POST /v1/vector_stores**
+
+Crea un nuevo almacen vectorial vacio o con archivos iniciales.
+
+<ParamField body="name" type="string" required>
+  Nombre descriptivo del almacen vectorial.
+</ParamField>
+
+<ParamField body="file_ids" type="array">
+  Lista de IDs de archivos a incluir inicialmente. Los archivos seran procesados e indexados automaticamente.
+</ParamField>
+
+<ParamField body="expires_after" type="object">
+  Politica de expiracion automatica del almacen.
+</ParamField>
+
+<Expandable title="Opciones de expiracion">
+  <ParamField body="expires_after.anchor" type="string">
+    Punto de referencia para el calculo. Valor: `last_active_at`.
+  </ParamField>
+  <ParamField body="expires_after.days" type="integer">
+    Numero de dias de inactividad antes de la expiracion.
+  </ParamField>
+</Expandable>
+
+<ParamField body="chunking_strategy" type="object">
+  Estrategia para dividir los documentos en fragmentos.
+</ParamField>
+
+<Expandable title="Estrategias de fragmentacion">
+  <ParamField body="chunking_strategy.type" type="string">
+    Tipo de estrategia: `auto` o `static`.
+  </ParamField>
+  <ParamField body="chunking_strategy.static.max_chunk_size_tokens" type="integer">
+    Tamano maximo de cada fragmento en tokens (solo para `static`). Entre 100 y 4,096.
+  </ParamField>
+  <ParamField body="chunking_strategy.static.chunk_overlap_tokens" type="integer">
+    Tokens de solapamiento entre fragmentos consecutivos. No puede exceder la mitad de `max_chunk_size_tokens`.
+  </ParamField>
+</Expandable>
+
+<ParamField body="metadata" type="object">
+  Metadatos personalizados. Maximo 16 pares clave-valor.
+</ParamField>
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/vector_stores \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Base de conocimiento - Soporte",
+    "file_ids": ["file-abc123", "file-def456"],
+    "chunking_strategy": {
+      "type": "static",
+      "static": {
+        "max_chunk_size_tokens": 800,
+        "chunk_overlap_tokens": 200
+      }
+    }
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+vector_store = client.beta.vector_stores.create(
+    name="Base de conocimiento - Soporte",
+    file_ids=["file-abc123", "file-def456"],
+    chunking_strategy={
+        "type": "static",
+        "static": {
+            "max_chunk_size_tokens": 800,
+            "chunk_overlap_tokens": 200
+        }
+    }
+)
+
+print(f"Almacen creado: {vector_store.id}")
+print(f"Estado: {vector_store.status}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const vectorStore = await client.beta.vectorStores.create({
+  name: "Base de conocimiento - Soporte",
+  file_ids: ["file-abc123", "file-def456"],
+  chunking_strategy: {
+    type: "static",
+    static: {
+      max_chunk_size_tokens: 800,
+      chunk_overlap_tokens: 200,
+    },
+  },
+});
+
+console.log(`Almacen creado: ${vectorStore.id}`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "vs_abc123",
+  "object": "vector_store",
+  "name": "Base de conocimiento - Soporte",
+  "status": "in_progress",
+  "file_counts": {
+    "in_progress": 2,
+    "completed": 0,
+    "failed": 0,
+    "cancelled": 0,
+    "total": 2
+  },
+  "created_at": 1711152000,
+  "usage_bytes": 0
+}
+```
+
+---
+
+### Listar almacenes vectoriales
+
+**GET /v1/vector_stores**
+
+Obtiene la lista de todos los almacenes vectoriales de tu organizacion.
+
+<ParamField query="limit" type="integer" default="20">
+  Numero maximo de resultados. Entre 1 y 100.
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  Orden por fecha de creacion: `asc` o `desc`.
+</ParamField>
+
+<ParamField query="after" type="string">
+  Cursor de paginacion.
+</ParamField>
+
+```python Python
+stores = client.beta.vector_stores.list(limit=10)
+
+for store in stores.data:
+    print(f"{store.id} - {store.name} ({store.status})")
+    print(f"  Archivos: {store.file_counts.completed} completados")
+```
+
+---
+
+### Obtener un almacen vectorial
+
+**GET /v1/vector_stores/{vector_store_id}**
+
+Recupera los detalles de un almacen vectorial especifico.
+
+<ParamField path="vector_store_id" type="string" required>
+  Identificador del almacen vectorial.
+</ParamField>
+
+```python Python
+store = client.beta.vector_stores.retrieve("vs_abc123")
+print(f"Nombre: {store.name}")
+print(f"Archivos completados: {store.file_counts.completed}")
+print(f"Uso en bytes: {store.usage_bytes}")
+```
+
+---
+
+### Modificar un almacen vectorial
+
+**POST /v1/vector_stores/{vector_store_id}**
+
+Actualiza el nombre, metadatos o politica de expiracion de un almacen.
+
+<ParamField path="vector_store_id" type="string" required>
+  Identificador del almacen a modificar.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Nuevo nombre del almacen.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Nuevos metadatos.
+</ParamField>
+
+<ParamField body="expires_after" type="object">
+  Nueva politica de expiracion.
+</ParamField>
+
+```python Python
+updated = client.beta.vector_stores.update(
+    "vs_abc123",
+    name="Base de conocimiento v2 - Soporte",
+    metadata={"version": "2.0", "department": "soporte"}
+)
+print(f"Actualizado: {updated.name}")
+```
+
+---
+
+### Eliminar un almacen vectorial
+
+**DELETE /v1/vector_stores/{vector_store_id}**
+
+Elimina un almacen vectorial y todos sus datos indexados.
+
+<ParamField path="vector_store_id" type="string" required>
+  Identificador del almacen a eliminar.
+</ParamField>
+
+```bash curl
+curl -X DELETE https://api.continuum-ai.com/v1/vector_stores/vs_abc123 \
+  -H "Authorization: Bearer sk-proj-tu-api-key"
+```
+
+<Warning>
+  La eliminacion es permanente. Los archivos originales no se eliminan, solo los datos vectoriales indexados.
+</Warning>
+
+---
+
+### Agregar archivo a un almacen
+
+**POST /v1/vector_stores/{vector_store_id}/files**
+
+Anade un archivo existente a un almacen vectorial para su procesamiento e indexacion.
+
+<ParamField path="vector_store_id" type="string" required>
+  Identificador del almacen vectorial.
+</ParamField>
+
+<ParamField body="file_id" type="string" required>
+  ID del archivo a agregar.
+</ParamField>
+
+```python Python
+file_in_store = client.beta.vector_stores.files.create(
+    vector_store_id="vs_abc123",
+    file_id="file-ghi789"
+)
+
+print(f"Archivo agregado: {file_in_store.id} - Estado: {file_in_store.status}")
+```
+
+---
+
+### Listar archivos de un almacen
+
+**GET /v1/vector_stores/{vector_store_id}/files**
+
+Obtiene la lista de archivos indexados en un almacen vectorial.
+
+<ParamField path="vector_store_id" type="string" required>
+  Identificador del almacen vectorial.
+</ParamField>
+
+<ParamField query="filter" type="string">
+  Filtrar por estado: `in_progress`, `completed`, `failed`, `cancelled`.
+</ParamField>
+
+```python Python
+files = client.beta.vector_stores.files.list(
+    vector_store_id="vs_abc123",
+    filter="completed"
+)
+
+for f in files.data:
+    print(f"{f.id} - {f.status} - Fragmentos: {f.chunking_strategy}")
+```
+
+---
+
+### Eliminar archivo de un almacen
+
+**DELETE /v1/vector_stores/{vector_store_id}/files/{file_id}**
+
+Elimina un archivo de un almacen vectorial. El archivo original no se elimina, solo se desvincula del almacen.
+
+<ParamField path="vector_store_id" type="string" required>
+  Identificador del almacen vectorial.
+</ParamField>
+
+<ParamField path="file_id" type="string" required>
+  Identificador del archivo a desvincular.
+</ParamField>
+
+```python Python
+result = client.beta.vector_stores.files.delete(
+    vector_store_id="vs_abc123",
+    file_id="file-ghi789"
+)
+print(f"Desvinculado: {result.deleted}")
+```
+
+## Ejemplo completo: Sistema RAG
+
+Este ejemplo muestra como construir un sistema de Retrieval-Augmented Generation usando Vector Stores:
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+# 1. Subir documentos
+file1 = client.files.create(
+    file=open("manual_producto.pdf", "rb"),
+    purpose="assistants"
+)
+file2 = client.files.create(
+    file=open("faq.pdf", "rb"),
+    purpose="assistants"
+)
+
+# 2. Crear almacen vectorial
+store = client.beta.vector_stores.create(
+    name="Documentacion del producto",
+    file_ids=[file1.id, file2.id]
+)
+
+# 3. Esperar a que se procesen los archivos
+import time
+while True:
+    store = client.beta.vector_stores.retrieve(store.id)
+    if store.file_counts.in_progress == 0:
+        break
+    time.sleep(2)
+
+print(f"Archivos procesados: {store.file_counts.completed}")
+
+# 4. Buscar informacion relevante y generar respuesta
+# (Usa el almacen vectorial con Threads y un asistente)
+```
+
+<Tip>
+  Los Vector Stores se integran de forma nativa con los Threads y el endpoint de Responses. El modelo puede buscar automaticamente informacion relevante en tus documentos antes de generar una respuesta.
+</Tip>

@@ -1,0 +1,308 @@
+---
+title: 'Imagenes'
+description: 'Genera, edita y crea variaciones de imagenes con los modelos de vision de Continuum AI'
+---
+
+## Generacion de imagenes
+
+Los modelos de vision de Continuum AI te permiten generar imagenes a partir de descripciones textuales, editar imagenes existentes y crear variaciones.
+
+<Info>
+  Todos los endpoints de imagenes devuelven URLs temporales (validas por 1 hora) o datos en formato base64, segun el parametro `response_format`.
+</Info>
+
+## Modelos disponibles
+
+| Modelo | Resolucion max. | Descripcion |
+|--------|-----------------|-------------|
+| `continuum-vision-hd` | 2048x2048 | Alta definicion con maximo nivel de detalle y realismo |
+| `continuum-vision` | 1024x1024 | Generacion rapida para uso general y prototipos |
+
+<Tabs>
+  <Tab title="Generar imagen">
+    ## POST /v1/images/generations
+
+    Genera una o varias imagenes a partir de una descripcion textual (prompt).
+
+    ### Parametros
+
+    <ParamField body="model" type="string" required>
+      Modelo de generacion. Opciones: `continuum-vision-hd`, `continuum-vision`.
+    </ParamField>
+
+    <ParamField body="prompt" type="string" required>
+      Descripcion textual de la imagen a generar. Maximo 4,000 caracteres. Se mas descriptivo para obtener mejores resultados.
+    </ParamField>
+
+    <ParamField body="n" type="integer" default="1">
+      Numero de imagenes a generar. Entre 1 y 10.
+    </ParamField>
+
+    <ParamField body="size" type="string" default="1024x1024">
+      Tamano de la imagen. Opciones: `256x256`, `512x512`, `1024x1024`, `1024x1792`, `1792x1024`, `2048x2048` (solo vision-hd).
+    </ParamField>
+
+    <ParamField body="quality" type="string" default="standard">
+      Calidad de la imagen. Opciones: `standard`, `hd`. La calidad `hd` genera imagenes con mayor detalle y coherencia.
+    </ParamField>
+
+    <ParamField body="style" type="string" default="vivid">
+      Estilo visual. Opciones: `vivid` (colores vibrantes e hiperrealistas) o `natural` (tonos mas sutiles y naturales).
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="url">
+      Formato de la respuesta: `url` (enlace temporal) o `b64_json` (datos base64).
+    </ParamField>
+
+    ### Ejemplos
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.continuum-ai.com/v1/images/generations \
+      -H "Authorization: Bearer sk-proj-tu-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-vision-hd",
+        "prompt": "Un atardecer sobre el mar Mediterraneo visto desde un acantilado, estilo fotorrealista, iluminacion dorada",
+        "n": 1,
+        "size": "1024x1024",
+        "quality": "hd"
+      }'
+    ```
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-tu-api-key",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    response = client.images.generate(
+        model="continuum-vision-hd",
+        prompt="Un atardecer sobre el mar Mediterraneo visto desde un acantilado, estilo fotorrealista, iluminacion dorada",
+        n=1,
+        size="1024x1024",
+        quality="hd"
+    )
+
+    print(response.data[0].url)
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-tu-api-key",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const response = await client.images.generate({
+      model: "continuum-vision-hd",
+      prompt: "Un atardecer sobre el mar Mediterraneo visto desde un acantilado, estilo fotorrealista, iluminacion dorada",
+      n: 1,
+      size: "1024x1024",
+      quality: "hd",
+    });
+
+    console.log(response.data[0].url);
+    ```
+
+    </CodeGroup>
+
+    **Respuesta:**
+
+    ```json
+    {
+      "created": 1711152000,
+      "data": [
+        {
+          "url": "https://api.continuum-ai.com/files/img-abc123.png",
+          "revised_prompt": "Un hermoso atardecer sobre el mar Mediterraneo visto desde lo alto de un acantilado rocoso..."
+        }
+      ]
+    }
+    ```
+
+    <ResponseField name="url" type="string">
+      URL temporal de la imagen generada. Valida durante 1 hora.
+    </ResponseField>
+
+    <ResponseField name="revised_prompt" type="string">
+      Version revisada y expandida del prompt original utilizada internamente para la generacion.
+    </ResponseField>
+
+    <Tip>
+      Los prompts en ingles tienden a producir mejores resultados. Si escribes en espanol, el modelo traducira internamente tu descripcion.
+    </Tip>
+  </Tab>
+
+  <Tab title="Editar imagen">
+    ## POST /v1/images/edits
+
+    Edita una imagen existente segun instrucciones textuales. Requiere una imagen base y opcionalmente una mascara que indique la zona a modificar.
+
+    ### Parametros
+
+    <ParamField body="image" type="file" required>
+      Imagen original en formato PNG. Debe ser cuadrada y menor a 4 MB.
+    </ParamField>
+
+    <ParamField body="prompt" type="string" required>
+      Descripcion de la edicion a realizar.
+    </ParamField>
+
+    <ParamField body="mask" type="file">
+      Imagen PNG con canal alfa que indica las areas a editar. Las zonas transparentes seran reemplazadas.
+    </ParamField>
+
+    <ParamField body="model" type="string" default="continuum-vision">
+      Modelo a utilizar para la edicion.
+    </ParamField>
+
+    <ParamField body="n" type="integer" default="1">
+      Numero de variaciones editadas a generar.
+    </ParamField>
+
+    <ParamField body="size" type="string" default="1024x1024">
+      Tamano de la imagen resultante.
+    </ParamField>
+
+    ### Ejemplo
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.continuum-ai.com/v1/images/edits \
+      -H "Authorization: Bearer sk-proj-tu-api-key" \
+      -F image="@imagen_original.png" \
+      -F mask="@mascara.png" \
+      -F prompt="Anade un gato naranja sentado en la silla" \
+      -F model="continuum-vision" \
+      -F n=1 \
+      -F size="1024x1024"
+    ```
+
+    ```python Python
+    response = client.images.edit(
+        model="continuum-vision",
+        image=open("imagen_original.png", "rb"),
+        mask=open("mascara.png", "rb"),
+        prompt="Anade un gato naranja sentado en la silla",
+        n=1,
+        size="1024x1024"
+    )
+
+    print(response.data[0].url)
+    ```
+
+    ```javascript Node.js
+    import fs from "fs";
+
+    const response = await client.images.edit({
+      model: "continuum-vision",
+      image: fs.createReadStream("imagen_original.png"),
+      mask: fs.createReadStream("mascara.png"),
+      prompt: "Anade un gato naranja sentado en la silla",
+      n: 1,
+      size: "1024x1024",
+    });
+
+    console.log(response.data[0].url);
+    ```
+
+    </CodeGroup>
+
+    <Warning>
+      La imagen y la mascara deben tener el mismo tamano y ser cuadradas. Formatos soportados: PNG con canal alfa para la mascara.
+    </Warning>
+  </Tab>
+
+  <Tab title="Variaciones">
+    ## POST /v1/images/variations
+
+    Genera variaciones de una imagen existente, manteniendo el estilo y la composicion general pero con diferencias creativas.
+
+    ### Parametros
+
+    <ParamField body="image" type="file" required>
+      Imagen base en formato PNG. Debe ser cuadrada y menor a 4 MB.
+    </ParamField>
+
+    <ParamField body="model" type="string" default="continuum-vision">
+      Modelo a utilizar.
+    </ParamField>
+
+    <ParamField body="n" type="integer" default="1">
+      Numero de variaciones a generar. Entre 1 y 10.
+    </ParamField>
+
+    <ParamField body="size" type="string" default="1024x1024">
+      Tamano de las imagenes resultantes.
+    </ParamField>
+
+    ### Ejemplo
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.continuum-ai.com/v1/images/variations \
+      -H "Authorization: Bearer sk-proj-tu-api-key" \
+      -F image="@imagen_original.png" \
+      -F model="continuum-vision" \
+      -F n=3 \
+      -F size="1024x1024"
+    ```
+
+    ```python Python
+    response = client.images.create_variation(
+        model="continuum-vision",
+        image=open("imagen_original.png", "rb"),
+        n=3,
+        size="1024x1024"
+    )
+
+    for i, img in enumerate(response.data):
+        print(f"Variacion {i + 1}: {img.url}")
+    ```
+
+    ```javascript Node.js
+    import fs from "fs";
+
+    const response = await client.images.createVariation({
+      model: "continuum-vision",
+      image: fs.createReadStream("imagen_original.png"),
+      n: 3,
+      size: "1024x1024",
+    });
+
+    response.data.forEach((img, i) => {
+      console.log(`Variacion ${i + 1}: ${img.url}`);
+    });
+    ```
+
+    </CodeGroup>
+
+    <Tip>
+      Las variaciones son utiles para explorar diferentes interpretaciones creativas de un concepto visual sin necesidad de escribir multiples prompts.
+    </Tip>
+  </Tab>
+</Tabs>
+
+## Consejos para mejores resultados
+
+<AccordionGroup>
+  <Accordion title="Escribe prompts descriptivos">
+    Incluye detalles sobre el sujeto, estilo artistico, iluminacion, composicion y ambiente. Por ejemplo, en lugar de "un perro", escribe "un golden retriever jugando en un parque verde al atardecer, fotografia profesional con bokeh suave".
+  </Accordion>
+  <Accordion title="Especifica el estilo visual">
+    Indica claramente si deseas un resultado fotorrealista, ilustracion, pintura al oleo, pixel art, 3D render, etc.
+  </Accordion>
+  <Accordion title="Usa tamanios apropiados">
+    Elige `1024x1792` para retratos verticales, `1792x1024` para paisajes horizontales, y `1024x1024` para imagenes cuadradas como avatares o iconos.
+  </Accordion>
+  <Accordion title="Calidad HD vs Standard">
+    Usa `quality: "hd"` para contenido final de produccion. Para borradores, iteraciones rapidas o prototipos, `standard` es mas rapida y economica.
+  </Accordion>
+</AccordionGroup>
