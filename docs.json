@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Continuum AI",
   "colors": {
-    "primary": "#9bff8b",
-    "light": "#7fe86d",
-    "dark": "#9bff8b"
+    "primary": "#ff8b3d",
+    "light": "#ff9f5a",
+    "dark": "#ff8b3d"
   },
   "favicon": "/favicon.svg",
   "navigation": {
