@@ -7,7 +7,7 @@
     "light": "#FF7A45",
     "dark": "#FF5A1F"
   },
-  "favicon": "/favicon.png",
+  "favicon": "/favicon.svg",
   "api": {
     "mdx": {
       "server": "https://api.continuumai.technology",
@@ -208,20 +208,14 @@
     }
   },
   "logo": {
-    "light": "/logo/logo-light.png",
-    "dark": "/logo/logo-dark.png"
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:support@continuum-ai.com"
-      }
-    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://app.continuum-ai.com"
+      "href": "https://yourai.continuumai.app/"
     }
   },
   "contextual": {
