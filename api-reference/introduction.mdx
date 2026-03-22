@@ -1,33 +1,200 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Reference"
+description: "Build intelligent applications with the Continuum AI API"
+icon: "code"
 ---
 
+# Build with Continuum AI
+
+The Continuum AI API gives you access to powerful language models, embeddings, image generation, audio processing, and more through a single, unified interface. Route requests through our intelligent gateway and let Continuum handle model selection, fallback, and optimization.
+
 <Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
+  All API endpoints require authentication via an API key. See the [Authentication](/api-reference/authentication) guide to get started.
 </Note>
 
-## Welcome
+## API capabilities
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+<CardGroup cols={3}>
+  <Card title="Authentication" icon="shield-halved" href="/api-reference/authentication">
+    API keys, tokens, and security best practices.
+  </Card>
+  <Card title="Models" icon="robot" href="/api-reference/models">
+    Browse all available models and their capabilities.
+  </Card>
+  <Card title="Chat Completions" icon="message-bot" href="/api-reference/endpoint/chat-completions">
+    Generate conversational responses with streaming support.
+  </Card>
+  <Card title="Responses" icon="wand-magic-sparkles" href="/api-reference/endpoint/responses">
+    Structured output generation and function calling.
+  </Card>
+  <Card title="Embeddings" icon="brain" href="/api-reference/endpoint/embeddings">
+    Convert text into numerical vector representations.
+  </Card>
+  <Card title="Images" icon="image" href="/api-reference/endpoint/images">
+    Generate and edit images from text prompts.
+  </Card>
+  <Card title="Audio" icon="headphones" href="/api-reference/endpoint/audio">
+    Speech-to-text, text-to-speech, and audio translation.
+  </Card>
+  <Card title="Threads" icon="messages" href="/api-reference/endpoint/threads">
+    Manage multi-turn conversation threads.
+  </Card>
+  <Card title="Files" icon="folder-open" href="/api-reference/endpoint/files">
+    Upload and manage files for use with the API.
+  </Card>
+  <Card title="Fine-tuning" icon="sliders" href="/api-reference/endpoint/fine-tuning">
+    Customize models with your own training data.
+  </Card>
+  <Card title="Vector Stores" icon="database" href="/api-reference/endpoint/vector-stores">
+    Store and search over vector embeddings.
+  </Card>
+  <Card title="Batches" icon="layer-group" href="/api-reference/endpoint/batches">
+    Submit large-scale requests for async processing.
+  </Card>
+  <Card title="Moderations" icon="shield-check" href="/api-reference/endpoint/moderations">
+    Classify content for policy compliance.
+  </Card>
+  <Card title="Usage & Billing" icon="chart-bar" href="/api-reference/endpoint/usage">
+    Monitor token consumption and costs.
+  </Card>
+</CardGroup>
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Base URL
 
-## Authentication
+All API requests are made to the following base URL:
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
-
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```bash
+https://api.continuum-ai.com/v1
 ```
+
+For example, to list available models:
+
+```bash
+curl https://api.continuum-ai.com/v1/models \
+  -H "Authorization: Bearer sk-proj-your-api-key"
+```
+
+## Rate limits
+
+Continuum AI enforces rate limits to ensure fair usage and platform stability. Limits are applied per API key using a sliding window algorithm.
+
+| Tier       | Requests per second | Requests per minute | Tokens per minute |
+|------------|--------------------:|--------------------:|------------------:|
+| Free       | 1                   | 20                  | 40,000            |
+| Pro        | 10                  | 500                 | 1,000,000         |
+| Business   | 50                  | 5,000               | 10,000,000        |
+| Enterprise | Custom              | Custom              | Custom            |
+
+<Tip>
+  When you exceed your rate limit, the API returns a `429 Too Many Requests` response. Use exponential backoff to retry. See the [Errors](/api-reference/errors) guide for details.
+</Tip>
+
+Rate limit headers are included in every response:
+
+```
+X-RateLimit-Limit: 500
+X-RateLimit-Remaining: 498
+X-RateLimit-Reset: 1711152000
+```
+
+## Response format
+
+All successful responses are wrapped in a standard envelope:
+
+<CodeGroup>
+
+```json Success response
+{
+  "data": {
+    "id": "chatcmpl-abc123",
+    "object": "chat.completion",
+    "model": "continuum-ultra",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Hello! How can I help you today?"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 12,
+      "completion_tokens": 9,
+      "total_tokens": 21
+    }
+  },
+  "status": 200
+}
+```
+
+```json Error response
+{
+  "error": {
+    "message": "Invalid API key provided.",
+    "code": "UNAUTHORIZED"
+  },
+  "status": 401
+}
+```
+
+```json Paginated response
+{
+  "data": [
+    { "id": "model-1", "object": "model" },
+    { "id": "model-2", "object": "model" }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 42,
+    "totalPages": 3
+  },
+  "status": 200
+}
+```
+
+</CodeGroup>
+
+## Streaming
+
+Chat completions support server-sent events (SSE) for real-time streaming. Set `"stream": true` in your request body to receive incremental responses.
+
+```bash
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "stream": true
+  }'
+```
+
+Each SSE event contains a JSON chunk:
+
+```
+data: {"id":"chatcmpl-abc123","choices":[{"delta":{"content":"Hello"},"index":0}]}
+
+data: {"id":"chatcmpl-abc123","choices":[{"delta":{"content":"!"},"index":0}]}
+
+data: [DONE]
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Get your API key" icon="key" href="/api-reference/authentication">
+    Set up authentication and make your first request.
+  </Card>
+  <Card title="Explore models" icon="robot" href="/api-reference/models">
+    Choose the right model for your use case.
+  </Card>
+  <Card title="Error handling" icon="triangle-exclamation" href="/api-reference/errors">
+    Handle errors gracefully in production.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Follow the step-by-step integration guide.
+  </Card>
+</CardGroup>
