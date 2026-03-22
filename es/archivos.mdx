@@ -40,38 +40,36 @@ curl https://api.continuumai.technology/v1/files \
 ```
 
 ```python Python
-from openai import OpenAI
-
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+import requests
 
 with open("datos_entrenamiento.jsonl", "rb") as f:
-    file = client.files.create(
-        file=f,
-        purpose="fine-tune"
+    response = requests.post(
+        "https://api.continuumai.technology/v1/files",
+        headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+        files={"file": f},
+        data={"purpose": "fine-tune"},
     )
 
-print(f"Archivo subido: {file.id}")
-print(f"Tamano: {file.bytes} bytes")
-print(f"Estado: {file.status}")
+file = response.json()
+print(f"Archivo subido: {file['id']}")
+print(f"Tamano: {file['bytes']} bytes")
+print(f"Estado: {file['status']}")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
 import fs from "fs";
 
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
+const formData = new FormData();
+formData.append("file", new Blob([fs.readFileSync("datos_entrenamiento.jsonl")]));
+formData.append("purpose", "fine-tune");
+
+const response = await fetch("https://api.continuumai.technology/v1/files", {
+  method: "POST",
+  headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+  body: formData,
 });
 
-const file = await client.files.create({
-  file: fs.createReadStream("datos_entrenamiento.jsonl"),
-  purpose: "fine-tune",
-});
-
+const file = await response.json();
 console.log(`Archivo subido: ${file.id}`);
 console.log(`Tamano: ${file.bytes} bytes`);
 ```
@@ -120,14 +118,22 @@ curl https://api.continuumai.technology/v1/files \
 ```
 
 ```python Python
-files = client.files.list()
+import requests
 
-for f in files.data:
-    print(f"{f.id} - {f.filename} ({f.bytes} bytes) - {f.purpose}")
+files = requests.get(
+    "https://api.continuumai.technology/v1/files",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+
+for f in files["data"]:
+    print(f"{f['id']} - {f['filename']} ({f['bytes']} bytes) - {f['purpose']}")
 ```
 
 ```javascript Node.js
-const files = await client.files.list();
+const response = await fetch("https://api.continuumai.technology/v1/files", {
+  headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+});
+const files = await response.json();
 
 for (const f of files.data) {
   console.log(`${f.id} - ${f.filename} (${f.bytes} bytes) - ${f.purpose}`);
@@ -184,14 +190,22 @@ curl https://api.continuumai.technology/v1/files/file-abc123 \
 ```
 
 ```python Python
-file = client.files.retrieve("file-abc123")
-print(f"Archivo: {file.filename}")
-print(f"Proposito: {file.purpose}")
-print(f"Estado: {file.status}")
+import requests
+
+file = requests.get(
+    "https://api.continuumai.technology/v1/files/file-abc123",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+print(f"Archivo: {file['filename']}")
+print(f"Proposito: {file['purpose']}")
+print(f"Estado: {file['status']}")
 ```
 
 ```javascript Node.js
-const file = await client.files.retrieve("file-abc123");
+const response = await fetch("https://api.continuumai.technology/v1/files/file-abc123", {
+  headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+});
+const file = await response.json();
 console.log(`Archivo: ${file.filename}`);
 console.log(`Proposito: ${file.purpose}`);
 ```
@@ -219,20 +233,28 @@ curl https://api.continuumai.technology/v1/files/file-abc123/content \
 ```
 
 ```python Python
-content = client.files.content("file-abc123")
+import requests
+
+response = requests.get(
+    "https://api.continuumai.technology/v1/files/file-abc123/content",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+)
 
 # Guardar en disco
 with open("datos_descargados.jsonl", "wb") as f:
-    f.write(content.read())
+    f.write(response.content)
 
 print("Archivo descargado correctamente.")
 ```
 
 ```javascript Node.js
-const content = await client.files.content("file-abc123");
-const text = await content.text();
-
 import fs from "fs";
+
+const response = await fetch("https://api.continuumai.technology/v1/files/file-abc123/content", {
+  headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+});
+const text = await response.text();
+
 fs.writeFileSync("datos_descargados.jsonl", text);
 console.log("Archivo descargado correctamente.");
 ```
@@ -259,12 +281,21 @@ curl -X DELETE https://api.continuumai.technology/v1/files/file-abc123 \
 ```
 
 ```python Python
-result = client.files.delete("file-abc123")
-print(f"Eliminado: {result.deleted}")
+import requests
+
+result = requests.delete(
+    "https://api.continuumai.technology/v1/files/file-abc123",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+print(f"Eliminado: {result['deleted']}")
 ```
 
 ```javascript Node.js
-const result = await client.files.delete("file-abc123");
+const response = await fetch("https://api.continuumai.technology/v1/files/file-abc123", {
+  method: "DELETE",
+  headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+});
+const result = await response.json();
 console.log(`Eliminado: ${result.deleted}`);
 ```
 

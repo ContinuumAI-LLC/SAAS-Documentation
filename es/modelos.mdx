@@ -97,27 +97,24 @@ curl https://api.continuumai.technology/v1/models \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.get(
+    "https://api.continuumai.technology/v1/models",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
 )
 
-models = client.models.list()
-for model in models:
-    print(model.id)
+models = response.json()
+for model in models["data"]:
+    print(model["id"])
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/models", {
+  headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
 });
 
-const models = await client.models.list();
+const models = await response.json();
 for (const model of models.data) {
   console.log(model.id);
 }
@@ -180,12 +177,20 @@ curl https://api.continuumai.technology/v1/models/continuum-ultra \
 ```
 
 ```python Python
-model = client.models.retrieve("continuum-ultra")
+import requests
+
+model = requests.get(
+    "https://api.continuumai.technology/v1/models/continuum-ultra",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
 print(model)
 ```
 
 ```javascript Node.js
-const model = await client.models.retrieve("continuum-ultra");
+const response = await fetch("https://api.continuumai.technology/v1/models/continuum-ultra", {
+  headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+});
+const model = await response.json();
 console.log(model);
 ```
 

@@ -80,49 +80,52 @@ curl https://api.continuumai.technology/v1/vector_stores \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+vector_store = requests.post(
+    "https://api.continuumai.technology/v1/vector_stores",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "name": "Base de conocimiento - Soporte",
+        "file_ids": ["file-abc123", "file-def456"],
+        "chunking_strategy": {
+            "type": "static",
+            "static": {
+                "max_chunk_size_tokens": 800,
+                "chunk_overlap_tokens": 200
+            }
+        },
+    },
+).json()
 
-vector_store = client.beta.vector_stores.create(
-    name="Base de conocimiento - Soporte",
-    file_ids=["file-abc123", "file-def456"],
-    chunking_strategy={
-        "type": "static",
-        "static": {
-            "max_chunk_size_tokens": 800,
-            "chunk_overlap_tokens": 200
-        }
-    }
-)
-
-print(f"Almacen creado: {vector_store.id}")
-print(f"Estado: {vector_store.status}")
+print(f"Almacen creado: {vector_store['id']}")
+print(f"Estado: {vector_store['status']}")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
-});
-
-const vectorStore = await client.beta.vectorStores.create({
-  name: "Base de conocimiento - Soporte",
-  file_ids: ["file-abc123", "file-def456"],
-  chunking_strategy: {
-    type: "static",
-    static: {
-      max_chunk_size_tokens: 800,
-      chunk_overlap_tokens: 200,
-    },
+const response = await fetch("https://api.continuumai.technology/v1/vector_stores", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
   },
+  body: JSON.stringify({
+    name: "Base de conocimiento - Soporte",
+    file_ids: ["file-abc123", "file-def456"],
+    chunking_strategy: {
+      type: "static",
+      static: {
+        max_chunk_size_tokens: 800,
+        chunk_overlap_tokens: 200,
+      },
+    },
+  }),
 });
 
+const vectorStore = await response.json();
 console.log(`Almacen creado: ${vectorStore.id}`);
 ```
 
@@ -169,11 +172,16 @@ Obtiene la lista de todos los almacenes vectoriales de tu organizacion.
 </ParamField>
 
 ```python Python
-stores = client.beta.vector_stores.list(limit=10)
+import requests
 
-for store in stores.data:
-    print(f"{store.id} - {store.name} ({store.status})")
-    print(f"  Archivos: {store.file_counts.completed} completados")
+stores = requests.get(
+    "https://api.continuumai.technology/v1/vector_stores?limit=10",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+
+for store in stores["data"]:
+    print(f"{store['id']} - {store['name']} ({store['status']})")
+    print(f"  Archivos: {store['file_counts']['completed']} completados")
 ```
 
 ---
@@ -189,10 +197,15 @@ Recupera los detalles de un almacen vectorial especifico.
 </ParamField>
 
 ```python Python
-store = client.beta.vector_stores.retrieve("vs_abc123")
-print(f"Nombre: {store.name}")
-print(f"Archivos completados: {store.file_counts.completed}")
-print(f"Uso en bytes: {store.usage_bytes}")
+import requests
+
+store = requests.get(
+    "https://api.continuumai.technology/v1/vector_stores/vs_abc123",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+print(f"Nombre: {store['name']}")
+print(f"Archivos completados: {store['file_counts']['completed']}")
+print(f"Uso en bytes: {store['usage_bytes']}")
 ```
 
 ---
@@ -220,12 +233,20 @@ Actualiza el nombre, metadatos o politica de expiracion de un almacen.
 </ParamField>
 
 ```python Python
-updated = client.beta.vector_stores.update(
-    "vs_abc123",
-    name="Base de conocimiento v2 - Soporte",
-    metadata={"version": "2.0", "department": "soporte"}
-)
-print(f"Actualizado: {updated.name}")
+import requests
+
+updated = requests.post(
+    "https://api.continuumai.technology/v1/vector_stores/vs_abc123",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "name": "Base de conocimiento v2 - Soporte",
+        "metadata": {"version": "2.0", "department": "soporte"},
+    },
+).json()
+print(f"Actualizado: {updated['name']}")
 ```
 
 ---
@@ -266,12 +287,18 @@ Anade un archivo existente a un almacen vectorial para su procesamiento e indexa
 </ParamField>
 
 ```python Python
-file_in_store = client.beta.vector_stores.files.create(
-    vector_store_id="vs_abc123",
-    file_id="file-ghi789"
-)
+import requests
 
-print(f"Archivo agregado: {file_in_store.id} - Estado: {file_in_store.status}")
+file_in_store = requests.post(
+    "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={"file_id": "file-ghi789"},
+).json()
+
+print(f"Archivo agregado: {file_in_store['id']} - Estado: {file_in_store['status']}")
 ```
 
 ---
@@ -291,13 +318,15 @@ Obtiene la lista de archivos indexados en un almacen vectorial.
 </ParamField>
 
 ```python Python
-files = client.beta.vector_stores.files.list(
-    vector_store_id="vs_abc123",
-    filter="completed"
-)
+import requests
 
-for f in files.data:
-    print(f"{f.id} - {f.status} - Fragmentos: {f.chunking_strategy}")
+files = requests.get(
+    "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files?filter=completed",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+
+for f in files["data"]:
+    print(f"{f['id']} - {f['status']}")
 ```
 
 ---
@@ -317,11 +346,13 @@ Elimina un archivo de un almacen vectorial. El archivo original no se elimina, s
 </ParamField>
 
 ```python Python
-result = client.beta.vector_stores.files.delete(
-    vector_store_id="vs_abc123",
-    file_id="file-ghi789"
-)
-print(f"Desvinculado: {result.deleted}")
+import requests
+
+result = requests.delete(
+    "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files/file-ghi789",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+print(f"Desvinculado: {result['deleted']}")
 ```
 
 ## Ejemplo completo: Sistema RAG
@@ -329,38 +360,47 @@ print(f"Desvinculado: {result.deleted}")
 Este ejemplo muestra como construir un sistema de Retrieval-Augmented Generation usando Vector Stores:
 
 ```python Python
-from openai import OpenAI
+import requests
+import time
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+headers = {"Authorization": "Bearer sk-proj-tu-api-key"}
 
 # 1. Subir documentos
-file1 = client.files.create(
-    file=open("manual_producto.pdf", "rb"),
-    purpose="assistants"
-)
-file2 = client.files.create(
-    file=open("faq.pdf", "rb"),
-    purpose="assistants"
-)
+file1 = requests.post(
+    "https://api.continuumai.technology/v1/files",
+    headers=headers,
+    files={"file": open("manual_producto.pdf", "rb")},
+    data={"purpose": "assistants"},
+).json()
+
+file2 = requests.post(
+    "https://api.continuumai.technology/v1/files",
+    headers=headers,
+    files={"file": open("faq.pdf", "rb")},
+    data={"purpose": "assistants"},
+).json()
 
 # 2. Crear almacen vectorial
-store = client.beta.vector_stores.create(
-    name="Documentacion del producto",
-    file_ids=[file1.id, file2.id]
-)
+store = requests.post(
+    "https://api.continuumai.technology/v1/vector_stores",
+    headers={**headers, "Content-Type": "application/json"},
+    json={
+        "name": "Documentacion del producto",
+        "file_ids": [file1["id"], file2["id"]],
+    },
+).json()
 
 # 3. Esperar a que se procesen los archivos
-import time
 while True:
-    store = client.beta.vector_stores.retrieve(store.id)
-    if store.file_counts.in_progress == 0:
+    store = requests.get(
+        f"https://api.continuumai.technology/v1/vector_stores/{store['id']}",
+        headers=headers,
+    ).json()
+    if store["file_counts"]["in_progress"] == 0:
         break
     time.sleep(2)
 
-print(f"Archivos procesados: {store.file_counts.completed}")
+print(f"Archivos procesados: {store['file_counts']['completed']}")
 
 # 4. Buscar informacion relevante y generar respuesta
 # (Usa el almacen vectorial con Threads y un asistente)

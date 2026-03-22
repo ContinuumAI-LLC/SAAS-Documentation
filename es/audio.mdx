@@ -64,46 +64,46 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
     ```
 
     ```python Python
-    from openai import OpenAI
-
-    client = OpenAI(
-        api_key="sk-proj-tu-api-key",
-        base_url="https://api.continuumai.technology/v1"
-    )
+    import requests
 
     with open("grabacion.mp3", "rb") as audio_file:
-        transcription = client.audio.transcriptions.create(
-            model="continuum-listen",
-            file=audio_file,
-            language="es",
-            response_format="verbose_json",
-            timestamp_granularities=["word"]
+        response = requests.post(
+            "https://api.continuumai.technology/v1/audio/transcriptions",
+            headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+            files={"file": audio_file},
+            data={
+                "model": "continuum-listen",
+                "language": "es",
+                "response_format": "verbose_json",
+                "timestamp_granularities[]": ["word"],
+            },
         )
 
-    print(transcription.text)
+    transcription = response.json()
+    print(transcription["text"])
 
     # Acceder a las marcas de tiempo por palabra
-    for word in transcription.words:
-        print(f"{word.start:.2f}s - {word.end:.2f}s: {word.word}")
+    for word in transcription["words"]:
+        print(f"{word['start']:.2f}s - {word['end']:.2f}s: {word['word']}")
     ```
 
     ```javascript Node.js
-    import OpenAI from "openai";
     import fs from "fs";
 
-    const client = new OpenAI({
-      apiKey: "sk-proj-tu-api-key",
-      baseURL: "https://api.continuumai.technology/v1",
+    const formData = new FormData();
+    formData.append("file", new Blob([fs.readFileSync("grabacion.mp3")]));
+    formData.append("model", "continuum-listen");
+    formData.append("language", "es");
+    formData.append("response_format", "verbose_json");
+    formData.append("timestamp_granularities[]", "word");
+
+    const response = await fetch("https://api.continuumai.technology/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+      body: formData,
     });
 
-    const transcription = await client.audio.transcriptions.create({
-      model: "continuum-listen",
-      file: fs.createReadStream("grabacion.mp3"),
-      language: "es",
-      response_format: "verbose_json",
-      timestamp_granularities: ["word"],
-    });
-
+    const transcription = await response.json();
     console.log(transcription.text);
     ```
 
@@ -173,22 +173,35 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
     ```
 
     ```python Python
+    import requests
+
     with open("audio_espanol.mp3", "rb") as audio_file:
-        translation = client.audio.translations.create(
-            model="continuum-listen",
-            file=audio_file
+        response = requests.post(
+            "https://api.continuumai.technology/v1/audio/translations",
+            headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+            files={"file": audio_file},
+            data={"model": "continuum-listen"},
         )
 
+    translation = response.json()
     # El resultado siempre esta en ingles
-    print(translation.text)
+    print(translation["text"])
     ```
 
     ```javascript Node.js
-    const translation = await client.audio.translations.create({
-      model: "continuum-listen",
-      file: fs.createReadStream("audio_espanol.mp3"),
+    import fs from "fs";
+
+    const formData = new FormData();
+    formData.append("file", new Blob([fs.readFileSync("audio_espanol.mp3")]));
+    formData.append("model", "continuum-listen");
+
+    const response = await fetch("https://api.continuumai.technology/v1/audio/translations", {
+      method: "POST",
+      headers: { "Authorization": "Bearer sk-proj-tu-api-key" },
+      body: formData,
     });
 
+    const translation = await response.json();
     console.log(translation.text);
     ```
 
@@ -264,18 +277,26 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
     ```
 
     ```python Python
-    response = client.audio.speech.create(
-        model="continuum-voice-hd",
-        input="Bienvenido a Continuum AI. Estamos encantados de tenerte aqui.",
-        voice="nova",
-        response_format="mp3",
-        speed=1.0
+    import requests
+
+    response = requests.post(
+        "https://api.continuumai.technology/v1/audio/speech",
+        headers={
+            "Authorization": "Bearer sk-proj-tu-api-key",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "continuum-voice-hd",
+            "input": "Bienvenido a Continuum AI. Estamos encantados de tenerte aqui.",
+            "voice": "nova",
+            "response_format": "mp3",
+            "speed": 1.0,
+        },
     )
 
     # Guardar el audio en un archivo
     with open("bienvenida.mp3", "wb") as f:
-        for chunk in response.iter_bytes():
-            f.write(chunk)
+        f.write(response.content)
 
     print("Audio guardado en bienvenida.mp3")
     ```
@@ -283,12 +304,19 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
     ```javascript Node.js
     import fs from "fs";
 
-    const response = await client.audio.speech.create({
-      model: "continuum-voice-hd",
-      input: "Bienvenido a Continuum AI. Estamos encantados de tenerte aqui.",
-      voice: "nova",
-      response_format: "mp3",
-      speed: 1.0,
+    const response = await fetch("https://api.continuumai.technology/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "continuum-voice-hd",
+        input: "Bienvenido a Continuum AI. Estamos encantados de tenerte aqui.",
+        voice: "nova",
+        response_format: "mp3",
+        speed: 1.0,
+      }),
     });
 
     const buffer = Buffer.from(await response.arrayBuffer());
@@ -308,19 +336,28 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
 
     ```python Python
     import pyaudio
+    import requests
 
-    response = client.audio.speech.create(
-        model="continuum-voice",
-        input="Este audio se reproduce mientras se genera, token por token.",
-        voice="alloy",
-        response_format="pcm"
+    response = requests.post(
+        "https://api.continuumai.technology/v1/audio/speech",
+        headers={
+            "Authorization": "Bearer sk-proj-tu-api-key",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "continuum-voice",
+            "input": "Este audio se reproduce mientras se genera, token por token.",
+            "voice": "alloy",
+            "response_format": "pcm",
+        },
+        stream=True,
     )
 
     # Reproducir audio en tiempo real
     player = pyaudio.PyAudio()
     stream = player.open(format=pyaudio.paInt16, channels=1, rate=24000, output=True)
 
-    for chunk in response.iter_bytes(chunk_size=1024):
+    for chunk in response.iter_content(chunk_size=1024):
         stream.write(chunk)
 
     stream.stop_stream()

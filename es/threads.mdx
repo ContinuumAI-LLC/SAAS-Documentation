@@ -68,50 +68,55 @@ curl https://api.continuumai.technology/v1/threads \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+headers = {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+}
 
-thread = client.beta.threads.create(
-    messages=[
-        {
-            "role": "user",
-            "content": "Hola, necesito ayuda con mi proyecto de Python."
-        }
-    ],
-    metadata={
-        "user_id": "usr_123",
-        "topic": "python-help"
-    }
-)
+thread = requests.post(
+    "https://api.continuumai.technology/v1/threads",
+    headers=headers,
+    json={
+        "messages": [
+            {
+                "role": "user",
+                "content": "Hola, necesito ayuda con mi proyecto de Python."
+            }
+        ],
+        "metadata": {
+            "user_id": "usr_123",
+            "topic": "python-help"
+        },
+    },
+).json()
 
-print(f"Thread creado: {thread.id}")
+print(f"Thread creado: {thread['id']}")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
-});
-
-const thread = await client.beta.threads.create({
-  messages: [
-    {
-      role: "user",
-      content: "Hola, necesito ayuda con mi proyecto de Python.",
-    },
-  ],
-  metadata: {
-    user_id: "usr_123",
-    topic: "python-help",
+const response = await fetch("https://api.continuumai.technology/v1/threads", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
   },
+  body: JSON.stringify({
+    messages: [
+      {
+        role: "user",
+        content: "Hola, necesito ayuda con mi proyecto de Python.",
+      },
+    ],
+    metadata: {
+      user_id: "usr_123",
+      topic: "python-help",
+    },
+  }),
 });
 
+const thread = await response.json();
 console.log(`Thread creado: ${thread.id}`);
 ```
 
@@ -236,21 +241,37 @@ curl https://api.continuumai.technology/v1/threads/thread_abc123/messages \
 ```
 
 ```python Python
-message = client.beta.threads.messages.create(
-    thread_id="thread_abc123",
-    role="user",
-    content="Como puedo leer un archivo CSV con pandas?"
-)
+import requests
 
-print(f"Mensaje creado: {message.id}")
+message = requests.post(
+    "https://api.continuumai.technology/v1/threads/thread_abc123/messages",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "role": "user",
+        "content": "Como puedo leer un archivo CSV con pandas?",
+    },
+).json()
+
+print(f"Mensaje creado: {message['id']}")
 ```
 
 ```javascript Node.js
-const message = await client.beta.threads.messages.create("thread_abc123", {
-  role: "user",
-  content: "Como puedo leer un archivo CSV con pandas?",
+const response = await fetch("https://api.continuumai.technology/v1/threads/thread_abc123/messages", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    role: "user",
+    content: "Como puedo leer un archivo CSV con pandas?",
+  }),
 });
 
+const message = await response.json();
 console.log(`Mensaje creado: ${message.id}`);
 ```
 
@@ -277,13 +298,15 @@ Obtiene todos los mensajes de un thread, ordenados del mas reciente al mas antig
 </ParamField>
 
 ```python Python
-messages = client.beta.threads.messages.list(
-    thread_id="thread_abc123",
-    order="asc"
-)
+import requests
 
-for msg in messages.data:
-    print(f"[{msg.role}] {msg.content[0].text.value}")
+messages = requests.get(
+    "https://api.continuumai.technology/v1/threads/thread_abc123/messages?order=asc",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+
+for msg in messages["data"]:
+    print(f"[{msg['role']}] {msg['content'][0]['text']['value']}")
 ```
 
 ---
@@ -336,24 +359,40 @@ curl https://api.continuumai.technology/v1/threads/thread_abc123/runs \
 ```
 
 ```python Python
-run = client.beta.threads.runs.create(
-    thread_id="thread_abc123",
-    model="continuum-ultra",
-    instructions="Eres un experto en Python. Responde con ejemplos de codigo claros y explicaciones concisas.",
-    temperature=0.7
-)
+import requests
 
-print(f"Run creado: {run.id} - Estado: {run.status}")
+run = requests.post(
+    "https://api.continuumai.technology/v1/threads/thread_abc123/runs",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-ultra",
+        "instructions": "Eres un experto en Python. Responde con ejemplos de codigo claros y explicaciones concisas.",
+        "temperature": 0.7,
+    },
+).json()
+
+print(f"Run creado: {run['id']} - Estado: {run['status']}")
 ```
 
 ```javascript Node.js
-const run = await client.beta.threads.runs.create("thread_abc123", {
-  model: "continuum-ultra",
-  instructions:
-    "Eres un experto en Python. Responde con ejemplos de codigo claros y explicaciones concisas.",
-  temperature: 0.7,
+const response = await fetch("https://api.continuumai.technology/v1/threads/thread_abc123/runs", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-ultra",
+    instructions:
+      "Eres un experto en Python. Responde con ejemplos de codigo claros y explicaciones concisas.",
+    temperature: 0.7,
+  }),
 });
 
+const run = await response.json();
 console.log(`Run creado: ${run.id} - Estado: ${run.status}`);
 ```
 
@@ -393,28 +432,64 @@ console.log(`Run creado: ${run.id} - Estado: ${run.status}`);
 Para recibir la respuesta en tiempo real, usa el parametro `stream: true`:
 
 ```python Python
-# Crear un run con streaming
-with client.beta.threads.runs.stream(
-    thread_id="thread_abc123",
-    model="continuum-turbo",
-    instructions="Eres un asistente amable y conciso."
-) as stream:
-    for text in stream.text_deltas:
-        print(text, end="", flush=True)
+import requests
+import json
+
+response = requests.post(
+    "https://api.continuumai.technology/v1/threads/thread_abc123/runs",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-turbo",
+        "instructions": "Eres un asistente amable y conciso.",
+        "stream": True,
+    },
+    stream=True,
+)
+
+for line in response.iter_lines():
+    if line:
+        text = line.decode("utf-8")
+        if text.startswith("data: ") and text != "data: [DONE]":
+            event = json.loads(text[6:])
+            if event.get("event") == "thread.message.delta":
+                content = event["data"]["delta"]["content"][0]
+                if content["type"] == "text":
+                    print(content["text"]["value"], end="", flush=True)
 ```
 
 ```javascript Node.js
-const stream = await client.beta.threads.runs.create("thread_abc123", {
-  model: "continuum-turbo",
-  instructions: "Eres un asistente amable y conciso.",
-  stream: true,
+const response = await fetch("https://api.continuumai.technology/v1/threads/thread_abc123/runs", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-turbo",
+    instructions: "Eres un asistente amable y conciso.",
+    stream: true,
+  }),
 });
 
-for await (const event of stream) {
-  if (event.event === "thread.message.delta") {
-    const content = event.data.delta.content[0];
-    if (content.type === "text") {
-      process.stdout.write(content.text.value);
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  const text = decoder.decode(value);
+  for (const line of text.split("\n")) {
+    if (line.startsWith("data: ") && line !== "data: [DONE]") {
+      const event = JSON.parse(line.slice(6));
+      if (event.event === "thread.message.delta") {
+        const content = event.data.delta.content[0];
+        if (content.type === "text") {
+          process.stdout.write(content.text.value);
+        }
+      }
     }
   }
 }
@@ -429,28 +504,37 @@ for await (const event of stream) {
 Consulta el estado actual de un run en ejecucion.
 
 ```python Python
-run = client.beta.threads.runs.retrieve(
-    thread_id="thread_abc123",
-    run_id="run_xyz789"
-)
+import requests
 
-print(f"Estado: {run.status}")
-if run.status == "completed":
-    print(f"Tokens usados: {run.usage.total_tokens}")
+run = requests.get(
+    "https://api.continuumai.technology/v1/threads/thread_abc123/runs/run_xyz789",
+    headers={"Authorization": "Bearer sk-proj-tu-api-key"},
+).json()
+
+print(f"Estado: {run['status']}")
+if run["status"] == "completed":
+    print(f"Tokens usados: {run['usage']['total_tokens']}")
 ```
 
 ## Ejemplo completo: Asistente de chat
 
 ```python Python
-from openai import OpenAI
+import requests
+import json
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+headers = {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+}
 
 # 1. Crear el thread
-thread = client.beta.threads.create()
+thread = requests.post(
+    "https://api.continuumai.technology/v1/threads",
+    headers=headers,
+    json={},
+).json()
+
+thread_id = thread["id"]
 
 # 2. Bucle de conversacion
 while True:
@@ -459,21 +543,34 @@ while True:
         break
 
     # 3. Agregar mensaje del usuario
-    client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content=user_input
+    requests.post(
+        f"https://api.continuumai.technology/v1/threads/{thread_id}/messages",
+        headers=headers,
+        json={"role": "user", "content": user_input},
     )
 
     # 4. Ejecutar el modelo con streaming
     print("\nAsistente: ", end="")
-    with client.beta.threads.runs.stream(
-        thread_id=thread.id,
-        model="continuum-turbo",
-        instructions="Eres un asistente amable. Responde en espanol de forma clara y concisa."
-    ) as stream:
-        for text in stream.text_deltas:
-            print(text, end="", flush=True)
+    response = requests.post(
+        f"https://api.continuumai.technology/v1/threads/{thread_id}/runs",
+        headers=headers,
+        json={
+            "model": "continuum-turbo",
+            "instructions": "Eres un asistente amable. Responde en espanol de forma clara y concisa.",
+            "stream": True,
+        },
+        stream=True,
+    )
+
+    for line in response.iter_lines():
+        if line:
+            text = line.decode("utf-8")
+            if text.startswith("data: ") and text != "data: [DONE]":
+                event = json.loads(text[6:])
+                if event.get("event") == "thread.message.delta":
+                    content = event["data"]["delta"]["content"][0]
+                    if content["type"] == "text":
+                        print(content["text"]["value"], end="", flush=True)
 
 print("\n\nConversacion finalizada.")
 ```
