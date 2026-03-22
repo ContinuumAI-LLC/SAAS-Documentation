@@ -1,0 +1,267 @@
+---
+title: 'Embeddings'
+description: 'Convierte texto en representaciones vectoriales para busqueda semantica y clasificacion'
+---
+
+## POST /v1/embeddings
+
+Genera vectores numericos (embeddings) a partir de texto. Los embeddings capturan el significado semantico del contenido y se utilizan para busqueda por similitud, clasificacion, agrupamiento y sistemas de recomendacion.
+
+<Info>
+  Los embeddings son representaciones numericas de texto en un espacio vectorial de alta dimension. Textos con significados similares producen vectores cercanos entre si.
+</Info>
+
+## Modelos de embeddings
+
+| Modelo | Dimensiones | Max tokens | Mejor para |
+|--------|-------------|------------|------------|
+| `continuum-embed-3` | 1536 | 8,191 | Uso general, busqueda semantica |
+| `continuum-embed-3-large` | 3,072 | 8,191 | Maxima precision, busqueda avanzada |
+| `continuum-embed-2` | 1536 | 8,191 | Compatibilidad con sistemas existentes |
+
+<Tip>
+  Para la mayoria de los casos, `continuum-embed-3` ofrece el mejor equilibrio entre precision y costo. Usa `continuum-embed-3-large` solo cuando necesites la maxima precision en tareas de recuperacion criticas.
+</Tip>
+
+## Parametros de la solicitud
+
+<ParamField body="model" type="string" required>
+  Modelo de embeddings a utilizar. Ejemplo: `continuum-embed-3`.
+</ParamField>
+
+<ParamField body="input" type="string | array" required>
+  Texto o lista de textos para convertir en embeddings. Maximo 8,191 tokens por texto.
+</ParamField>
+
+<ParamField body="encoding_format" type="string" default="float">
+  Formato de los valores del vector. Opciones: `float` (numeros decimales) o `base64` (codificado en base64 para transferencia eficiente).
+</ParamField>
+
+<ParamField body="dimensions" type="integer">
+  Numero de dimensiones del vector resultante. Solo disponible para modelos `embed-3`. Permite reducir dimensiones para optimizar almacenamiento.
+</ParamField>
+
+## Ejemplo basico
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/embeddings \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-embed-3",
+    "input": "La inteligencia artificial esta transformando la tecnologia moderna."
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.embeddings.create(
+    model="continuum-embed-3",
+    input="La inteligencia artificial esta transformando la tecnologia moderna."
+)
+
+embedding = response.data[0].embedding
+print(f"Dimensiones: {len(embedding)}")
+print(f"Primeros 5 valores: {embedding[:5]}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.embeddings.create({
+  model: "continuum-embed-3",
+  input: "La inteligencia artificial esta transformando la tecnologia moderna.",
+});
+
+const embedding = response.data[0].embedding;
+console.log(`Dimensiones: ${embedding.length}`);
+console.log(`Primeros 5 valores: ${embedding.slice(0, 5)}`);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.0023064255, -0.009327292, 0.015797347, -0.007598712, 0.011984035, ...]
+    }
+  ],
+  "model": "continuum-embed-3",
+  "usage": {
+    "prompt_tokens": 12,
+    "total_tokens": 12
+  }
+}
+```
+
+<ResponseField name="embedding" type="array">
+  Vector de numeros decimales que representa el texto. La longitud depende del modelo utilizado.
+</ResponseField>
+
+<ResponseField name="index" type="integer">
+  Indice del embedding en el lote de solicitud. Corresponde a la posicion del texto en el array `input`.
+</ResponseField>
+
+## Embeddings en lote
+
+Puedes enviar multiples textos en una sola solicitud para mayor eficiencia.
+
+```python Python
+texts = [
+    "Python es un lenguaje de programacion versatil.",
+    "JavaScript domina el desarrollo web.",
+    "Go es excelente para sistemas concurrentes.",
+    "Rust ofrece seguridad de memoria sin recolector de basura."
+]
+
+response = client.embeddings.create(
+    model="continuum-embed-3",
+    input=texts
+)
+
+for i, item in enumerate(response.data):
+    print(f"Texto {i}: {len(item.embedding)} dimensiones")
+```
+
+<Note>
+  Enviar textos en lote es mas eficiente que hacer solicitudes individuales. Puedes incluir hasta 2,048 textos en una sola solicitud.
+</Note>
+
+## Reduccion de dimensiones
+
+Con los modelos `embed-3`, puedes especificar un numero menor de dimensiones para reducir el tamano del vector sin perder demasiada precision.
+
+```python Python
+# Embedding completo (1536 dimensiones)
+full = client.embeddings.create(
+    model="continuum-embed-3",
+    input="Ejemplo de texto"
+)
+
+# Embedding reducido (256 dimensiones)
+reduced = client.embeddings.create(
+    model="continuum-embed-3",
+    input="Ejemplo de texto",
+    dimensions=256
+)
+
+print(f"Completo: {len(full.data[0].embedding)} dimensiones")
+print(f"Reducido: {len(reduced.data[0].embedding)} dimensiones")
+```
+
+<Tip>
+  Reducir a 256 o 512 dimensiones puede disminuir los costos de almacenamiento hasta un 80% con una perdida minima de precision en la mayoria de tareas.
+</Tip>
+
+## Casos de uso
+
+<AccordionGroup>
+  <Accordion title="Busqueda semantica">
+    Compara el embedding de una consulta contra una base de embeddings de documentos para encontrar los mas relevantes.
+
+    ```python Python
+    import numpy as np
+
+    def cosine_similarity(a, b):
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+    # Generar embeddings de documentos
+    docs = ["Python para ciencia de datos", "Receta de paella valenciana", "Guia de Docker"]
+    doc_embeddings = client.embeddings.create(model="continuum-embed-3", input=docs)
+
+    # Embedding de la consulta
+    query = "Como analizar datos con Python?"
+    query_embedding = client.embeddings.create(model="continuum-embed-3", input=query)
+
+    # Calcular similitud
+    query_vec = query_embedding.data[0].embedding
+    for i, doc in enumerate(doc_embeddings.data):
+        similarity = cosine_similarity(query_vec, doc.embedding)
+        print(f"{docs[i]}: {similarity:.4f}")
+    ```
+  </Accordion>
+  <Accordion title="Clasificacion de texto">
+    Usa embeddings como entrada para clasificadores de machine learning, eliminando la necesidad de feature engineering manual.
+
+    ```python Python
+    from sklearn.linear_model import LogisticRegression
+
+    # Textos de entrenamiento con etiquetas
+    train_texts = ["Gran producto, me encanta", "Pesimo servicio", "Muy recomendable", "No funciona"]
+    train_labels = ["positivo", "negativo", "positivo", "negativo"]
+
+    # Obtener embeddings
+    train_embeddings = client.embeddings.create(model="continuum-embed-3", input=train_texts)
+    X_train = [e.embedding for e in train_embeddings.data]
+
+    # Entrenar clasificador
+    clf = LogisticRegression()
+    clf.fit(X_train, train_labels)
+
+    # Predecir
+    new_text = "Excelente calidad y buen precio"
+    new_embedding = client.embeddings.create(model="continuum-embed-3", input=new_text)
+    prediction = clf.predict([new_embedding.data[0].embedding])
+    print(f"Sentimiento: {prediction[0]}")
+    ```
+  </Accordion>
+  <Accordion title="Agrupamiento (clustering)">
+    Agrupa textos similares sin etiquetas previas usando algoritmos como K-Means.
+
+    ```python Python
+    from sklearn.cluster import KMeans
+
+    texts = [
+        "Python para machine learning",
+        "Receta de tortilla espanola",
+        "Tutorial de React",
+        "Como hacer gazpacho",
+        "Introduccion a TensorFlow",
+        "Cocina tradicional mexicana"
+    ]
+
+    embeddings = client.embeddings.create(model="continuum-embed-3", input=texts)
+    vectors = [e.embedding for e in embeddings.data]
+
+    # Agrupar en 2 clusters
+    kmeans = KMeans(n_clusters=2, random_state=42)
+    labels = kmeans.fit_predict(vectors)
+
+    for text, label in zip(texts, labels):
+        print(f"Cluster {label}: {text}")
+    ```
+  </Accordion>
+  <Accordion title="Sistemas de recomendacion">
+    Recomienda contenido similar calculando la distancia entre embeddings de items y preferencias del usuario.
+  </Accordion>
+</AccordionGroup>
+
+## Buenas practicas
+
+<Warning>
+  Los textos que excedan el limite de 8,191 tokens seran truncados silenciosamente. Para documentos largos, dividelos en fragmentos de 500-1000 tokens con solapamiento para mantener el contexto.
+</Warning>
+
+- **Limpia el texto** antes de generar embeddings: elimina HTML, caracteres especiales innecesarios y normaliza espacios.
+- **Usa lotes** en lugar de solicitudes individuales para maximizar el rendimiento.
+- **Almacena los embeddings** en una base de datos vectorial (como pgvector, Pinecone o Qdrant) para busquedas eficientes a escala.
+- **Normaliza los vectores** antes de calcular similitud coseno si tu base de datos no lo hace automaticamente.

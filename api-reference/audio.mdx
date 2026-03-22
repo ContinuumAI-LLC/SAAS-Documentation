@@ -1,0 +1,562 @@
+---
+title: "Audio"
+description: "Convert text to speech, transcribe audio, and translate audio to English"
+icon: "headphones"
+---
+
+The Audio API provides three capabilities: generating natural-sounding speech from text, transcribing audio into text, and translating audio from any supported language into English.
+
+<CardGroup cols={3}>
+  <Card title="Speech" icon="volume-high" href="#speech">
+    Generate lifelike spoken audio from text.
+  </Card>
+  <Card title="Transcription" icon="closed-captioning" href="#transcription">
+    Convert audio recordings to text.
+  </Card>
+  <Card title="Translation" icon="language" href="#translation">
+    Translate audio from any language to English.
+  </Card>
+</CardGroup>
+
+---
+
+## Authentication
+
+Include your API key in the `Authorization` header for all audio endpoints.
+
+```
+Authorization: Bearer sk-proj-...
+```
+
+---
+
+## Available models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `continuum-voice` | Text-to-speech | Fast, low-latency speech generation |
+| `continuum-voice-hd` | Text-to-speech | High-definition, most natural-sounding speech |
+| `continuum-listen` | Speech-to-text | Transcription and translation of audio files |
+
+---
+
+<Tabs>
+  <Tab title="Speech">
+    ## Create speech {#speech}
+
+    Generate spoken audio from text input. Returns an audio file in the specified format.
+
+    ```
+    POST https://api.continuum-ai.com/v1/audio/speech
+    ```
+
+    ### Request body
+
+    <ParamField body="model" type="string" required>
+      The model to use. One of `continuum-voice` or `continuum-voice-hd`.
+
+      - **continuum-voice** -- optimized for real-time, low-latency applications
+      - **continuum-voice-hd** -- optimized for quality, best for pre-rendered content
+    </ParamField>
+
+    <ParamField body="input" type="string" required>
+      The text to generate audio for. Maximum length is 4,096 characters.
+    </ParamField>
+
+    <ParamField body="voice" type="string" required>
+      The voice to use for speech synthesis. Available voices:
+
+      | Voice | Description |
+      |-------|-------------|
+      | `alloy` | Balanced, neutral tone |
+      | `echo` | Warm, conversational |
+      | `fable` | Expressive, storytelling |
+      | `onyx` | Deep, authoritative |
+      | `nova` | Bright, energetic |
+      | `shimmer` | Soft, gentle |
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="mp3">
+      The audio format of the output. One of:
+      - `mp3` -- compressed, smallest file size (default)
+      - `opus` -- low latency, ideal for streaming and real-time
+      - `aac` -- best for mobile devices and Apple ecosystem
+      - `flac` -- lossless compression, best audio quality
+      - `wav` -- uncompressed, maximum compatibility
+      - `pcm` -- raw audio samples, no header
+    </ParamField>
+
+    <ParamField body="speed" type="number" default={1.0}>
+      The speed of the generated audio. Between `0.25` (quarter speed) and `4.0` (4x speed).
+    </ParamField>
+
+    ### Examples
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.continuum-ai.com/v1/audio/speech \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-proj-..." \
+      -d '{
+        "model": "continuum-voice-hd",
+        "input": "Welcome to Continuum AI. We are building the future of intelligent applications, one API call at a time.",
+        "voice": "nova",
+        "response_format": "mp3",
+        "speed": 1.0
+      }' \
+      --output speech.mp3
+    ```
+
+    ```python Python
+    from openai import OpenAI
+    from pathlib import Path
+
+    client = OpenAI(
+        api_key="sk-proj-...",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    response = client.audio.speech.create(
+        model="continuum-voice-hd",
+        input="Welcome to Continuum AI. We are building the future of intelligent applications, one API call at a time.",
+        voice="nova",
+        response_format="mp3",
+        speed=1.0
+    )
+
+    # Save to file
+    speech_file = Path("speech.mp3")
+    response.stream_to_file(speech_file)
+    print(f"Audio saved to {speech_file}")
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+    import fs from "fs";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-...",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const response = await client.audio.speech.create({
+      model: "continuum-voice-hd",
+      input:
+        "Welcome to Continuum AI. We are building the future of intelligent applications, one API call at a time.",
+      voice: "nova",
+      response_format: "mp3",
+      speed: 1.0,
+    });
+
+    // Save to file
+    const buffer = Buffer.from(await response.arrayBuffer());
+    fs.writeFileSync("speech.mp3", buffer);
+    console.log("Audio saved to speech.mp3");
+    ```
+
+    </CodeGroup>
+
+    <Tip>
+      **Real-time streaming:** For low-latency applications like voice assistants, use `continuum-voice` with `opus` format. The response is streamed -- you can start playing audio before the entire file is generated.
+    </Tip>
+
+    ### Streaming speech
+
+    The speech endpoint supports streaming audio. Read from the response body as it arrives:
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-...",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    # Stream audio to file in chunks
+    with client.audio.speech.with_streaming_response.create(
+        model="continuum-voice",
+        input="This audio is being streamed in real time as it is generated.",
+        voice="alloy",
+        response_format="opus"
+    ) as response:
+        response.stream_to_file("streamed_speech.opus")
+    ```
+  </Tab>
+
+  <Tab title="Transcription">
+    ## Create transcription {#transcription}
+
+    Transcribe audio into text in the language of the audio. Supports a wide range of languages.
+
+    ```
+    POST https://api.continuum-ai.com/v1/audio/transcriptions
+    ```
+
+    <Note>
+      This endpoint accepts **multipart/form-data** requests. Maximum file size is **25 MB**. Supported formats: `mp3`, `mp4`, `mpeg`, `mpga`, `m4a`, `wav`, `webm`, `flac`, `ogg`.
+    </Note>
+
+    ### Request body
+
+    <ParamField body="file" type="file" required>
+      The audio file to transcribe. Must be one of the supported formats and under 25 MB.
+    </ParamField>
+
+    <ParamField body="model" type="string" required>
+      The model to use. Currently only `continuum-listen` is available.
+    </ParamField>
+
+    <ParamField body="language" type="string">
+      The language of the audio in [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) format (e.g., `en`, `es`, `fr`, `de`, `ja`). Providing the language improves accuracy and latency.
+    </ParamField>
+
+    <ParamField body="prompt" type="string">
+      Optional text to guide the model's style or continue a previous segment. The prompt should match the language of the audio.
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="json">
+      The format of the response. One of:
+      - `json` -- returns a JSON object with the transcribed text
+      - `text` -- returns the raw text only
+      - `srt` -- returns SubRip subtitle format
+      - `verbose_json` -- returns JSON with word-level timestamps and metadata
+      - `vtt` -- returns WebVTT subtitle format
+    </ParamField>
+
+    <ParamField body="temperature" type="number" default={0}>
+      Sampling temperature between `0` and `1`. Higher values increase creativity but may reduce accuracy. Use `0` for most reliable results.
+    </ParamField>
+
+    <ParamField body="timestamp_granularities" type="array">
+      The granularity of timestamps in the response. One or both of `word` and `segment`. Requires `response_format` to be `verbose_json`.
+    </ParamField>
+
+    ### Examples
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.continuum-ai.com/v1/audio/transcriptions \
+      -H "Authorization: Bearer sk-proj-..." \
+      -F file="@meeting-recording.mp3" \
+      -F model="continuum-listen" \
+      -F language="en" \
+      -F response_format="verbose_json" \
+      -F 'timestamp_granularities[]=word' \
+      -F 'timestamp_granularities[]=segment'
+    ```
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-...",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    with open("meeting-recording.mp3", "rb") as audio_file:
+        transcription = client.audio.transcriptions.create(
+            model="continuum-listen",
+            file=audio_file,
+            language="en",
+            response_format="verbose_json",
+            timestamp_granularities=["word", "segment"]
+        )
+
+    print(transcription.text)
+
+    # Access word-level timestamps
+    for word in transcription.words:
+        print(f"[{word.start:.2f}s - {word.end:.2f}s] {word.word}")
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+    import fs from "fs";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-...",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const transcription = await client.audio.transcriptions.create({
+      model: "continuum-listen",
+      file: fs.createReadStream("meeting-recording.mp3"),
+      language: "en",
+      response_format: "verbose_json",
+      timestamp_granularities: ["word", "segment"],
+    });
+
+    console.log(transcription.text);
+    ```
+
+    </CodeGroup>
+
+    ### Response
+
+    <ResponseField name="text" type="string">
+      The transcribed text.
+    </ResponseField>
+
+    <ResponseField name="language" type="string">
+      The detected language of the audio (present in `verbose_json` format).
+    </ResponseField>
+
+    <ResponseField name="duration" type="number">
+      The duration of the audio in seconds (present in `verbose_json` format).
+    </ResponseField>
+
+    <ResponseField name="words" type="array">
+      Word-level timing information (present in `verbose_json` when requested).
+      <Expandable title="Word object">
+        <ResponseField name="word" type="string">
+          The transcribed word.
+        </ResponseField>
+        <ResponseField name="start" type="number">
+          Start time in seconds.
+        </ResponseField>
+        <ResponseField name="end" type="number">
+          End time in seconds.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="segments" type="array">
+      Segment-level timing information (present in `verbose_json` when requested).
+      <Expandable title="Segment object">
+        <ResponseField name="id" type="integer">
+          Segment index.
+        </ResponseField>
+        <ResponseField name="text" type="string">
+          The transcribed text of this segment.
+        </ResponseField>
+        <ResponseField name="start" type="number">
+          Start time in seconds.
+        </ResponseField>
+        <ResponseField name="end" type="number">
+          End time in seconds.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    **Example response (`verbose_json`):**
+
+    ```json
+    {
+      "text": "Welcome to the quarterly review. Let's start with the revenue numbers.",
+      "language": "en",
+      "duration": 5.42,
+      "words": [
+        { "word": "Welcome", "start": 0.00, "end": 0.48 },
+        { "word": "to", "start": 0.48, "end": 0.58 },
+        { "word": "the", "start": 0.58, "end": 0.68 },
+        { "word": "quarterly", "start": 0.68, "end": 1.12 },
+        { "word": "review.", "start": 1.12, "end": 1.56 },
+        { "word": "Let's", "start": 2.10, "end": 2.34 },
+        { "word": "start", "start": 2.34, "end": 2.62 },
+        { "word": "with", "start": 2.62, "end": 2.78 },
+        { "word": "the", "start": 2.78, "end": 2.88 },
+        { "word": "revenue", "start": 2.88, "end": 3.24 },
+        { "word": "numbers.", "start": 3.24, "end": 3.72 }
+      ],
+      "segments": [
+        {
+          "id": 0,
+          "text": "Welcome to the quarterly review.",
+          "start": 0.00,
+          "end": 1.56
+        },
+        {
+          "id": 1,
+          "text": "Let's start with the revenue numbers.",
+          "start": 2.10,
+          "end": 3.72
+        }
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Translation">
+    ## Create translation {#translation}
+
+    Translate audio from any supported language into English text. The model transcribes and translates in a single step.
+
+    ```
+    POST https://api.continuum-ai.com/v1/audio/translations
+    ```
+
+    <Note>
+      This endpoint accepts **multipart/form-data** requests. Maximum file size is **25 MB**. The output language is always English.
+    </Note>
+
+    ### Request body
+
+    <ParamField body="file" type="file" required>
+      The audio file to translate. Must be one of the supported formats and under 25 MB.
+    </ParamField>
+
+    <ParamField body="model" type="string" required>
+      The model to use. Currently only `continuum-listen` is available.
+    </ParamField>
+
+    <ParamField body="prompt" type="string">
+      Optional text to guide the model's style or provide context. Should be in English.
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="json">
+      The format of the response. One of `json`, `text`, `srt`, `verbose_json`, or `vtt`.
+    </ParamField>
+
+    <ParamField body="temperature" type="number" default={0}>
+      Sampling temperature between `0` and `1`.
+    </ParamField>
+
+    ### Examples
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.continuum-ai.com/v1/audio/translations \
+      -H "Authorization: Bearer sk-proj-..." \
+      -F file="@interview-spanish.mp3" \
+      -F model="continuum-listen" \
+      -F response_format="json"
+    ```
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-...",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    with open("interview-spanish.mp3", "rb") as audio_file:
+        translation = client.audio.translations.create(
+            model="continuum-listen",
+            file=audio_file,
+            response_format="json"
+        )
+
+    print(translation.text)
+    # Output is always in English, regardless of the source language
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+    import fs from "fs";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-...",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const translation = await client.audio.translations.create({
+      model: "continuum-listen",
+      file: fs.createReadStream("interview-spanish.mp3"),
+      response_format: "json",
+    });
+
+    console.log(translation.text);
+    // Output is always in English, regardless of the source language
+    ```
+
+    </CodeGroup>
+
+    ### Response
+
+    <ResponseField name="text" type="string">
+      The translated English text.
+    </ResponseField>
+
+    **Example response:**
+
+    ```json
+    {
+      "text": "Good morning, thank you for joining us today. We are going to discuss the new product launch and the marketing strategy for the upcoming quarter."
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Supported audio formats
+
+| Format | Extension | Notes |
+|--------|-----------|-------|
+| MP3 | `.mp3` | Most common, widely supported |
+| MP4 | `.mp4`, `.m4a` | Audio extracted from video containers |
+| MPEG | `.mpeg`, `.mpga` | MPEG audio layer |
+| WAV | `.wav` | Uncompressed, larger files |
+| WebM | `.webm` | Common for web recordings |
+| FLAC | `.flac` | Lossless compression |
+| OGG | `.ogg` | Open format, good compression |
+
+<Warning>
+  **Maximum file size: 25 MB.** For longer recordings, split the audio into chunks before sending. Each chunk should be under 25 MB and ideally split at natural pause points to maintain transcription quality.
+</Warning>
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Optimizing transcription accuracy">
+    - **Provide the language parameter** when you know the spoken language. This significantly improves accuracy and reduces latency.
+    - **Use high-quality audio** whenever possible. Reduce background noise, use close-talking microphones, and avoid compression artifacts.
+    - **Use the prompt parameter** to provide context, correct spellings of proper nouns, or continue a previous transcription segment.
+    - **Set temperature to 0** for the most reliable transcriptions.
+  </Accordion>
+
+  <Accordion title="Choosing the right voice">
+    Each voice has a distinct character. Test multiple voices with your content to find the best match:
+    - **alloy** -- versatile, works well for most content
+    - **echo** -- ideal for conversational UI and chatbots
+    - **fable** -- best for audiobooks and long-form narration
+    - **onyx** -- strong for announcements and formal content
+    - **nova** -- great for tutorials and product demos
+    - **shimmer** -- suited for meditation, ASMR, and calm content
+  </Accordion>
+
+  <Accordion title="Handling long audio files">
+    For files over 25 MB, split them into smaller segments. Use a tool like `ffmpeg`:
+
+    ```bash
+    # Split into 10-minute chunks
+    ffmpeg -i long-recording.mp3 -f segment -segment_time 600 -c copy chunk_%03d.mp3
+    ```
+
+    Transcribe each chunk and concatenate the results. Use the `prompt` parameter on subsequent chunks to maintain context from the previous segment's output.
+  </Accordion>
+
+  <Accordion title="Generating subtitles">
+    Use `response_format: "srt"` or `response_format: "vtt"` to get ready-to-use subtitle files:
+
+    ```python
+    transcription = client.audio.transcriptions.create(
+        model="continuum-listen",
+        file=open("video-audio.mp3", "rb"),
+        response_format="srt"
+    )
+
+    with open("subtitles.srt", "w") as f:
+        f.write(transcription)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Error codes
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| `400` | `invalid_file_format` | The uploaded file is not a supported audio format. |
+| `400` | `file_too_large` | The file exceeds the 25 MB limit. |
+| `400` | `input_too_long` | Speech input text exceeds the 4,096 character limit. |
+| `401` | `invalid_api_key` | The API key is missing or invalid. |
+| `429` | `rate_limit_exceeded` | Too many requests. Retry with exponential backoff. |
+| `500` | `processing_failed` | Audio could not be processed. Retry the request. |
