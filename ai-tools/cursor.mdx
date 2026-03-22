@@ -1,39 +1,46 @@
 ---
-title: "Cursor setup"
-description: "Configure Cursor for your documentation workflow"
+title: "Using Continuum AI with Cursor"
+description: "Configure Cursor to build applications powered by Continuum AI"
 icon: "arrow-pointer"
 ---
 
-Set up Cursor to help you write and maintain your Mintlify documentation.
+Set up Cursor to integrate with Continuum AI for AI-assisted development using your preferred models through our unified API gateway.
 
 ## Prerequisites
 
 - Cursor editor installed
+- A Continuum AI API key (get one from the [dashboard](https://app.continuum-ai.com))
 
 ## Setup
 
 <Steps>
-<Step title="Open your docs directory in Cursor">
-  Open the root of your documentation repository where `docs.json` is located.
+<Step title="Open your project in Cursor">
+  Open the root of your project directory in Cursor.
 </Step>
 
-<Step title="Install the Mintlify skill">
-  In the integrated terminal, run:
+<Step title="Configure the Continuum AI endpoint">
+  Open Cursor's settings and navigate to the **Models** configuration. Set the API base URL to:
 
-  ```bash
-  npx skills add https://mintlify.com/docs
+  ```
+  https://api.continuumai.technology/v1
   ```
 
-  This gives Cursor Mintlify's component reference, writing standards,
-  and workflow guidance.
+  Enter your Continuum AI API key in the API key field. This routes all of Cursor's AI requests through the Continuum AI gateway.
 </Step>
 
-<Step title="Customize project instructions">
-  Edit `AGENTS.md` in your project root to add project-specific terminology,
-  style preferences, and content boundaries.
+<Step title="Select your model">
+  Choose from any model available through Continuum AI, including GPT-4o, Claude Sonnet, Gemini Pro, and more. You can switch between models at any time depending on your task.
 </Step>
 
-<Step title="Start writing with Cursor">
-  Open a file and use Cursor's AI features to draft and edit documentation.
+<Step title="Start building with Continuum AI">
+  Open a file and use Cursor's AI features -- chat, inline edits, and code generation -- all powered by Continuum AI's unified API.
+
+  <Tip>Use different models for different tasks. For example, use a fast model for autocomplete and a more capable model for complex refactoring.</Tip>
 </Step>
 </Steps>
+
+## Tips for best results
+
+- **Set project context**: Add an `AGENTS.md` or `.cursorrules` file to your project root with instructions about your codebase, coding conventions, and preferred patterns.
+- **Use the chat panel**: Ask Continuum AI-powered models questions about your codebase, debug errors, or plan architecture.
+- **Leverage inline editing**: Select code and use `Cmd+K` (macOS) or `Ctrl+K` (Windows/Linux) to request AI-powered edits in place.

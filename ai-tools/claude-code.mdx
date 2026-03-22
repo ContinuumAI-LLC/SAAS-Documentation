@@ -1,14 +1,15 @@
 ---
-title: "Claude Code setup"
-description: "Configure Claude Code for your documentation workflow"
+title: "Using Continuum AI with Claude Code"
+description: "Configure Claude Code to work with Continuum AI's unified API gateway"
 icon: "asterisk"
 ---
 
-Set up Claude Code to help you write and maintain your Mintlify documentation.
+Set up Claude Code to route requests through Continuum AI, giving you access to multiple model providers and centralized usage tracking.
 
 ## Prerequisites
 
 - Active Claude subscription (Pro, Max, or API access)
+- A Continuum AI API key (get one from the [dashboard](https://app.continuum-ai.com))
 
 ## Setup
 
@@ -19,25 +20,34 @@ Set up Claude Code to help you write and maintain your Mintlify documentation.
   ```
 </Step>
 
-<Step title="Install the Mintlify skill">
-  In your docs directory, run:
+<Step title="Configure the Continuum AI endpoint">
+  Set the Continuum AI API as your base URL by exporting the following environment variables:
 
   ```bash
-  npx skills add https://mintlify.com/docs
+  export ANTHROPIC_BASE_URL="https://api.continuumai.technology/v1"
+  export ANTHROPIC_API_KEY="your-continuum-api-key"
   ```
 
-  This gives Claude Code Mintlify's component reference, writing standards,
-  and workflow guidance.
+  This routes Claude Code's requests through the Continuum AI gateway, giving you centralized billing, logging, and model routing.
 </Step>
 
-<Step title="Customize project instructions">
-  Edit `AGENTS.md` in your project root to add project-specific terminology,
-  style preferences, and content boundaries.
+<Step title="Add project context">
+  Create or edit an `AGENTS.md` file in your project root to give Claude Code context about your codebase, coding conventions, and project-specific instructions.
 </Step>
 
-<Step title="Start writing with Claude Code">
+<Step title="Start building with Continuum AI">
+  Launch Claude Code in your project directory:
+
   ```bash
   claude
   ```
+
+  All AI requests will now flow through Continuum AI's unified gateway.
 </Step>
 </Steps>
+
+## Tips for best results
+
+- **Set clear project instructions**: A well-written `AGENTS.md` or `CLAUDE.md` file dramatically improves the quality of AI-generated code.
+- **Use slash commands**: Claude Code supports slash commands like `/review-pr` and `/commit` for common workflows.
+- **Track usage in the dashboard**: Monitor your Claude Code usage and costs in the [Continuum AI dashboard](https://app.continuum-ai.com).

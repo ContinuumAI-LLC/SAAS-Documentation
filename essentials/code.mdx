@@ -1,6 +1,6 @@
 ---
 title: 'Code blocks'
-description: 'Display inline code and code blocks'
+description: 'Display inline code and code blocks in Continuum AI documentation'
 icon: 'code'
 ---
 
@@ -33,3 +33,43 @@ class HelloWorld {
 }
 ```
 ````
+
+### Continuum AI API examples
+
+Use code blocks to show developers how to interact with the Continuum AI API:
+
+```python continuum_example.py
+import openai
+
+client = openai.OpenAI(
+    api_key="your-api-key",
+    base_url="https://api.continuumai.technology/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "user", "content": "Explain quantum computing in one sentence."}
+    ]
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript continuum_example.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "your-api-key",
+  baseURL: "https://api.continuumai.technology/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "gpt-4o",
+  messages: [
+    { role: "user", content: "Explain quantum computing in one sentence." },
+  ],
+});
+
+console.log(response.choices[0].message.content);
+```

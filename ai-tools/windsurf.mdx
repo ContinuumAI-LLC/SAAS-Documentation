@@ -1,39 +1,46 @@
 ---
-title: "Windsurf setup"
-description: "Configure Windsurf for your documentation workflow"
+title: "Using Continuum AI with Windsurf"
+description: "Configure Windsurf to build applications powered by Continuum AI"
 icon: "water"
 ---
 
-Set up Windsurf's Cascade AI assistant to help you write and maintain your Mintlify documentation.
+Set up Windsurf's Cascade AI assistant to route requests through Continuum AI, giving you access to multiple models through a single API gateway.
 
 ## Prerequisites
 
 - Windsurf editor installed
+- A Continuum AI API key (get one from the [dashboard](https://app.continuum-ai.com))
 
 ## Setup
 
 <Steps>
-<Step title="Open your docs directory in Windsurf">
-  Open the root of your documentation repository where `docs.json` is located.
+<Step title="Open your project in Windsurf">
+  Open the root of your project directory in Windsurf where your source code is located.
 </Step>
 
-<Step title="Install the Mintlify skill">
-  In the integrated terminal, run:
+<Step title="Configure the Continuum AI endpoint">
+  Open Windsurf's settings and navigate to the AI provider configuration. Set the API base URL to:
 
-  ```bash
-  npx skills add https://mintlify.com/docs
+  ```
+  https://api.continuumai.technology/v1
   ```
 
-  This gives Windsurf Mintlify's component reference, writing standards,
-  and workflow guidance.
+  Enter your Continuum AI API key. This routes all of Windsurf's Cascade AI requests through the Continuum AI gateway.
 </Step>
 
-<Step title="Customize project instructions">
-  Edit `AGENTS.md` in your project root to add project-specific terminology,
-  style preferences, and content boundaries.
+<Step title="Select your model">
+  Choose from any model available through Continuum AI. Windsurf's Cascade assistant works with GPT-4o, Claude Sonnet, Gemini Pro, and other models available in your Continuum AI plan.
 </Step>
 
-<Step title="Start writing with Cascade">
-  Open a file and use Cascade to draft and edit documentation.
+<Step title="Start building with Cascade">
+  Open a file and use Cascade to draft code, refactor, debug, and navigate your codebase -- all powered by Continuum AI.
+
+  <Tip>Cascade excels at multi-file edits and understanding project-wide context. Use it for large refactoring tasks or cross-cutting changes.</Tip>
 </Step>
 </Steps>
+
+## Tips for best results
+
+- **Set project context**: Add an `AGENTS.md` or `.windsurfrules` file to your project root with instructions about your codebase and preferred patterns.
+- **Use Cascade flows**: Cascade can chain multiple steps together. Describe your high-level goal and let it plan the implementation.
+- **Monitor usage**: Track your Windsurf-related AI usage in the [Continuum AI dashboard](https://app.continuum-ai.com) for centralized billing and cost insights.
