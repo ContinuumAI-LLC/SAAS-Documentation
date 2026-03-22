@@ -442,7 +442,7 @@ Authorization: Bearer sk-proj-...
     </ParamField>
 
     <ParamField body="model" type="string" required>
-      The model to use for generation. Examples: `gpt-4o`, `gpt-4o-mini`, `gpt-3.5-turbo`.
+      The model to use for generation. Examples: `continuum-ultra`, `continuum-lite`, `continuum-turbo`.
     </ParamField>
 
     <ParamField body="temperature" type="number" default="1.0" optional>
@@ -476,7 +476,7 @@ Authorization: Bearer sk-proj-...
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
-        "model": "gpt-4o",
+        "model": "continuum-ultra",
         "temperature": 0.7,
         "max_tokens": 1024,
         "additional_instructions": "Respond concisely in bullet points.",
@@ -489,7 +489,7 @@ Authorization: Bearer sk-proj-...
         "https://api.continuumai.technology/v1/threads/thread_abc123def456/runs",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
-            "model": "gpt-4o",
+            "model": "continuum-ultra",
             "temperature": 0.7,
             "max_tokens": 1024,
             "additional_instructions": "Respond concisely in bullet points.",
@@ -509,7 +509,7 @@ Authorization: Bearer sk-proj-...
           "id": "run_001",
           "object": "run",
           "thread_id": "thread_abc123def456",
-          "model": "gpt-4o",
+          "model": "continuum-ultra",
           "status": "completed",
           "usage": {
             "prompt_tokens": 85,
@@ -555,7 +555,7 @@ Authorization: Bearer sk-proj-...
     response = requests.post(
         "https://api.continuumai.technology/v1/threads/thread_abc123def456/runs",
         headers={"Authorization": "Bearer sk-proj-..."},
-        json={"model": "gpt-4o", "stream": True},
+        json={"model": "continuum-ultra", "stream": True},
         stream=True
     )
 
@@ -573,7 +573,7 @@ Authorization: Bearer sk-proj-...
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
-        "model": "gpt-4o",
+        "model": "continuum-ultra",
         "tools": [
           {
             "type": "function",
@@ -650,7 +650,7 @@ Build a complete multi-turn conversation in four steps:
     curl -X POST https://api.continuumai.technology/v1/threads/thread_abc123def456/runs \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
-      -d '{"model": "gpt-4o", "temperature": 0.7}'
+      -d '{"model": "continuum-ultra", "temperature": 0.7}'
     ```
   </Step>
 

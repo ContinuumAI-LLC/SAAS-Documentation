@@ -29,9 +29,9 @@ Authorization: Bearer sk-proj-...
     Create a JSONL file where each line is a request object containing a `custom_id`, `method`, `url`, and `body`. Upload it via the [Files API](/api-reference/files) with `purpose: batch`.
 
     ```jsonl
-    {"custom_id": "req-001", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Classify this review as positive or negative: Great product!"}]}}
-    {"custom_id": "req-002", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Classify this review as positive or negative: Terrible experience."}]}}
-    {"custom_id": "req-003", "method": "POST", "url": "/v1/embeddings", "body": {"model": "text-embedding-3-small", "input": "Vector databases enable semantic search"}}
+    {"custom_id": "req-001", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "continuum-lite", "messages": [{"role": "user", "content": "Classify this review as positive or negative: Great product!"}]}}
+    {"custom_id": "req-002", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "continuum-lite", "messages": [{"role": "user", "content": "Classify this review as positive or negative: Terrible experience."}]}}
+    {"custom_id": "req-003", "method": "POST", "url": "/v1/embeddings", "body": {"model": "continuum-embed-3", "input": "Vector databases enable semantic search"}}
     ```
   </Step>
 

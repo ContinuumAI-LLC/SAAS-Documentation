@@ -57,7 +57,7 @@ Authorization: Bearer sk-proj-...
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
-        "model": "gpt-4o-mini",
+        "model": "continuum-lite",
         "training_file": "file_abc123",
         "validation_file": "file_def456",
         "hyperparameters": {
@@ -86,7 +86,7 @@ Authorization: Bearer sk-proj-...
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
-        "model": "ft:gpt-4o-mini:your-project:custom-name:abc123",
+        "model": "ft:continuum-lite:your-project:custom-name:abc123",
         "messages": [{"role": "user", "content": "Summarize this contract clause."}]
       }'
     ```
@@ -100,7 +100,7 @@ Authorization: Bearer sk-proj-...
 ### Create a fine-tuning job
 
 <ParamField body="model" type="string" required>
-  The base model to fine-tune. Supported models: `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`.
+  The base model to fine-tune. Supported models: `continuum-lite`, `continuum-ultra`, `continuum-turbo`.
 </ParamField>
 
 <ParamField body="training_file" type="string" required>
@@ -140,7 +140,7 @@ curl -X POST https://api.continuumai.technology/v1/fine_tuning/jobs \
   -H "Authorization: Bearer sk-proj-..." \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-4o-mini",
+    "model": "continuum-lite",
     "training_file": "file_abc123",
     "validation_file": "file_def456",
     "hyperparameters": {
@@ -157,7 +157,7 @@ response = requests.post(
     "https://api.continuumai.technology/v1/fine_tuning/jobs",
     headers={"Authorization": "Bearer sk-proj-..."},
     json={
-        "model": "gpt-4o-mini",
+        "model": "continuum-lite",
         "training_file": "file_abc123",
         "validation_file": "file_def456",
         "hyperparameters": {"n_epochs": 3},
@@ -177,7 +177,7 @@ print(job["data"]["id"])
     "data": {
       "id": "ftjob_abc123",
       "object": "fine_tuning.job",
-      "model": "gpt-4o-mini",
+      "model": "continuum-lite",
       "training_file": "file_abc123",
       "validation_file": "file_def456",
       "hyperparameters": {
@@ -237,9 +237,9 @@ response = requests.get(
       {
         "id": "ftjob_abc123",
         "object": "fine_tuning.job",
-        "model": "gpt-4o-mini",
+        "model": "continuum-lite",
         "status": "succeeded",
-        "fine_tuned_model": "ft:gpt-4o-mini:your-project:legal-assistant:abc123",
+        "fine_tuned_model": "ft:continuum-lite:your-project:legal-assistant:abc123",
         "trained_tokens": 48000,
         "created_at": "2026-03-22T14:00:00Z",
         "completed_at": "2026-03-22T15:23:00Z"
@@ -287,7 +287,7 @@ response = requests.get(
     "data": {
       "id": "ftjob_abc123",
       "object": "fine_tuning.job",
-      "model": "gpt-4o-mini",
+      "model": "continuum-lite",
       "training_file": "file_abc123",
       "validation_file": "file_def456",
       "hyperparameters": {
@@ -383,7 +383,7 @@ response = requests.get(
         "id": "evt_004",
         "object": "fine_tuning.event",
         "type": "status",
-        "message": "Job succeeded. Fine-tuned model: ft:gpt-4o-mini:your-project:legal-assistant:abc123",
+        "message": "Job succeeded. Fine-tuned model: ft:continuum-lite:your-project:legal-assistant:abc123",
         "created_at": "2026-03-22T15:23:00Z"
       }
     ],

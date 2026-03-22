@@ -34,7 +34,7 @@ Authorization: Bearer sk-proj-...
 <ParamField body="model" type="string" required>
   The model to use for generating the response.
 
-  Examples: `continuum-4o`, `continuum-4o-mini`, `continuum-4-turbo`
+  Examples: `continuum-ultra`, `continuum-lite`, `continuum-turbo`
 </ParamField>
 
 <ParamField body="input" type="string | array" required>
@@ -123,7 +123,7 @@ curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
-    "model": "continuum-4o",
+    "model": "continuum-ultra",
     "input": "What are the three laws of thermodynamics?"
   }'
 ```
@@ -138,7 +138,7 @@ response = requests.post(
         "Content-Type": "application/json",
     },
     json={
-        "model": "continuum-4o",
+        "model": "continuum-ultra",
         "input": "What are the three laws of thermodynamics?",
     },
 )
@@ -155,7 +155,7 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    model: "continuum-4o",
+    model: "continuum-ultra",
     input: "What are the three laws of thermodynamics?",
   }),
 });
@@ -170,7 +170,7 @@ console.log(data.output[0].content[0].text);
 {
   "id": "resp_abc123",
   "object": "response",
-  "model": "continuum-4o",
+  "model": "continuum-ultra",
   "output": [
     {
       "type": "message",
@@ -205,7 +205,7 @@ curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
-    "model": "continuum-4o",
+    "model": "continuum-ultra",
     "instructions": "You are a concise technical writer. Respond in bullet points.",
     "input": "Explain microservices architecture.",
     "temperature": 0.5
@@ -222,7 +222,7 @@ response = requests.post(
         "Content-Type": "application/json",
     },
     json={
-        "model": "continuum-4o",
+        "model": "continuum-ultra",
         "instructions": "You are a concise technical writer. Respond in bullet points.",
         "input": "Explain microservices architecture.",
         "temperature": 0.5,
@@ -241,7 +241,7 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    model: "continuum-4o",
+    model: "continuum-ultra",
     instructions: "You are a concise technical writer. Respond in bullet points.",
     input: "Explain microservices architecture.",
     temperature: 0.5,
@@ -267,7 +267,7 @@ curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
-    "model": "continuum-4o",
+    "model": "continuum-ultra",
     "input": [
       {
         "role": "user",
@@ -297,7 +297,7 @@ response = requests.post(
         "Content-Type": "application/json",
     },
     json={
-        "model": "continuum-4o",
+        "model": "continuum-ultra",
         "input": [
             {
                 "role": "user",
@@ -326,7 +326,7 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    model: "continuum-4o",
+    model: "continuum-ultra",
     input: [
       {
         role: "user",
@@ -362,7 +362,7 @@ curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
-    "model": "continuum-4o",
+    "model": "continuum-ultra",
     "input": "What is the stock price of AAPL?",
     "tools": [
       {
@@ -394,7 +394,7 @@ response = requests.post(
         "Content-Type": "application/json",
     },
     json={
-        "model": "continuum-4o",
+        "model": "continuum-ultra",
         "input": "What is the stock price of AAPL?",
         "tools": [
             {
@@ -432,7 +432,7 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    model: "continuum-4o",
+    model: "continuum-ultra",
     input: "What is the stock price of AAPL?",
     tools: [
       {
@@ -479,7 +479,7 @@ curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
-    "model": "continuum-4o",
+    "model": "continuum-ultra",
     "input": "Tell me a short story about a robot learning to paint.",
     "stream": true
   }'
@@ -496,7 +496,7 @@ response = requests.post(
         "Content-Type": "application/json",
     },
     json={
-        "model": "continuum-4o",
+        "model": "continuum-ultra",
         "input": "Tell me a short story about a robot learning to paint.",
         "stream": True,
     },
@@ -520,7 +520,7 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    model: "continuum-4o",
+    model: "continuum-ultra",
     input: "Tell me a short story about a robot learning to paint.",
     stream: true,
   }),
@@ -637,7 +637,7 @@ while (true) {
 {
   "id": "resp_abc123",
   "object": "response",
-  "model": "continuum-4o",
+  "model": "continuum-ultra",
   "output": [
     {
       "type": "message",

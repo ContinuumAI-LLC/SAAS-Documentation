@@ -53,7 +53,7 @@ Todas las respuestas de error siguen este formato consistente:
 | `422` | Unprocessable Entity | Los parametros son validos sintacticamente pero semanticamente incorrectos. |
 | `429` | Too Many Requests | Se excedio el limite de tasa. Espera antes de reintentar. |
 | `500` | Internal Server Error | Error interno del servidor. Reintenta la solicitud. |
-| `502` | Bad Gateway | El servidor recibio una respuesta invalida de un servicio upstream. |
+| `502` | Bad Gateway | Error interno del servicio. Reintenta la solicitud. |
 | `503` | Service Unavailable | El servicio esta temporalmente no disponible. Reintenta mas tarde. |
 
 ## Tipos de error

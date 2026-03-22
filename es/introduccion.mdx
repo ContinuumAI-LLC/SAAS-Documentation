@@ -5,7 +5,7 @@ description: 'Construye aplicaciones inteligentes con la API de Continuum AI'
 
 ## Construye con Continuum AI
 
-La API de Continuum AI te brinda acceso a modelos de inteligencia artificial de ultima generacion para chat, embeddings, generacion de imagenes, audio y mucho mas. Integra capacidades de IA en tus aplicaciones con una API compatible con OpenAI, sin complicaciones.
+La API de Continuum AI te brinda acceso a modelos de inteligencia artificial de ultima generacion para chat, embeddings, generacion de imagenes, audio y mucho mas. Integra capacidades de IA en tus aplicaciones con nuestra API REST, sin complicaciones.
 
 <Note>
   **URL base de la API:** `https://api.continuumai.technology/v1`
@@ -174,16 +174,16 @@ La API aplica limites de tasa para garantizar un servicio estable para todos los
   Si excedes los limites de tasa, recibiras un error `429 Too Many Requests`. Implementa logica de reintento con backoff exponencial para manejar estos casos correctamente.
 </Warning>
 
-## Compatibilidad con OpenAI
+## Ejemplo rapido
 
-La API de Continuum AI es completamente compatible con el formato de OpenAI. Solo necesitas cambiar la URL base y tu API key:
+Haz tu primera solicitud a la API de Continuum AI:
 
 ```bash
 curl -X POST https://api.continuumai.technology/v1/chat/completions \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-4o",
+    "model": "continuum-ultra",
     "messages": [{"role": "user", "content": "Hola!"}]
   }'
 ```

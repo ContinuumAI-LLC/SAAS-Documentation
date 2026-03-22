@@ -46,7 +46,7 @@ Every error response follows this structure:
 | **404** | Not Found | The requested resource (model, thread, file) does not exist. |
 | **429** | Too Many Requests | You have exceeded your rate limit. Back off and retry. |
 | **500** | Internal Server Error | An unexpected error occurred on our side. Retry with exponential backoff. |
-| **502** | Bad Gateway | The upstream model provider returned an error. Retry or try a different model. |
+| **502** | Bad Gateway | An internal service error occurred. Retry or try a different model. |
 
 ---
 
@@ -185,12 +185,12 @@ Every error response follows this structure:
   <Accordion title="UPSTREAM_ERROR" icon="circle-xmark">
     **HTTP status:** 502
 
-    The upstream model provider returned an error or timed out.
+    An internal service error occurred or the request timed out.
 
     ```json
     {
       "error": {
-        "message": "The upstream model provider returned an error. Please retry your request.",
+        "message": "An internal service error occurred. Please retry your request.",
         "code": "UPSTREAM_ERROR"
       },
       "status": 502

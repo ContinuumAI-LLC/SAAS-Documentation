@@ -308,7 +308,7 @@ def safe_generate(user_message):
         "https://api.continuumai.technology/v1/chat/completions",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
-            "model": "gpt-4o",
+            "model": "continuum-ultra",
             "messages": [{"role": "user", "content": user_message}]
         }
     ).json()

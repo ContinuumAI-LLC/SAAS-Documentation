@@ -1,94 +1,178 @@
 ---
 title: 'Development'
-description: 'Set up your local environment for working with Continuum AI documentation'
+description: 'Integrate Continuum AI into your application with this local development guide'
 ---
 
-<Info>
-  **Prerequisites**:
-  - Node.js version 19 or higher
-  - A docs repository with a `docs.json` file
-</Info>
+Build intelligent applications by integrating the Continuum AI API into your development workflow. This guide walks you through setting up your environment, making your first API call, and understanding the request lifecycle.
 
-Follow these steps to set up your local development environment for the Continuum AI documentation site.
+## How it works
+
+```mermaid
+sequenceDiagram
+    participant App as Your Application
+    participant API as Continuum AI Gateway
+    participant Model as AI Model
+
+    App->>API: POST /v1/chat/completions
+    Note over API: Authenticate API key
+    Note over API: Apply rate limits
+    API->>Model: Route to selected model
+    Model-->>API: Generated response
+    Note over API: Track usage & billing
+    API-->>App: JSON response
+```
+
+## Set up your environment
 
 <Steps>
-<Step title="Install the Continuum docs CLI">
+  <Step title="Get your API key">
+    Sign in to the [Continuum AI dashboard](https://yourai.continuumai.app/) and create a new API key from your project settings. Store it securely as an environment variable.
 
-```bash
-npm i -g mint
-```
-</Step>
+    ```bash
+    export CONTINUUM_API_KEY="sk-proj-your-api-key"
+    ```
+  </Step>
 
-<Step title="Preview locally">
+  <Step title="Make your first request">
+    Test your setup with a simple curl request:
 
-Navigate to your docs directory where your `docs.json` file is located, and run the following command:
+    ```bash
+    curl -X POST https://api.continuumai.technology/v1/chat/completions \
+      -H "Authorization: Bearer $CONTINUUM_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-ultra",
+        "messages": [
+          {"role": "user", "content": "Hello, Continuum!"}
+        ]
+      }'
+    ```
 
-```bash
-mint dev
-```
+    You should receive a JSON response with the model's completion.
+  </Step>
 
-A local preview of your Continuum AI documentation will be available at `http://localhost:3000`.
+  <Step title="Integrate into your app">
+    Use any HTTP client in your language of choice. All requests go directly to the REST API.
 
-</Step>
+    <CodeGroup>
+
+    ```python Python
+    import os
+    import requests
+
+    response = requests.post(
+        "https://api.continuumai.technology/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {os.environ['CONTINUUM_API_KEY']}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "continuum-ultra",
+            "messages": [{"role": "user", "content": "Hello!"}],
+        },
+    )
+
+    print(response.json()["choices"][0]["message"]["content"])
+    ```
+
+    ```javascript Node.js
+    const response = await fetch("https://api.continuumai.technology/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.CONTINUUM_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "continuum-ultra",
+        messages: [{ role: "user", content: "Hello!" }],
+      }),
+    });
+
+    const data = await response.json();
+    console.log(data.choices[0].message.content);
+    ```
+
+    </CodeGroup>
+  </Step>
 </Steps>
 
-## Custom ports
+## API request lifecycle
 
-By default, the dev server uses port 3000. You can customize the port by using the `--port` flag. For example, to run on port 3333:
-
-```bash
-mint dev --port 3333
+```mermaid
+flowchart LR
+    A[Build Request] --> B[Add Auth Header]
+    B --> C[Send to API]
+    C --> D{Status Code}
+    D -->|200| E[Parse Response]
+    D -->|429| F[Wait & Retry]
+    D -->|4xx| G[Fix Request]
+    D -->|5xx| H[Retry with Backoff]
+    F --> C
+    H --> C
 ```
 
-If you attempt to run on a port that is already in use, the next available port will be used automatically:
+Every request to Continuum AI follows this pattern:
 
-```md
-Port 3000 is already in use. Trying 3001 instead.
+1. **Build the request** -- construct the JSON body with your model, messages, and parameters
+2. **Authenticate** -- include your API key in the `Authorization: Bearer` header
+3. **Send** -- POST to the appropriate endpoint at `https://api.continuumai.technology/v1/`
+4. **Handle the response** -- parse the JSON response or handle errors with retry logic
+
+## Available endpoints
+
+```mermaid
+graph TD
+    A[api.continuumai.technology/v1] --> B[/chat/completions]
+    A --> C[/responses]
+    A --> D[/embeddings]
+    A --> E[/images/generations]
+    A --> F[/audio/speech]
+    A --> G[/audio/transcriptions]
+    A --> H[/moderations]
+    A --> I[/files]
+    A --> J[/fine_tuning/jobs]
+    A --> K[/threads]
+    A --> L[/vector_stores]
+    A --> M[/batches]
+    style A fill:#FF5A1F,color:#fff
 ```
 
-## CLI versions
+<CardGroup cols={2}>
+  <Card title="API reference" icon="code" href="/api-reference/introduction">
+    Full documentation for every endpoint, parameter, and response format.
+  </Card>
+  <Card title="Error handling" icon="triangle-exclamation" href="/api-reference/errors">
+    Retry strategies and error code reference.
+  </Card>
+  <Card title="Models" icon="robot" href="/api-reference/models">
+    Browse available models and their capabilities.
+  </Card>
+  <Card title="Authentication" icon="shield-halved" href="/api-reference/authentication">
+    API key management and security best practices.
+  </Card>
+</CardGroup>
 
-Each CLI release is associated with a specific version of the documentation framework. If your local preview does not align with the production version, update the CLI:
-
-```bash
-npm mint update
-```
-
-## Validating links
-
-The CLI can help you validate links across your Continuum AI documentation. To identify any broken links, use the following command:
-
-```bash
-mint broken-links
-```
-
-## Deployment
-
-Continuum AI documentation is auto-deployed when you push changes to your default branch via the GitHub app integration. If the deployment is successful, you should see the following:
-
-<Frame>
-  <img src="/images/checks-passed.png" alt="Screenshot of a deployment confirmation message that says All checks have passed." style={{ borderRadius: '0.5rem' }} />
-</Frame>
-
-## Code formatting
-
-We suggest using extensions on your IDE to recognize and format MDX. If you use VS Code, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
-
-## Troubleshooting
+## Best practices
 
 <AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
+  <Accordion title="Store API keys in environment variables" icon="lock">
+    Never hardcode API keys in your source code. Use environment variables or a secrets manager.
 
-    This may be due to an outdated version of Node.js. Try the following:
-    1. Remove the currently-installed version of the CLI: `npm remove -g mint`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall the CLI: `npm i -g mint`
+    ```bash
+    # .env (add to .gitignore)
+    CONTINUUM_API_KEY=sk-proj-your-api-key
+    ```
   </Accordion>
 
-  <Accordion title="Issue: Encountering an unknown error">
+  <Accordion title="Implement retry logic" icon="rotate">
+    Always implement exponential backoff for `429` and `5xx` errors. Check the `Retry-After` header for rate limit responses.
+  </Accordion>
 
-    Solution: Go to the root of your device and delete the `~/.mintlify` folder. Then run `mint dev` again.
+  <Accordion title="Use streaming for real-time responses" icon="bolt">
+    For chat applications, set `"stream": true` to receive tokens as they are generated. This reduces perceived latency for end users.
+  </Accordion>
+
+  <Accordion title="Monitor your usage" icon="chart-bar">
+    Use the [Usage & Billing](/api-reference/usage-billing) endpoint to track token consumption and costs programmatically.
   </Accordion>
 </AccordionGroup>
-
-Curious about what changed in the latest CLI version? Check out the [CLI changelog](https://www.npmjs.com/package/mintlify?activeTab=versions).

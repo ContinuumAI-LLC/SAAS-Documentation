@@ -256,11 +256,11 @@ limits = response.json()
         "tokens_per_day": 10000000
       },
       "allowed_models": [
-        "gpt-4o",
-        "gpt-4o-mini",
-        "gpt-3.5-turbo",
-        "text-embedding-3-small",
-        "text-embedding-3-large"
+        "continuum-ultra",
+        "continuum-lite",
+        "continuum-turbo",
+        "continuum-embed-3",
+        "continuum-embed-3-large"
       ],
       "max_context_tokens": 128000,
       "max_output_tokens": 16384,
@@ -309,7 +309,7 @@ limits = response.json()
 |---------|------|---------|-----|------------|
 | Requests per minute | 20 | 100 | 500 | Custom |
 | Tokens per minute | 10,000 | 60,000 | 200,000 | Custom |
-| Models | gpt-4o-mini, gpt-3.5-turbo | All standard | All standard | All + custom |
+| Models | continuum-lite, continuum-turbo | All standard | All standard | All + custom |
 | Fine-tuning | -- | 1 concurrent job | 3 concurrent jobs | Unlimited |
 | Batch processing | -- | 10K req/batch | 50K req/batch | Custom |
 | Vector stores | 1 GB | 10 GB | 100 GB | Custom |
