@@ -211,7 +211,7 @@ from openai import OpenAI, RateLimitError, APIError
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 def call_with_retry(func, max_retries=5, base_delay=1.0):
@@ -248,7 +248,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 async function callWithRetry(fn, maxRetries = 5, baseDelay = 1000) {

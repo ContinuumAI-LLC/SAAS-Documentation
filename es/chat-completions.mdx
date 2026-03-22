@@ -89,7 +89,7 @@ Crea una respuesta de chat basada en una lista de mensajes. Este es el endpoint 
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/chat/completions \
+curl https://api.continuumai.technology/v1/chat/completions \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -114,7 +114,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.chat.completions.create(
@@ -135,7 +135,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.chat.completions.create({
@@ -198,7 +198,7 @@ Con streaming, la respuesta se transmite en tiempo real token por token usando S
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/chat/completions \
+curl https://api.continuumai.technology/v1/chat/completions \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -215,7 +215,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 stream = client.chat.completions.create(
@@ -236,7 +236,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const stream = await client.chat.completions.create({
@@ -278,7 +278,7 @@ Permite al modelo invocar funciones definidas por ti. El modelo decide cuando es
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/chat/completions \
+curl https://api.continuumai.technology/v1/chat/completions \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -320,7 +320,7 @@ import json
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 tools = [
@@ -389,7 +389,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const tools = [
@@ -483,7 +483,7 @@ Los modelos de chat pueden analizar imagenes enviadas como parte de los mensajes
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/chat/completions \
+curl https://api.continuumai.technology/v1/chat/completions \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -571,7 +571,7 @@ Fuerza al modelo a generar unicamente JSON valido como respuesta. Util para inte
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/chat/completions \
+curl https://api.continuumai.technology/v1/chat/completions \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{

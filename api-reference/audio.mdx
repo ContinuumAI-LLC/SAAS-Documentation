@@ -47,7 +47,7 @@ Authorization: Bearer sk-proj-...
     Generate spoken audio from text input. Returns an audio file in the specified format.
 
     ```
-    POST https://api.continuum-ai.com/v1/audio/speech
+    POST https://api.continuumai.technology/v1/audio/speech
     ```
 
     ### Request body
@@ -95,7 +95,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/audio/speech \
+    curl -X POST https://api.continuumai.technology/v1/audio/speech \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer sk-proj-..." \
       -d '{
@@ -114,7 +114,7 @@ Authorization: Bearer sk-proj-...
 
     client = OpenAI(
         api_key="sk-proj-...",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     response = client.audio.speech.create(
@@ -137,7 +137,7 @@ Authorization: Bearer sk-proj-...
 
     const client = new OpenAI({
       apiKey: "sk-proj-...",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const response = await client.audio.speech.create({
@@ -170,7 +170,7 @@ Authorization: Bearer sk-proj-...
 
     client = OpenAI(
         api_key="sk-proj-...",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     # Stream audio to file in chunks
@@ -190,7 +190,7 @@ Authorization: Bearer sk-proj-...
     Transcribe audio into text in the language of the audio. Supports a wide range of languages.
 
     ```
-    POST https://api.continuum-ai.com/v1/audio/transcriptions
+    POST https://api.continuumai.technology/v1/audio/transcriptions
     ```
 
     <Note>
@@ -237,7 +237,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/audio/transcriptions \
+    curl -X POST https://api.continuumai.technology/v1/audio/transcriptions \
       -H "Authorization: Bearer sk-proj-..." \
       -F file="@meeting-recording.mp3" \
       -F model="continuum-listen" \
@@ -252,7 +252,7 @@ Authorization: Bearer sk-proj-...
 
     client = OpenAI(
         api_key="sk-proj-...",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     with open("meeting-recording.mp3", "rb") as audio_file:
@@ -277,7 +277,7 @@ Authorization: Bearer sk-proj-...
 
     const client = new OpenAI({
       apiKey: "sk-proj-...",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const transcription = await client.audio.transcriptions.create({
@@ -384,7 +384,7 @@ Authorization: Bearer sk-proj-...
     Translate audio from any supported language into English text. The model transcribes and translates in a single step.
 
     ```
-    POST https://api.continuum-ai.com/v1/audio/translations
+    POST https://api.continuumai.technology/v1/audio/translations
     ```
 
     <Note>
@@ -418,7 +418,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/audio/translations \
+    curl -X POST https://api.continuumai.technology/v1/audio/translations \
       -H "Authorization: Bearer sk-proj-..." \
       -F file="@interview-spanish.mp3" \
       -F model="continuum-listen" \
@@ -430,7 +430,7 @@ Authorization: Bearer sk-proj-...
 
     client = OpenAI(
         api_key="sk-proj-...",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     with open("interview-spanish.mp3", "rb") as audio_file:
@@ -450,7 +450,7 @@ Authorization: Bearer sk-proj-...
 
     const client = new OpenAI({
       apiKey: "sk-proj-...",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const translation = await client.audio.translations.create({

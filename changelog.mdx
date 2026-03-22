@@ -1,0 +1,126 @@
+---
+title: "Changelog"
+description: "New features, improvements, and fixes for the Continuum AI platform"
+icon: "clock-rotate-left"
+rss: true
+---
+
+# Changelog
+
+Stay up to date with the latest changes to the Continuum AI API and platform.
+
+<Update label="March 2026" description="v1.6.0">
+  ## API playground
+
+  The API documentation now includes an **interactive playground** where you can test endpoints directly from the docs. Authenticate with your API key and make live requests without leaving the browser.
+
+  ## New base URL
+
+  The API is now served from `https://api.continuumai.technology`. All existing endpoints remain backward compatible.
+
+  ## Changelog and RSS
+
+  You can now subscribe to platform updates via RSS. Look for the feed icon at the top of this page.
+</Update>
+
+<Update label="February 2026" description="v1.5.0">
+  ## Vector stores API
+
+  Build persistent, searchable knowledge bases from your files. Upload documents, and Continuum automatically chunks, embeds, and indexes them for semantic search during thread runs.
+
+  - Create, list, get, and delete vector stores
+  - Add and manage files within stores
+  - Automatic chunking and embedding with configurable strategies
+
+  ## Batch processing
+
+  Submit large collections of API requests as a single asynchronous job at a **50% discount**.
+
+  - Supported endpoints: `/v1/chat/completions`, `/v1/embeddings`
+  - Jobs complete within a 24-hour window
+  - Full progress tracking and cancellation support
+</Update>
+
+<Update label="January 2026" description="v1.4.0">
+  ## Responses API
+
+  A new, modern unified endpoint for generating AI responses. Simpler request format than Chat Completions with first-class support for:
+
+  - String or message array input
+  - Dedicated `instructions` field (no system message needed)
+  - Multimodal input (text + images)
+  - Tool calling with structured output
+  - Granular streaming events
+
+  ## Fine-tuning improvements
+
+  - Added validation file support for monitoring overfitting
+  - Hyperparameter overrides: `n_epochs`, `batch_size`, `learning_rate_multiplier`
+  - Training event stream with loss metrics per step
+</Update>
+
+<Update label="December 2025" description="v1.3.0">
+  ## Threads API
+
+  Persistent multi-turn conversations are now available. Create threads, add messages, and run models against the full conversation history.
+
+  - Thread CRUD operations with metadata support
+  - Message management with tool calling
+  - Streaming runs with server-sent events
+  - Automatic context management
+
+  ## Audio API enhancements
+
+  - Added `continuum-voice-hd` model for high-definition speech synthesis
+  - Word-level and segment-level timestamps in `verbose_json` format
+  - New voices: `echo`, `fable`, `onyx`, `nova`, `shimmer`
+</Update>
+
+<Update label="November 2025" description="v1.2.0">
+  ## Image generation
+
+  Generate, edit, and create variations of images with AI.
+
+  - `continuum-vision-hd` for high-fidelity generation up to 2048x2048
+  - `continuum-vision` for fast, cost-effective generation
+  - Landscape (1792x1024) and portrait (1024x1792) sizes
+  - Style control: `vivid` and `natural` modes
+
+  ## Files API
+
+  Upload and manage files for use across Continuum AI services.
+
+  - Support for `assistants`, `fine-tune`, `batch`, and `vision` purposes
+  - Up to 512 MB per file
+  - Async processing with status tracking
+</Update>
+
+<Update label="October 2025" description="v1.1.0">
+  ## Embeddings
+
+  Transform text into vector representations for search, clustering, and RAG.
+
+  - `continuum-embed-3` and `continuum-embed-3-large` models
+  - Configurable dimensions for storage-efficient vectors
+  - Batch embedding up to 2,048 strings per request
+
+  ## Moderations
+
+  Free content moderation across 11 safety categories.
+
+  - `continuum-shield` with granular confidence scores
+  - Batch moderation for up to 32 inputs per request
+  - Custom threshold support via raw scores
+</Update>
+
+<Update label="September 2025" description="v1.0.0">
+  ## Initial release
+
+  Continuum AI API v1.0 is live. A unified gateway for language models, embeddings, images, audio, and more.
+
+  - **Chat Completions** -- OpenAI-compatible endpoint with streaming, tool calling, vision, and JSON mode
+  - **Models** -- Browse and query available models and their capabilities
+  - **Authentication** -- Project-scoped API keys with Bearer token and X-API-Key support
+  - **Usage & Billing** -- Real-time usage monitoring, subscription management, and rate limit visibility
+  - **Error handling** -- Structured error responses with machine-readable codes and retry guidance
+</Update>

@@ -94,7 +94,7 @@ Inicia un nuevo job de fine-tuning con el archivo de entrenamiento especificado.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/fine_tuning/jobs \
+curl https://api.continuumai.technology/v1/fine_tuning/jobs \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -113,7 +113,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 job = client.fine_tuning.jobs.create(
@@ -135,7 +135,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const job = await client.fineTuning.jobs.create({
@@ -193,7 +193,7 @@ Obtiene la lista de todos los jobs de fine-tuning de tu organizacion.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/fine_tuning/jobs?limit=10 \
+curl https://api.continuumai.technology/v1/fine_tuning/jobs?limit=10 \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -234,7 +234,7 @@ Recupera el estado actual y los detalles de un job de fine-tuning.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/fine_tuning/jobs/ftjob-abc123 \
+curl https://api.continuumai.technology/v1/fine_tuning/jobs/ftjob-abc123 \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 

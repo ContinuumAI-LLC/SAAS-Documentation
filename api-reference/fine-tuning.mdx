@@ -42,7 +42,7 @@ Authorization: Bearer sk-proj-...
     Upload your JSONL file with `purpose: fine-tune` using the [Files API](/api-reference/files).
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/files \
+    curl -X POST https://api.continuumai.technology/v1/files \
       -H "Authorization: Bearer sk-proj-..." \
       -F file=@training_data.jsonl \
       -F purpose=fine-tune
@@ -53,7 +53,7 @@ Authorization: Bearer sk-proj-...
     Start training by specifying the base model and your training file. Optionally provide a validation file and hyperparameter overrides.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/fine_tuning/jobs \
+    curl -X POST https://api.continuumai.technology/v1/fine_tuning/jobs \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -73,7 +73,7 @@ Authorization: Bearer sk-proj-...
     Poll the job events endpoint to track training progress, including loss metrics and validation results.
 
     ```bash
-    curl https://api.continuum-ai.com/v1/fine_tuning/jobs/ftjob_abc123/events \
+    curl https://api.continuumai.technology/v1/fine_tuning/jobs/ftjob_abc123/events \
       -H "Authorization: Bearer sk-proj-..."
     ```
   </Step>
@@ -82,7 +82,7 @@ Authorization: Bearer sk-proj-...
     Once the job status is `succeeded`, the `fine_tuned_model` field contains your model identifier. Use it anywhere you would use a standard model name.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+    curl -X POST https://api.continuumai.technology/v1/chat/completions \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -136,7 +136,7 @@ Authorization: Bearer sk-proj-...
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/fine_tuning/jobs \
+curl -X POST https://api.continuumai.technology/v1/fine_tuning/jobs \
   -H "Authorization: Bearer sk-proj-..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -154,7 +154,7 @@ curl -X POST https://api.continuum-ai.com/v1/fine_tuning/jobs \
 import requests
 
 response = requests.post(
-    "https://api.continuum-ai.com/v1/fine_tuning/jobs",
+    "https://api.continuumai.technology/v1/fine_tuning/jobs",
     headers={"Authorization": "Bearer sk-proj-..."},
     json={
         "model": "gpt-4o-mini",
@@ -216,13 +216,13 @@ Returns a paginated list of fine-tuning jobs for the current project.
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.continuum-ai.com/v1/fine_tuning/jobs?page=1&pageSize=10" \
+curl "https://api.continuumai.technology/v1/fine_tuning/jobs?page=1&pageSize=10" \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/fine_tuning/jobs",
+    "https://api.continuumai.technology/v1/fine_tuning/jobs",
     headers={"Authorization": "Bearer sk-proj-..."},
     params={"page": 1, "pageSize": 10}
 )
@@ -268,13 +268,13 @@ Retrieves the current state of a fine-tuning job.
 <CodeGroup>
 
 ```bash cURL
-curl https://api.continuum-ai.com/v1/fine_tuning/jobs/ftjob_abc123 \
+curl https://api.continuumai.technology/v1/fine_tuning/jobs/ftjob_abc123 \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/fine_tuning/jobs/ftjob_abc123",
+    "https://api.continuumai.technology/v1/fine_tuning/jobs/ftjob_abc123",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 ```
@@ -330,13 +330,13 @@ Returns a chronological list of events for a fine-tuning job, including training
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.continuum-ai.com/v1/fine_tuning/jobs/ftjob_abc123/events?pageSize=50" \
+curl "https://api.continuumai.technology/v1/fine_tuning/jobs/ftjob_abc123/events?pageSize=50" \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/fine_tuning/jobs/ftjob_abc123/events",
+    "https://api.continuumai.technology/v1/fine_tuning/jobs/ftjob_abc123/events",
     headers={"Authorization": "Bearer sk-proj-..."},
     params={"pageSize": 50}
 )
@@ -401,9 +401,14 @@ response = requests.get(
 
 ## Job status lifecycle
 
-```
-pending → running → succeeded
-                  ↘ failed
+```mermaid
+stateDiagram-v2
+    [*] --> pending
+    pending --> running
+    running --> succeeded
+    running --> failed
+    succeeded --> [*]
+    failed --> [*]
 ```
 
 | Status | Description |

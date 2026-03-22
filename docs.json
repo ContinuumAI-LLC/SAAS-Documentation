@@ -3,11 +3,27 @@
   "theme": "mint",
   "name": "Continuum AI",
   "colors": {
-    "primary": "#ff8b3d",
-    "light": "#ff9f5a",
-    "dark": "#ff8b3d"
+    "primary": "#FF5A1F",
+    "light": "#FF7A45",
+    "dark": "#FF5A1F"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
+  "api": {
+    "mdx": {
+      "server": "https://api.continuumai.technology",
+      "auth": {
+        "method": "bearer"
+      }
+    },
+    "playground": {
+      "display": "interactive",
+      "proxy": true
+    },
+    "examples": {
+      "languages": ["bash", "python", "javascript", "go"],
+      "defaults": "required"
+    }
+  },
   "navigation": {
     "tabs": [
       {
@@ -158,6 +174,17 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "Changelog",
+            "pages": [
+              "changelog"
+            ]
+          }
+        ]
       }
     ],
     "global": {
@@ -168,16 +195,21 @@
           "icon": "code"
         },
         {
+          "anchor": "Changelog",
+          "href": "/changelog",
+          "icon": "clock-rotate-left"
+        },
+        {
           "anchor": "Status",
-          "href": "https://status.continuum-ai.com",
+          "href": "https://status.continuumai.app",
           "icon": "signal"
         }
       ]
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/logo-light.png",
+    "dark": "/logo/logo-dark.png"
   },
   "navbar": {
     "links": [

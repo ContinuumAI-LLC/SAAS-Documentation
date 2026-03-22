@@ -38,7 +38,7 @@ Obtiene un resumen del consumo de tu organizacion en un periodo de tiempo.
 <CodeGroup>
 
 ```bash curl
-curl "https://api.continuum-ai.com/v1/usage?start_date=2026-03-01&end_date=2026-03-22&group_by=model" \
+curl "https://api.continuumai.technology/v1/usage?start_date=2026-03-01&end_date=2026-03-22&group_by=model" \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -48,7 +48,7 @@ import requests
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 # Consulta directa al endpoint de uso
@@ -60,7 +60,7 @@ params = {
 }
 
 response = requests.get(
-    "https://api.continuum-ai.com/v1/usage",
+    "https://api.continuumai.technology/v1/usage",
     headers=headers,
     params=params
 )
@@ -76,7 +76,7 @@ for entry in usage["data"]:
 
 ```javascript Node.js
 const response = await fetch(
-  "https://api.continuum-ai.com/v1/usage?start_date=2026-03-01&end_date=2026-03-22&group_by=model",
+  "https://api.continuumai.technology/v1/usage?start_date=2026-03-01&end_date=2026-03-22&group_by=model",
   {
     headers: {
       Authorization: "Bearer sk-proj-tu-api-key",
@@ -162,14 +162,14 @@ Consulta los limites de uso activos para tu organizacion y el consumo actual res
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/usage/limits \
+curl https://api.continuumai.technology/v1/usage/limits \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
 ```python Python
 headers = {"Authorization": "Bearer sk-proj-tu-api-key"}
 response = requests.get(
-    "https://api.continuum-ai.com/v1/usage/limits",
+    "https://api.continuumai.technology/v1/usage/limits",
     headers=headers
 )
 
@@ -181,7 +181,7 @@ print(f"Porcentaje usado: {limits['data']['usage_percentage']:.1f}%")
 ```
 
 ```javascript Node.js
-const response = await fetch("https://api.continuum-ai.com/v1/usage/limits", {
+const response = await fetch("https://api.continuumai.technology/v1/usage/limits", {
   headers: {
     Authorization: "Bearer sk-proj-tu-api-key",
   },
@@ -235,7 +235,7 @@ Obtiene un desglose detallado de costos por modelo, incluyendo precios por millo
 <CodeGroup>
 
 ```bash curl
-curl "https://api.continuum-ai.com/v1/usage/costs?start_date=2026-03-01&end_date=2026-03-22" \
+curl "https://api.continuumai.technology/v1/usage/costs?start_date=2026-03-01&end_date=2026-03-22" \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -244,7 +244,7 @@ headers = {"Authorization": "Bearer sk-proj-tu-api-key"}
 params = {"start_date": "2026-03-01", "end_date": "2026-03-22"}
 
 response = requests.get(
-    "https://api.continuum-ai.com/v1/usage/costs",
+    "https://api.continuumai.technology/v1/usage/costs",
     headers=headers,
     params=params
 )
@@ -259,7 +259,7 @@ for model in costs["data"]["models"]:
 
 ```javascript Node.js
 const response = await fetch(
-  "https://api.continuum-ai.com/v1/usage/costs?start_date=2026-03-01&end_date=2026-03-22",
+  "https://api.continuumai.technology/v1/usage/costs?start_date=2026-03-01&end_date=2026-03-22",
   {
     headers: { Authorization: "Bearer sk-proj-tu-api-key" },
   }

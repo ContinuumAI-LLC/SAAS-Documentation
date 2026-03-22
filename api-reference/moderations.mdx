@@ -2,6 +2,7 @@
 title: "Moderations"
 description: "Detect harmful or policy-violating content before it reaches your users"
 icon: "shield-check"
+api: "POST /v1/moderations"
 ---
 
 The Moderations API analyzes text for content that may violate usage policies, enabling you to build safety layers into your application. Each request returns category-level flags and granular confidence scores, giving you the flexibility to enforce your own thresholds.
@@ -56,7 +57,7 @@ Analyzes the provided input text and returns a detailed breakdown of content cat
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/moderations \
+curl -X POST https://api.continuumai.technology/v1/moderations \
   -H "Authorization: Bearer sk-proj-..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -69,7 +70,7 @@ curl -X POST https://api.continuum-ai.com/v1/moderations \
 import requests
 
 response = requests.post(
-    "https://api.continuum-ai.com/v1/moderations",
+    "https://api.continuumai.technology/v1/moderations",
     headers={"Authorization": "Bearer sk-proj-..."},
     json={
         "input": "I want to learn how to build a web application with React.",
@@ -135,7 +136,7 @@ Moderate multiple inputs in a single request by passing an array of strings.
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/moderations \
+curl -X POST https://api.continuumai.technology/v1/moderations \
   -H "Authorization: Bearer sk-proj-..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -149,7 +150,7 @@ curl -X POST https://api.continuum-ai.com/v1/moderations \
 
 ```python Python
 response = requests.post(
-    "https://api.continuum-ai.com/v1/moderations",
+    "https://api.continuumai.technology/v1/moderations",
     headers={"Authorization": "Bearer sk-proj-..."},
     json={
         "input": [
@@ -263,6 +264,16 @@ for category, threshold in CUSTOM_THRESHOLDS.items():
 
 ## Integration pattern
 
+```mermaid
+flowchart LR
+    A[User Input] --> B{Moderate Input}
+    B -->|Safe| C[Chat Completions]
+    B -->|Flagged| D[Block & Respond]
+    C --> E{Moderate Output}
+    E -->|Safe| F[Display to User]
+    E -->|Flagged| G[Retry or Fallback]
+```
+
 A typical safety pipeline moderates both the user's input and the model's output:
 
 <Steps>
@@ -284,7 +295,7 @@ A typical safety pipeline moderates both the user's input and the model's output
 def safe_generate(user_message):
     # Step 1: Check input
     mod_input = requests.post(
-        "https://api.continuum-ai.com/v1/moderations",
+        "https://api.continuumai.technology/v1/moderations",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={"input": user_message}
     ).json()
@@ -294,7 +305,7 @@ def safe_generate(user_message):
 
     # Step 2: Generate response
     completion = requests.post(
-        "https://api.continuum-ai.com/v1/chat/completions",
+        "https://api.continuumai.technology/v1/chat/completions",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
             "model": "gpt-4o",
@@ -306,7 +317,7 @@ def safe_generate(user_message):
 
     # Step 3: Check output
     mod_output = requests.post(
-        "https://api.continuum-ai.com/v1/moderations",
+        "https://api.continuumai.technology/v1/moderations",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={"input": assistant_message}
     ).json()

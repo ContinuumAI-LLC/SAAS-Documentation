@@ -43,7 +43,7 @@ Returns aggregated usage statistics for the current project within a specified d
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.continuum-ai.com/v1/usage?from=2026-03-01T00:00:00Z&to=2026-03-22T23:59:59Z&group_by=day" \
+curl "https://api.continuumai.technology/v1/usage?from=2026-03-01T00:00:00Z&to=2026-03-22T23:59:59Z&group_by=day" \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
@@ -51,7 +51,7 @@ curl "https://api.continuum-ai.com/v1/usage?from=2026-03-01T00:00:00Z&to=2026-03
 import requests
 
 response = requests.get(
-    "https://api.continuum-ai.com/v1/usage",
+    "https://api.continuumai.technology/v1/usage",
     headers={"Authorization": "Bearer sk-proj-..."},
     params={
         "from": "2026-03-01T00:00:00Z",
@@ -150,13 +150,13 @@ Returns details about the current project's subscription plan, including credit 
 <CodeGroup>
 
 ```bash cURL
-curl https://api.continuum-ai.com/v1/billing/subscription \
+curl https://api.continuumai.technology/v1/billing/subscription \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/billing/subscription",
+    "https://api.continuumai.technology/v1/billing/subscription",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 
@@ -230,13 +230,13 @@ Returns the current rate limits and model access restrictions for the project. L
 <CodeGroup>
 
 ```bash cURL
-curl https://api.continuum-ai.com/v1/billing/limits \
+curl https://api.continuumai.technology/v1/billing/limits \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/billing/limits",
+    "https://api.continuumai.technology/v1/billing/limits",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 

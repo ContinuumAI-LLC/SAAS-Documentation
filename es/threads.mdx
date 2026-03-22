@@ -50,7 +50,7 @@ Crea un nuevo hilo de conversacion vacio o con mensajes iniciales.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/threads \
+curl https://api.continuumai.technology/v1/threads \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -72,7 +72,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 thread = client.beta.threads.create(
@@ -96,7 +96,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const thread = await client.beta.threads.create({
@@ -144,7 +144,7 @@ Recupera la informacion de un thread existente.
 </ParamField>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/threads/thread_abc123 \
+curl https://api.continuumai.technology/v1/threads/thread_abc123 \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -165,7 +165,7 @@ Actualiza los metadatos de un thread.
 </ParamField>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/threads/thread_abc123 \
+curl https://api.continuumai.technology/v1/threads/thread_abc123 \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -X POST \
@@ -191,7 +191,7 @@ Elimina un thread y todos sus mensajes de forma permanente.
 </ParamField>
 
 ```bash curl
-curl -X DELETE https://api.continuum-ai.com/v1/threads/thread_abc123 \
+curl -X DELETE https://api.continuumai.technology/v1/threads/thread_abc123 \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -226,7 +226,7 @@ Anade un nuevo mensaje a un thread existente.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/threads/thread_abc123/messages \
+curl https://api.continuumai.technology/v1/threads/thread_abc123/messages \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -325,7 +325,7 @@ Ejecuta el modelo sobre el thread completo para generar una respuesta. El modelo
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/threads/thread_abc123/runs \
+curl https://api.continuumai.technology/v1/threads/thread_abc123/runs \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -446,7 +446,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 # 1. Crear el thread

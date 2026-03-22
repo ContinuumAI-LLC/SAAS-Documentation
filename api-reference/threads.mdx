@@ -36,7 +36,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/threads \
+    curl -X POST https://api.continuumai.technology/v1/threads \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -51,7 +51,7 @@ Authorization: Bearer sk-proj-...
     import requests
 
     response = requests.post(
-        "https://api.continuum-ai.com/v1/threads",
+        "https://api.continuumai.technology/v1/threads",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
             "metadata": {
@@ -101,13 +101,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl https://api.continuum-ai.com/v1/threads?page=1&pageSize=20 \
+    curl https://api.continuumai.technology/v1/threads?page=1&pageSize=20 \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.get(
-        "https://api.continuum-ai.com/v1/threads",
+        "https://api.continuumai.technology/v1/threads",
         headers={"Authorization": "Bearer sk-proj-..."},
         params={"page": 1, "pageSize": 20}
     )
@@ -154,13 +154,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl https://api.continuum-ai.com/v1/threads/thread_abc123def456 \
+    curl https://api.continuumai.technology/v1/threads/thread_abc123def456 \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.get(
-        "https://api.continuum-ai.com/v1/threads/thread_abc123def456",
+        "https://api.continuumai.technology/v1/threads/thread_abc123def456",
         headers={"Authorization": "Bearer sk-proj-..."}
     )
     ```
@@ -201,7 +201,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X PATCH https://api.continuum-ai.com/v1/threads/thread_abc123def456 \
+    curl -X PATCH https://api.continuumai.technology/v1/threads/thread_abc123def456 \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -214,7 +214,7 @@ Authorization: Bearer sk-proj-...
 
     ```python Python
     response = requests.patch(
-        "https://api.continuum-ai.com/v1/threads/thread_abc123def456",
+        "https://api.continuumai.technology/v1/threads/thread_abc123def456",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
             "metadata": {
@@ -258,13 +258,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X DELETE https://api.continuum-ai.com/v1/threads/thread_abc123def456 \
+    curl -X DELETE https://api.continuumai.technology/v1/threads/thread_abc123def456 \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.delete(
-        "https://api.continuum-ai.com/v1/threads/thread_abc123def456",
+        "https://api.continuumai.technology/v1/threads/thread_abc123def456",
         headers={"Authorization": "Bearer sk-proj-..."}
     )
     ```
@@ -315,7 +315,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/threads/thread_abc123def456/messages \
+    curl -X POST https://api.continuumai.technology/v1/threads/thread_abc123def456/messages \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -326,7 +326,7 @@ Authorization: Bearer sk-proj-...
 
     ```python Python
     response = requests.post(
-        "https://api.continuum-ai.com/v1/threads/thread_abc123def456/messages",
+        "https://api.continuumai.technology/v1/threads/thread_abc123def456/messages",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
             "role": "user",
@@ -378,13 +378,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl "https://api.continuum-ai.com/v1/threads/thread_abc123def456/messages?page=1&pageSize=50" \
+    curl "https://api.continuumai.technology/v1/threads/thread_abc123def456/messages?page=1&pageSize=50" \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.get(
-        "https://api.continuum-ai.com/v1/threads/thread_abc123def456/messages",
+        "https://api.continuumai.technology/v1/threads/thread_abc123def456/messages",
         headers={"Authorization": "Bearer sk-proj-..."},
         params={"page": 1, "pageSize": 50}
     )
@@ -472,7 +472,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/threads/thread_abc123def456/runs \
+    curl -X POST https://api.continuumai.technology/v1/threads/thread_abc123def456/runs \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -486,7 +486,7 @@ Authorization: Bearer sk-proj-...
 
     ```python Python
     response = requests.post(
-        "https://api.continuum-ai.com/v1/threads/thread_abc123def456/runs",
+        "https://api.continuumai.technology/v1/threads/thread_abc123def456/runs",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
             "model": "gpt-4o",
@@ -553,7 +553,7 @@ Authorization: Bearer sk-proj-...
     import requests
 
     response = requests.post(
-        "https://api.continuum-ai.com/v1/threads/thread_abc123def456/runs",
+        "https://api.continuumai.technology/v1/threads/thread_abc123def456/runs",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={"model": "gpt-4o", "stream": True},
         stream=True
@@ -569,7 +569,7 @@ Authorization: Bearer sk-proj-...
     #### Runs with tool calling
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/threads/thread_abc123def456/runs \
+    curl -X POST https://api.continuumai.technology/v1/threads/thread_abc123def456/runs \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -603,6 +603,21 @@ Authorization: Bearer sk-proj-...
 
 ## Conversation flow
 
+```mermaid
+sequenceDiagram
+    participant App
+    participant API as Continuum API
+    App->>API: POST /v1/threads
+    API-->>App: thread_id
+    App->>API: POST /v1/threads/{id}/messages
+    API-->>App: message_id
+    App->>API: POST /v1/threads/{id}/runs
+    API-->>App: SSE stream / response
+    App->>API: POST /v1/threads/{id}/messages (follow-up)
+    App->>API: POST /v1/threads/{id}/runs
+    API-->>App: SSE stream / response
+```
+
 Build a complete multi-turn conversation in four steps:
 
 <Steps>
@@ -610,7 +625,7 @@ Build a complete multi-turn conversation in four steps:
     Start a new conversation by creating a thread. Optionally attach metadata to associate the thread with a user, session, or any context your application needs.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/threads \
+    curl -X POST https://api.continuumai.technology/v1/threads \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{"metadata": {"user_id": "usr_abc123"}}'
@@ -621,7 +636,7 @@ Build a complete multi-turn conversation in four steps:
     Post the user's input as a message to the thread. The message is persisted and becomes part of the conversation context.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/threads/thread_abc123def456/messages \
+    curl -X POST https://api.continuumai.technology/v1/threads/thread_abc123def456/messages \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{"role": "user", "content": "Explain quantum computing in simple terms."}'
@@ -632,7 +647,7 @@ Build a complete multi-turn conversation in four steps:
     Create a run to generate the AI response. The model reads the entire thread history and produces a contextually aware reply.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/threads/thread_abc123def456/runs \
+    curl -X POST https://api.continuumai.technology/v1/threads/thread_abc123def456/runs \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{"model": "gpt-4o", "temperature": 0.7}'
@@ -643,7 +658,7 @@ Build a complete multi-turn conversation in four steps:
     The run response includes the assistant's generated message. For subsequent turns, repeat steps 2-3. The thread automatically maintains the full conversation history.
 
     ```bash
-    curl https://api.continuum-ai.com/v1/threads/thread_abc123def456/messages?page=1&pageSize=50 \
+    curl https://api.continuumai.technology/v1/threads/thread_abc123def456/messages?page=1&pageSize=50 \
       -H "Authorization: Bearer sk-proj-..."
     ```
   </Step>

@@ -59,7 +59,7 @@ Los modelos de vision de Continuum AI te permiten generar imagenes a partir de d
     <CodeGroup>
 
     ```bash curl
-    curl https://api.continuum-ai.com/v1/images/generations \
+    curl https://api.continuumai.technology/v1/images/generations \
       -H "Authorization: Bearer sk-proj-tu-api-key" \
       -H "Content-Type: application/json" \
       -d '{
@@ -76,7 +76,7 @@ Los modelos de vision de Continuum AI te permiten generar imagenes a partir de d
 
     client = OpenAI(
         api_key="sk-proj-tu-api-key",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     response = client.images.generate(
@@ -95,7 +95,7 @@ Los modelos de vision de Continuum AI te permiten generar imagenes a partir de d
 
     const client = new OpenAI({
       apiKey: "sk-proj-tu-api-key",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const response = await client.images.generate({
@@ -118,7 +118,7 @@ Los modelos de vision de Continuum AI te permiten generar imagenes a partir de d
       "created": 1711152000,
       "data": [
         {
-          "url": "https://api.continuum-ai.com/files/img-abc123.png",
+          "url": "https://api.continuumai.technology/files/img-abc123.png",
           "revised_prompt": "Un hermoso atardecer sobre el mar Mediterraneo visto desde lo alto de un acantilado rocoso..."
         }
       ]
@@ -174,7 +174,7 @@ Los modelos de vision de Continuum AI te permiten generar imagenes a partir de d
     <CodeGroup>
 
     ```bash curl
-    curl https://api.continuum-ai.com/v1/images/edits \
+    curl https://api.continuumai.technology/v1/images/edits \
       -H "Authorization: Bearer sk-proj-tu-api-key" \
       -F image="@imagen_original.png" \
       -F mask="@mascara.png" \
@@ -247,7 +247,7 @@ Los modelos de vision de Continuum AI te permiten generar imagenes a partir de d
     <CodeGroup>
 
     ```bash curl
-    curl https://api.continuum-ai.com/v1/images/variations \
+    curl https://api.continuumai.technology/v1/images/variations \
       -H "Authorization: Bearer sk-proj-tu-api-key" \
       -F image="@imagen_original.png" \
       -F model="continuum-vision" \

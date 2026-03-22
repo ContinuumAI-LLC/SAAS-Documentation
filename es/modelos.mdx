@@ -8,7 +8,7 @@ description: 'Referencia completa de todos los modelos disponibles en Continuum 
 Continuum AI ofrece una amplia gama de modelos optimizados para diferentes tareas. Desde generacion de texto conversacional hasta embeddings, vision, audio y moderacion de contenido.
 
 <Info>
-  Todos los modelos son accesibles a traves de la URL base `https://api.continuum-ai.com/v1`. Usa el identificador del modelo en el campo `model` de tus solicitudes.
+  Todos los modelos son accesibles a traves de la URL base `https://api.continuumai.technology/v1`. Usa el identificador del modelo en el campo `model` de tus solicitudes.
 </Info>
 
 ## Catalogo de modelos
@@ -92,7 +92,7 @@ Obtiene la lista completa de modelos disponibles en tu cuenta.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/models \
+curl https://api.continuumai.technology/v1/models \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -101,7 +101,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 models = client.models.list()
@@ -114,7 +114,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const models = await client.models.list();
@@ -175,7 +175,7 @@ Recupera la informacion detallada de un modelo especifico.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/models/continuum-ultra \
+curl https://api.continuumai.technology/v1/models/continuum-ultra \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 

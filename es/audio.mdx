@@ -54,7 +54,7 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
     <CodeGroup>
 
     ```bash curl
-    curl https://api.continuum-ai.com/v1/audio/transcriptions \
+    curl https://api.continuumai.technology/v1/audio/transcriptions \
       -H "Authorization: Bearer sk-proj-tu-api-key" \
       -F file="@grabacion.mp3" \
       -F model="continuum-listen" \
@@ -68,7 +68,7 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
 
     client = OpenAI(
         api_key="sk-proj-tu-api-key",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     with open("grabacion.mp3", "rb") as audio_file:
@@ -93,7 +93,7 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
 
     const client = new OpenAI({
       apiKey: "sk-proj-tu-api-key",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const transcription = await client.audio.transcriptions.create({
@@ -166,7 +166,7 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
     <CodeGroup>
 
     ```bash curl
-    curl https://api.continuum-ai.com/v1/audio/translations \
+    curl https://api.continuumai.technology/v1/audio/translations \
       -H "Authorization: Bearer sk-proj-tu-api-key" \
       -F file="@audio_espanol.mp3" \
       -F model="continuum-listen"
@@ -250,7 +250,7 @@ Continuum AI ofrece modelos especializados para trabajar con audio: transcripcio
     <CodeGroup>
 
     ```bash curl
-    curl https://api.continuum-ai.com/v1/audio/speech \
+    curl https://api.continuumai.technology/v1/audio/speech \
       -H "Authorization: Bearer sk-proj-tu-api-key" \
       -H "Content-Type: application/json" \
       -d '{

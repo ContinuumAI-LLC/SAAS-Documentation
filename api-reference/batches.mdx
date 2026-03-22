@@ -39,7 +39,7 @@ Authorization: Bearer sk-proj-...
     Submit the batch job by referencing your uploaded file and the target endpoint.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/batches \
+    curl -X POST https://api.continuumai.technology/v1/batches \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -57,7 +57,7 @@ Authorization: Bearer sk-proj-...
     Poll the batch status until it reaches a terminal state.
 
     ```bash
-    curl https://api.continuum-ai.com/v1/batches/batch_abc123 \
+    curl https://api.continuumai.technology/v1/batches/batch_abc123 \
       -H "Authorization: Bearer sk-proj-..."
     ```
   </Step>
@@ -66,7 +66,7 @@ Authorization: Bearer sk-proj-...
     Once completed, download the output file using the `output_file_id` from the batch response. Each line contains the original `custom_id` and the corresponding API response.
 
     ```bash
-    curl https://api.continuum-ai.com/v1/files/file_output001/content \
+    curl https://api.continuumai.technology/v1/files/file_output001/content \
       -H "Authorization: Bearer sk-proj-..." \
       --output results.jsonl
     ```
@@ -98,7 +98,7 @@ Authorization: Bearer sk-proj-...
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/batches \
+curl -X POST https://api.continuumai.technology/v1/batches \
   -H "Authorization: Bearer sk-proj-..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -114,7 +114,7 @@ curl -X POST https://api.continuum-ai.com/v1/batches \
 import requests
 
 response = requests.post(
-    "https://api.continuum-ai.com/v1/batches",
+    "https://api.continuumai.technology/v1/batches",
     headers={"Authorization": "Bearer sk-proj-..."},
     json={
         "input_file_id": "file_batch001",
@@ -177,13 +177,13 @@ Returns a paginated list of batch jobs for the current project.
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.continuum-ai.com/v1/batches?page=1&pageSize=10" \
+curl "https://api.continuumai.technology/v1/batches?page=1&pageSize=10" \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/batches",
+    "https://api.continuumai.technology/v1/batches",
     headers={"Authorization": "Bearer sk-proj-..."},
     params={"page": 1, "pageSize": 10}
 )
@@ -232,13 +232,13 @@ Retrieves the current state of a batch job, including progress counts and output
 <CodeGroup>
 
 ```bash cURL
-curl https://api.continuum-ai.com/v1/batches/batch_abc123 \
+curl https://api.continuumai.technology/v1/batches/batch_abc123 \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/batches/batch_abc123",
+    "https://api.continuumai.technology/v1/batches/batch_abc123",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 ```
@@ -289,13 +289,13 @@ Cancels an in-progress batch job. Requests that have already completed will stil
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/batches/batch_abc123/cancel \
+curl -X POST https://api.continuumai.technology/v1/batches/batch_abc123/cancel \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.post(
-    "https://api.continuum-ai.com/v1/batches/batch_abc123/cancel",
+    "https://api.continuumai.technology/v1/batches/batch_abc123/cancel",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 ```
@@ -330,11 +330,20 @@ response = requests.post(
 
 ## Batch status lifecycle
 
-```
-validating → in_progress → completed
-                         ↘ failed
-                         ↘ expired
-          ↘ cancelling → cancelled
+```mermaid
+stateDiagram-v2
+    [*] --> validating
+    validating --> in_progress
+    validating --> cancelling
+    in_progress --> completed
+    in_progress --> failed
+    in_progress --> expired
+    in_progress --> cancelling
+    cancelling --> cancelled
+    completed --> [*]
+    failed --> [*]
+    expired --> [*]
+    cancelled --> [*]
 ```
 
 | Status | Description |

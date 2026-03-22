@@ -2,6 +2,7 @@
 title: "Chat completions"
 description: "Generate conversational responses from Continuum AI models"
 icon: "message-bot"
+api: "POST /v1/chat/completions"
 ---
 
 <Info>
@@ -13,7 +14,7 @@ icon: "message-bot"
 Generate a model response for a conversation. Supports text generation, tool calling, vision, JSON mode, and streaming.
 
 ```
-POST https://api.continuum-ai.com/v1/chat/completions
+POST https://api.continuumai.technology/v1/chat/completions
 ```
 
 ---
@@ -163,10 +164,9 @@ Authorization: Bearer sk-proj-...
 
 ## Basic example
 
-<CodeGroup>
-
+<RequestExample>
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+curl -X POST https://api.continuumai.technology/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -191,7 +191,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.chat.completions.create(
@@ -212,7 +212,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.chat.completions.create({
@@ -227,8 +227,33 @@ const response = await client.chat.completions.create({
 
 console.log(response.choices[0].message.content);
 ```
+</RequestExample>
 
-</CodeGroup>
+<ResponseExample>
+```json 200
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1711600000,
+  "model": "continuum-4o",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Quantum computing uses qubits that can exist in superposition, allowing them to process multiple possibilities simultaneously."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 28,
+    "completion_tokens": 52,
+    "total_tokens": 80
+  }
+}
+```
+</ResponseExample>
 
 ---
 
@@ -239,7 +264,7 @@ Set `stream: true` to receive partial responses as server-sent events. Each even
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+curl -X POST https://api.continuumai.technology/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -256,7 +281,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 stream = client.chat.completions.create(
@@ -277,7 +302,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const stream = await client.chat.completions.create({
@@ -332,7 +357,7 @@ Provide tool definitions and let the model decide when to call them. You then ex
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+curl -X POST https://api.continuumai.technology/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -373,7 +398,7 @@ import json
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 tools = [
@@ -439,7 +464,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const tools = [
@@ -512,7 +537,7 @@ Pass images to the model by providing an array of content parts in the `messages
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+curl -X POST https://api.continuumai.technology/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -544,7 +569,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.chat.completions.create(
@@ -575,7 +600,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.chat.completions.create({
@@ -616,7 +641,7 @@ Force the model to output valid JSON by setting `response_format`.
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+curl -X POST https://api.continuumai.technology/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -642,7 +667,7 @@ import json
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.chat.completions.create(
@@ -671,7 +696,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.chat.completions.create({

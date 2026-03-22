@@ -63,7 +63,7 @@ Crea un nuevo almacen vectorial vacio o con archivos iniciales.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/vector_stores \
+curl https://api.continuumai.technology/v1/vector_stores \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -84,7 +84,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 vector_store = client.beta.vector_stores.create(
@@ -108,7 +108,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const vectorStore = await client.beta.vectorStores.create({
@@ -241,7 +241,7 @@ Elimina un almacen vectorial y todos sus datos indexados.
 </ParamField>
 
 ```bash curl
-curl -X DELETE https://api.continuum-ai.com/v1/vector_stores/vs_abc123 \
+curl -X DELETE https://api.continuumai.technology/v1/vector_stores/vs_abc123 \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -333,7 +333,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 # 1. Subir documentos

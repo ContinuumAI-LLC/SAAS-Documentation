@@ -2,6 +2,7 @@
 title: "Embeddings"
 description: "Generate vector representations of text for search, clustering, and RAG"
 icon: "brain"
+api: "POST /v1/embeddings"
 ---
 
 ## Create embeddings
@@ -9,7 +10,7 @@ icon: "brain"
 Transform text into numerical vector representations that capture semantic meaning. Use embeddings to power search, recommendations, clustering, and retrieval-augmented generation (RAG).
 
 ```
-POST https://api.continuum-ai.com/v1/embeddings
+POST https://api.continuumai.technology/v1/embeddings
 ```
 
 ---
@@ -60,10 +61,9 @@ Authorization: Bearer sk-proj-...
 
 ## Basic example
 
-<CodeGroup>
-
+<RequestExample>
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/embeddings \
+curl -X POST https://api.continuumai.technology/v1/embeddings \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -77,7 +77,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.embeddings.create(
@@ -95,7 +95,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.embeddings.create({
@@ -107,8 +107,27 @@ const embedding = response.data[0].embedding;
 console.log(`Dimensions: ${embedding.length}`);
 console.log(`First 5 values: ${embedding.slice(0, 5)}`);
 ```
+</RequestExample>
 
-</CodeGroup>
+<ResponseExample>
+```json 200
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.0023, -0.0093, 0.0158, -0.0076, 0.0110, "..."]
+    }
+  ],
+  "model": "continuum-embed-3",
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 9
+  }
+}
+```
+</ResponseExample>
 
 ---
 
@@ -123,7 +142,7 @@ Embed multiple texts in a single request for efficiency. The response contains o
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/embeddings \
+curl -X POST https://api.continuumai.technology/v1/embeddings \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -142,7 +161,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 texts = [
@@ -166,7 +185,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const texts = [
@@ -201,7 +220,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 # Full dimensions (1536)
@@ -226,7 +245,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 // Reduced to 256 dimensions
@@ -342,7 +361,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 # Your knowledge base

@@ -2,6 +2,7 @@
 title: "Responses"
 description: "The modern unified endpoint for generating AI responses"
 icon: "wand-magic-sparkles"
+api: "POST /v1/responses"
 ---
 
 <Tip>
@@ -13,7 +14,7 @@ icon: "wand-magic-sparkles"
 Generate a model response from a text or multimodal input. Supports tool calling, structured output, and streaming.
 
 ```
-POST https://api.continuum-ai.com/v1/responses
+POST https://api.continuumai.technology/v1/responses
 ```
 
 ---
@@ -116,10 +117,9 @@ Authorization: Bearer sk-proj-...
 
 The simplest usage -- pass a string as `input` and get a response.
 
-<CodeGroup>
-
+<RequestExample>
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/responses \
+curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -133,7 +133,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.responses.create(
@@ -149,7 +149,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.responses.create({
@@ -159,8 +159,34 @@ const response = await client.responses.create({
 
 console.log(response.output_text);
 ```
+</RequestExample>
 
-</CodeGroup>
+<ResponseExample>
+```json 200
+{
+  "id": "resp_abc123",
+  "object": "response",
+  "model": "continuum-4o",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "The three laws of thermodynamics are:\n\n1. **First Law:** Energy cannot be created or destroyed.\n2. **Second Law:** Entropy always increases.\n3. **Third Law:** Entropy approaches zero at absolute zero."
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 15,
+    "output_tokens": 98,
+    "total_tokens": 113
+  }
+}
+```
+</ResponseExample>
 
 ---
 
@@ -171,7 +197,7 @@ Use `instructions` to set system-level behavior without adding a system message 
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/responses \
+curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -187,7 +213,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.responses.create(
@@ -205,7 +231,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.responses.create({
@@ -229,7 +255,7 @@ Analyze images by passing content parts in the input array.
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/responses \
+curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -258,7 +284,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.responses.create(
@@ -286,7 +312,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.responses.create({
@@ -320,7 +346,7 @@ Define tools that the model can invoke. The response includes tool call output i
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/responses \
+curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -351,7 +377,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.responses.create(
@@ -387,7 +413,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.responses.create({
@@ -431,7 +457,7 @@ Stream the response as it is generated using server-sent events.
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/responses \
+curl -X POST https://api.continuumai.technology/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-proj-..." \
   -d '{
@@ -446,7 +472,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-...",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 stream = client.responses.create(
@@ -465,7 +491,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-...",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const stream = await client.responses.create({

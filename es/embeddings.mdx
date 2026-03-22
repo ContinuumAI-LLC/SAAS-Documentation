@@ -46,7 +46,7 @@ Genera vectores numericos (embeddings) a partir de texto. Los embeddings captura
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/embeddings \
+curl https://api.continuumai.technology/v1/embeddings \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -60,7 +60,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 response = client.embeddings.create(
@@ -78,7 +78,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const response = await client.embeddings.create({

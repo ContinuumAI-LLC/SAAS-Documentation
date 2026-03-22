@@ -48,7 +48,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/vector_stores \
+    curl -X POST https://api.continuumai.technology/v1/vector_stores \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -65,7 +65,7 @@ Authorization: Bearer sk-proj-...
     import requests
 
     response = requests.post(
-        "https://api.continuum-ai.com/v1/vector_stores",
+        "https://api.continuumai.technology/v1/vector_stores",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={
             "name": "Product Documentation",
@@ -130,13 +130,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl "https://api.continuum-ai.com/v1/vector_stores?page=1&pageSize=20" \
+    curl "https://api.continuumai.technology/v1/vector_stores?page=1&pageSize=20" \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.get(
-        "https://api.continuum-ai.com/v1/vector_stores",
+        "https://api.continuumai.technology/v1/vector_stores",
         headers={"Authorization": "Bearer sk-proj-..."},
         params={"page": 1, "pageSize": 20}
     )
@@ -185,13 +185,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl https://api.continuum-ai.com/v1/vector_stores/vs_abc123 \
+    curl https://api.continuumai.technology/v1/vector_stores/vs_abc123 \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.get(
-        "https://api.continuum-ai.com/v1/vector_stores/vs_abc123",
+        "https://api.continuumai.technology/v1/vector_stores/vs_abc123",
         headers={"Authorization": "Bearer sk-proj-..."}
     )
     ```
@@ -241,13 +241,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X DELETE https://api.continuum-ai.com/v1/vector_stores/vs_abc123 \
+    curl -X DELETE https://api.continuumai.technology/v1/vector_stores/vs_abc123 \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.delete(
-        "https://api.continuum-ai.com/v1/vector_stores/vs_abc123",
+        "https://api.continuumai.technology/v1/vector_stores/vs_abc123",
         headers={"Authorization": "Bearer sk-proj-..."}
     )
     ```
@@ -290,7 +290,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files \
+    curl -X POST https://api.continuumai.technology/v1/vector_stores/vs_abc123/files \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -300,7 +300,7 @@ Authorization: Bearer sk-proj-...
 
     ```python Python
     response = requests.post(
-        "https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files",
+        "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files",
         headers={"Authorization": "Bearer sk-proj-..."},
         json={"file_id": "file_ghi789"}
     )
@@ -352,13 +352,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl "https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files?status=completed" \
+    curl "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files?status=completed" \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.get(
-        "https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files",
+        "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files",
         headers={"Authorization": "Bearer sk-proj-..."},
         params={"status": "completed"}
     )
@@ -408,13 +408,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files/vsfile_001 \
+    curl https://api.continuumai.technology/v1/vector_stores/vs_abc123/files/vsfile_001 \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.get(
-        "https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files/vsfile_001",
+        "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files/vsfile_001",
         headers={"Authorization": "Bearer sk-proj-..."}
     )
     ```
@@ -458,13 +458,13 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X DELETE https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files/vsfile_001 \
+    curl -X DELETE https://api.continuumai.technology/v1/vector_stores/vs_abc123/files/vsfile_001 \
       -H "Authorization: Bearer sk-proj-..."
     ```
 
     ```python Python
     response = requests.delete(
-        "https://api.continuum-ai.com/v1/vector_stores/vs_abc123/files/vsfile_001",
+        "https://api.continuumai.technology/v1/vector_stores/vs_abc123/files/vsfile_001",
         headers={"Authorization": "Bearer sk-proj-..."}
     )
     ```
@@ -502,7 +502,7 @@ Combine vector stores with threads for retrieval-augmented generation:
     Create a vector store and add your files. Wait for all files to reach `completed` status.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/vector_stores \
+    curl -X POST https://api.continuumai.technology/v1/vector_stores \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -516,7 +516,7 @@ Combine vector stores with threads for retrieval-augmented generation:
     When creating a run on a thread, reference the vector store. The model will automatically search the store for relevant context before generating a response.
 
     ```bash
-    curl -X POST https://api.continuum-ai.com/v1/threads/thread_xyz/runs \
+    curl -X POST https://api.continuumai.technology/v1/threads/thread_xyz/runs \
       -H "Authorization: Bearer sk-proj-..." \
       -H "Content-Type: application/json" \
       -d '{
@@ -536,10 +536,15 @@ Combine vector stores with threads for retrieval-augmented generation:
 
 ## Store file status lifecycle
 
-```
-in_progress → completed
-            ↘ failed
-            ↘ cancelled
+```mermaid
+stateDiagram-v2
+    [*] --> in_progress
+    in_progress --> completed
+    in_progress --> failed
+    in_progress --> cancelled
+    completed --> [*]
+    failed --> [*]
+    cancelled --> [*]
 ```
 
 | Status | Description |

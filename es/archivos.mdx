@@ -33,7 +33,7 @@ Sube un archivo al servidor de Continuum AI. El proposito del archivo (`purpose`
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/files \
+curl https://api.continuumai.technology/v1/files \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   -F file="@datos_entrenamiento.jsonl" \
   -F purpose="fine-tune"
@@ -44,7 +44,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuum-ai.com/v1"
+    base_url="https://api.continuumai.technology/v1"
 )
 
 with open("datos_entrenamiento.jsonl", "rb") as f:
@@ -64,7 +64,7 @@ import fs from "fs";
 
 const client = new OpenAI({
   apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuum-ai.com/v1",
+  baseURL: "https://api.continuumai.technology/v1",
 });
 
 const file = await client.files.create({
@@ -115,7 +115,7 @@ Obtiene la lista de todos los archivos subidos por tu organizacion.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/files \
+curl https://api.continuumai.technology/v1/files \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -179,7 +179,7 @@ Recupera los metadatos de un archivo especifico.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/files/file-abc123 \
+curl https://api.continuumai.technology/v1/files/file-abc123 \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 
@@ -213,7 +213,7 @@ Descarga el contenido de un archivo subido previamente.
 <CodeGroup>
 
 ```bash curl
-curl https://api.continuum-ai.com/v1/files/file-abc123/content \
+curl https://api.continuumai.technology/v1/files/file-abc123/content \
   -H "Authorization: Bearer sk-proj-tu-api-key" \
   --output datos_descargados.jsonl
 ```
@@ -254,7 +254,7 @@ Elimina un archivo del servidor de forma permanente.
 <CodeGroup>
 
 ```bash curl
-curl -X DELETE https://api.continuum-ai.com/v1/files/file-abc123 \
+curl -X DELETE https://api.continuumai.technology/v1/files/file-abc123 \
   -H "Authorization: Bearer sk-proj-tu-api-key"
 ```
 

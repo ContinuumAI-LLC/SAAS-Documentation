@@ -331,6 +331,20 @@ Every error response follows this structure:
 
 ## Retry strategy
 
+```mermaid
+flowchart TD
+    A[API Request] --> B{Response}
+    B -->|2xx| C[Success]
+    B -->|4xx| D{Retryable?}
+    B -->|5xx| E[Retry with backoff]
+    D -->|429| F[Wait for Retry-After]
+    D -->|400/401/403/404| G[Fix request & retry]
+    F --> A
+    E --> A
+    style C fill:#9bff8b,color:#000
+    style G fill:#f87171,color:#000
+```
+
 Not all errors should be retried. Use this guide to determine the correct behavior:
 
 | Status | Retry? | Strategy |
@@ -376,7 +390,7 @@ wait_time = min(base_delay * 2^attempt + random_jitter, max_delay)
 
     client = OpenAI(
         api_key="sk-proj-your-api-key",
-        base_url="https://api.continuum-ai.com/v1",
+        base_url="https://api.continuumai.technology/v1",
     )
 
     def chat_with_retry(messages, model="continuum-ultra", max_retries=5):
@@ -430,7 +444,7 @@ wait_time = min(base_delay * 2^attempt + random_jitter, max_delay)
 
     const client = new OpenAI({
       apiKey: process.env.CONTINUUM_API_KEY,
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     async function chatWithRetry(messages, model = "continuum-ultra", maxRetries = 5) {

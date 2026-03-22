@@ -19,7 +19,7 @@ Retrieve the list of all models available to your API key.
 ### GET /v1/models
 
 ```bash
-curl https://api.continuum-ai.com/v1/models \
+curl https://api.continuumai.technology/v1/models \
   -H "Authorization: Bearer sk-proj-your-api-key"
 ```
 
@@ -54,7 +54,7 @@ curl https://api.continuum-ai.com/v1/models \
 Retrieve details for a specific model.
 
 ```bash
-curl https://api.continuum-ai.com/v1/models/continuum-ultra \
+curl https://api.continuumai.technology/v1/models/continuum-ultra \
   -H "Authorization: Bearer sk-proj-your-api-key"
 ```
 
@@ -137,7 +137,7 @@ curl https://api.continuum-ai.com/v1/models/continuum-ultra \
     ### Example
 
     ```bash
-    curl https://api.continuum-ai.com/v1/embeddings \
+    curl https://api.continuumai.technology/v1/embeddings \
       -H "Authorization: Bearer sk-proj-your-api-key" \
       -H "Content-Type: application/json" \
       -d '{
@@ -166,7 +166,7 @@ curl https://api.continuum-ai.com/v1/models/continuum-ultra \
     ### Example
 
     ```bash
-    curl https://api.continuum-ai.com/v1/images/generations \
+    curl https://api.continuumai.technology/v1/images/generations \
       -H "Authorization: Bearer sk-proj-your-api-key" \
       -H "Content-Type: application/json" \
       -d '{
@@ -198,7 +198,7 @@ curl https://api.continuum-ai.com/v1/models/continuum-ultra \
     ### Transcription example
 
     ```bash
-    curl https://api.continuum-ai.com/v1/audio/transcriptions \
+    curl https://api.continuumai.technology/v1/audio/transcriptions \
       -H "Authorization: Bearer sk-proj-your-api-key" \
       -F "model=continuum-listen" \
       -F "file=@recording.mp3"
@@ -207,7 +207,7 @@ curl https://api.continuum-ai.com/v1/models/continuum-ultra \
     ### Text-to-speech example
 
     ```bash
-    curl https://api.continuum-ai.com/v1/audio/speech \
+    curl https://api.continuumai.technology/v1/audio/speech \
       -H "Authorization: Bearer sk-proj-your-api-key" \
       -H "Content-Type: application/json" \
       -d '{
@@ -239,7 +239,7 @@ curl https://api.continuum-ai.com/v1/models/continuum-ultra \
     ### Example
 
     ```bash
-    curl https://api.continuum-ai.com/v1/moderations \
+    curl https://api.continuumai.technology/v1/moderations \
       -H "Authorization: Bearer sk-proj-your-api-key" \
       -H "Content-Type: application/json" \
       -d '{

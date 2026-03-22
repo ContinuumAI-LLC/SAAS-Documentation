@@ -56,7 +56,7 @@ Upload a file using multipart form data. The file is processed asynchronously �
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.continuum-ai.com/v1/files \
+curl -X POST https://api.continuumai.technology/v1/files \
   -H "Authorization: Bearer sk-proj-..." \
   -F file=@training_data.jsonl \
   -F purpose=fine-tune
@@ -67,7 +67,7 @@ import requests
 
 with open("training_data.jsonl", "rb") as f:
     response = requests.post(
-        "https://api.continuum-ai.com/v1/files",
+        "https://api.continuumai.technology/v1/files",
         headers={"Authorization": "Bearer sk-proj-..."},
         files={"file": f},
         data={"purpose": "fine-tune"}
@@ -117,13 +117,13 @@ Returns a paginated list of all files belonging to the current project.
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.continuum-ai.com/v1/files?purpose=fine-tune&page=1&pageSize=10" \
+curl "https://api.continuumai.technology/v1/files?purpose=fine-tune&page=1&pageSize=10" \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/files",
+    "https://api.continuumai.technology/v1/files",
     headers={"Authorization": "Bearer sk-proj-..."},
     params={"purpose": "fine-tune", "page": 1, "pageSize": 10}
 )
@@ -177,13 +177,13 @@ Retrieves metadata about a specific file. This does not return the file content 
 <CodeGroup>
 
 ```bash cURL
-curl https://api.continuum-ai.com/v1/files/file_abc123 \
+curl https://api.continuumai.technology/v1/files/file_abc123 \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/files/file_abc123",
+    "https://api.continuumai.technology/v1/files/file_abc123",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 ```
@@ -221,13 +221,13 @@ Permanently deletes a file. This action cannot be undone. Files currently in use
 <CodeGroup>
 
 ```bash cURL
-curl -X DELETE https://api.continuum-ai.com/v1/files/file_abc123 \
+curl -X DELETE https://api.continuumai.technology/v1/files/file_abc123 \
   -H "Authorization: Bearer sk-proj-..."
 ```
 
 ```python Python
 response = requests.delete(
-    "https://api.continuum-ai.com/v1/files/file_abc123",
+    "https://api.continuumai.technology/v1/files/file_abc123",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 ```
@@ -260,14 +260,14 @@ Returns the raw content of the file. The response `Content-Type` header matches 
 <CodeGroup>
 
 ```bash cURL
-curl https://api.continuum-ai.com/v1/files/file_abc123/content \
+curl https://api.continuumai.technology/v1/files/file_abc123/content \
   -H "Authorization: Bearer sk-proj-..." \
   --output training_data.jsonl
 ```
 
 ```python Python
 response = requests.get(
-    "https://api.continuum-ai.com/v1/files/file_abc123/content",
+    "https://api.continuumai.technology/v1/files/file_abc123/content",
     headers={"Authorization": "Bearer sk-proj-..."}
 )
 
@@ -285,9 +285,14 @@ with open("training_data.jsonl", "wb") as f:
 
 ## File status lifecycle
 
-```
-uploaded → processing → processed
-                     ↘ error
+```mermaid
+stateDiagram-v2
+    [*] --> uploaded
+    uploaded --> processing
+    processing --> processed
+    processing --> error
+    processed --> [*]
+    error --> [*]
 ```
 
 | Status | Description |

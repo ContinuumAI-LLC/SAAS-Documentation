@@ -54,7 +54,7 @@ Authorization: Bearer sk-proj-...
     Generate one or more images from a text prompt.
 
     ```
-    POST https://api.continuum-ai.com/v1/images/generations
+    POST https://api.continuumai.technology/v1/images/generations
     ```
 
     ### Request body
@@ -102,7 +102,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/images/generations \
+    curl -X POST https://api.continuumai.technology/v1/images/generations \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer sk-proj-..." \
       -d '{
@@ -120,7 +120,7 @@ Authorization: Bearer sk-proj-...
 
     client = OpenAI(
         api_key="sk-proj-...",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     response = client.images.generate(
@@ -141,7 +141,7 @@ Authorization: Bearer sk-proj-...
 
     const client = new OpenAI({
       apiKey: "sk-proj-...",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const response = await client.images.generate({
@@ -201,7 +201,7 @@ Authorization: Bearer sk-proj-...
     Edit an existing image by providing a prompt describing the desired changes. Optionally supply a mask to indicate which areas should be modified.
 
     ```
-    POST https://api.continuum-ai.com/v1/images/edits
+    POST https://api.continuumai.technology/v1/images/edits
     ```
 
     <Note>
@@ -247,7 +247,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/images/edits \
+    curl -X POST https://api.continuumai.technology/v1/images/edits \
       -H "Authorization: Bearer sk-proj-..." \
       -F image="@original.png" \
       -F mask="@mask.png" \
@@ -262,7 +262,7 @@ Authorization: Bearer sk-proj-...
 
     client = OpenAI(
         api_key="sk-proj-...",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     response = client.images.edit(
@@ -283,7 +283,7 @@ Authorization: Bearer sk-proj-...
 
     const client = new OpenAI({
       apiKey: "sk-proj-...",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const response = await client.images.edit({
@@ -311,7 +311,7 @@ Authorization: Bearer sk-proj-...
     Generate variations of a given image. The model creates new images that are visually similar to the input but with creative differences.
 
     ```
-    POST https://api.continuum-ai.com/v1/images/variations
+    POST https://api.continuumai.technology/v1/images/variations
     ```
 
     <Note>
@@ -349,7 +349,7 @@ Authorization: Bearer sk-proj-...
     <CodeGroup>
 
     ```bash cURL
-    curl -X POST https://api.continuum-ai.com/v1/images/variations \
+    curl -X POST https://api.continuumai.technology/v1/images/variations \
       -H "Authorization: Bearer sk-proj-..." \
       -F image="@original.png" \
       -F model="continuum-vision" \
@@ -362,7 +362,7 @@ Authorization: Bearer sk-proj-...
 
     client = OpenAI(
         api_key="sk-proj-...",
-        base_url="https://api.continuum-ai.com/v1"
+        base_url="https://api.continuumai.technology/v1"
     )
 
     response = client.images.create_variation(
@@ -382,7 +382,7 @@ Authorization: Bearer sk-proj-...
 
     const client = new OpenAI({
       apiKey: "sk-proj-...",
-      baseURL: "https://api.continuum-ai.com/v1",
+      baseURL: "https://api.continuumai.technology/v1",
     });
 
     const response = await client.images.createVariation({

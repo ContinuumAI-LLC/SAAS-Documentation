@@ -59,20 +59,99 @@ The Continuum AI API gives you access to powerful language models, embeddings, i
   </Card>
 </CardGroup>
 
+## Architecture
+
+```mermaid
+flowchart LR
+    A[Your App] -->|API Key| B[Continuum Gateway]
+    B --> C[Chat Completions]
+    B --> D[Embeddings]
+    B --> E[Images]
+    B --> F[Audio]
+    B --> G[Files & Fine-tuning]
+    B --> H[Threads & Runs]
+    C --> I[Model Router]
+    I --> J[continuum-ultra]
+    I --> K[continuum-turbo]
+    I --> L[continuum-pro]
+```
+
 ## Base URL
 
 All API requests are made to the following base URL:
 
 ```bash
-https://api.continuum-ai.com/v1
+https://api.continuumai.technology/v1
 ```
 
 For example, to list available models:
 
-```bash
-curl https://api.continuum-ai.com/v1/models \
+<RequestExample>
+```bash cURL
+curl https://api.continuumai.technology/v1/models \
   -H "Authorization: Bearer sk-proj-your-api-key"
 ```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "data": [
+    {
+      "id": "continuum-ultra",
+      "object": "model",
+      "capabilities": ["chat", "vision", "function_calling"]
+    }
+  ],
+  "status": 200
+}
+```
+</ResponseExample>
+
+## Project structure
+
+<Tree>
+  <Tree.Folder name="v1" defaultOpen>
+    <Tree.Folder name="chat" defaultOpen>
+      <Tree.File name="completions" />
+    </Tree.Folder>
+    <Tree.Folder name="responses">
+      <Tree.File name="create" />
+    </Tree.Folder>
+    <Tree.File name="embeddings" />
+    <Tree.File name="models" />
+    <Tree.File name="moderations" />
+    <Tree.Folder name="images">
+      <Tree.File name="generations" />
+      <Tree.File name="edits" />
+      <Tree.File name="variations" />
+    </Tree.Folder>
+    <Tree.Folder name="audio">
+      <Tree.File name="speech" />
+      <Tree.File name="transcriptions" />
+      <Tree.File name="translations" />
+    </Tree.Folder>
+    <Tree.Folder name="threads">
+      <Tree.File name="messages" />
+      <Tree.File name="runs" />
+    </Tree.Folder>
+    <Tree.Folder name="files">
+      <Tree.File name="content" />
+    </Tree.Folder>
+    <Tree.Folder name="fine_tuning">
+      <Tree.File name="jobs" />
+    </Tree.Folder>
+    <Tree.File name="batches" />
+    <Tree.Folder name="vector_stores">
+      <Tree.File name="files" />
+    </Tree.Folder>
+    <Tree.Folder name="billing">
+      <Tree.File name="subscription" />
+      <Tree.File name="limits" />
+    </Tree.Folder>
+    <Tree.File name="usage" />
+  </Tree.Folder>
+</Tree>
 
 ## Rate limits
 
@@ -162,7 +241,7 @@ All successful responses are wrapped in a standard envelope:
 Chat completions support server-sent events (SSE) for real-time streaming. Set `"stream": true` in your request body to receive incremental responses.
 
 ```bash
-curl https://api.continuum-ai.com/v1/chat/completions \
+curl https://api.continuumai.technology/v1/chat/completions \
   -H "Authorization: Bearer sk-proj-your-api-key" \
   -H "Content-Type: application/json" \
   -d '{
