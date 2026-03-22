@@ -1,0 +1,206 @@
+---
+title: 'Introduccion a la API'
+description: 'Construye aplicaciones inteligentes con la API de Continuum AI'
+---
+
+## Construye con Continuum AI
+
+La API de Continuum AI te brinda acceso a modelos de inteligencia artificial de ultima generacion para chat, embeddings, generacion de imagenes, audio y mucho mas. Integra capacidades de IA en tus aplicaciones con una API compatible con OpenAI, sin complicaciones.
+
+<Note>
+  **URL base de la API:** `https://api.continuum-ai.com/v1`
+
+  Todas las solicitudes deben incluir tu API key en el encabezado `Authorization`.
+</Note>
+
+## Explora la API
+
+<CardGroup cols={2}>
+  <Card
+    title="Autenticacion"
+    icon="shield-halved"
+    href="/es/autenticacion"
+  >
+    Configura tus API keys y aprende los metodos de autenticacion disponibles.
+  </Card>
+  <Card
+    title="Modelos"
+    icon="robot"
+    href="/es/modelos"
+  >
+    Descubre todos los modelos disponibles: chat, embeddings, vision, audio y mas.
+  </Card>
+  <Card
+    title="Chat Completions"
+    icon="message-bot"
+    href="/es/chat-completions"
+  >
+    Genera respuestas conversacionales con nuestros modelos de lenguaje.
+  </Card>
+  <Card
+    title="Responses"
+    icon="wand-magic-sparkles"
+    href="/es/responses"
+  >
+    Endpoint unificado y moderno para interacciones multimodales.
+  </Card>
+  <Card
+    title="Embeddings"
+    icon="brain"
+    href="/es/embeddings"
+  >
+    Convierte texto en vectores numericos para busqueda semantica y clasificacion.
+  </Card>
+  <Card
+    title="Imagenes"
+    icon="image"
+    href="/es/imagenes"
+  >
+    Genera, edita y crea variaciones de imagenes con modelos de vision.
+  </Card>
+  <Card
+    title="Audio"
+    icon="headphones"
+    href="/es/audio"
+  >
+    Transcripcion, traduccion y sintesis de voz con modelos de audio.
+  </Card>
+  <Card
+    title="Threads"
+    icon="messages"
+    href="/es/threads"
+  >
+    Gestiona conversaciones persistentes con historial de mensajes.
+  </Card>
+  <Card
+    title="Archivos"
+    icon="folder-open"
+    href="/es/archivos"
+  >
+    Sube, lista y gestiona archivos para fine-tuning y otros usos.
+  </Card>
+  <Card
+    title="Fine-Tuning"
+    icon="sliders"
+    href="/es/fine-tuning"
+  >
+    Personaliza modelos con tus propios datos de entrenamiento.
+  </Card>
+  <Card
+    title="Vector Stores"
+    icon="database"
+    href="/es/vector-stores"
+  >
+    Almacenes vectoriales para busqueda por similitud a escala.
+  </Card>
+  <Card
+    title="Lotes"
+    icon="layer-group"
+    href="/es/lotes"
+  >
+    Procesamiento por lotes para solicitudes masivas con descuento.
+  </Card>
+  <Card
+    title="Moderaciones"
+    icon="shield-check"
+    href="/es/moderaciones"
+  >
+    Analiza contenido para detectar material inapropiado o peligroso.
+  </Card>
+  <Card
+    title="Uso y Facturacion"
+    icon="chart-bar"
+    href="/es/uso-facturacion"
+  >
+    Consulta tu consumo, costos y limites de uso.
+  </Card>
+</CardGroup>
+
+## Formato de respuesta
+
+Todas las respuestas de la API siguen un formato estandarizado con envolvente JSON:
+
+<Tabs>
+  <Tab title="Respuesta exitosa">
+    ```json
+    {
+      "data": {
+        "id": "chatcmpl-abc123",
+        "object": "chat.completion",
+        "choices": [...]
+      },
+      "status": 200
+    }
+    ```
+  </Tab>
+  <Tab title="Error">
+    ```json
+    {
+      "error": {
+        "message": "API key invalida.",
+        "code": "INVALID_API_KEY"
+      },
+      "status": 401
+    }
+    ```
+  </Tab>
+  <Tab title="Paginada">
+    ```json
+    {
+      "data": [...],
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 150,
+        "totalPages": 8
+      },
+      "status": 200
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Rate Limits
+
+La API aplica limites de tasa para garantizar un servicio estable para todos los usuarios.
+
+| Plan | Solicitudes/min | Tokens/min | Solicitudes/dia |
+|------|-----------------|------------|-----------------|
+| Gratuito | 60 | 40,000 | 1,000 |
+| Pro | 600 | 400,000 | 50,000 |
+| Enterprise | Personalizado | Personalizado | Personalizado |
+
+<Warning>
+  Si excedes los limites de tasa, recibiras un error `429 Too Many Requests`. Implementa logica de reintento con backoff exponencial para manejar estos casos correctamente.
+</Warning>
+
+## Compatibilidad con OpenAI
+
+La API de Continuum AI es completamente compatible con el formato de OpenAI. Si ya usas el SDK de OpenAI, solo necesitas cambiar la URL base y tu API key:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+```
+
+<Tip>
+  Puedes migrar desde OpenAI sin cambiar una sola linea de logica en tu aplicacion. Solo actualiza las credenciales y la URL base.
+</Tip>
+
+## Primeros pasos
+
+<Steps>
+  <Step title="Obtener tu API key">
+    Registrate en [Continuum AI](https://app.continuum-ai.com) y genera tu primera API key desde el panel de proyecto.
+  </Step>
+  <Step title="Hacer tu primera solicitud">
+    Usa curl, Python, Node.js o cualquier cliente HTTP para enviar una solicitud al endpoint de chat completions.
+  </Step>
+  <Step title="Explorar la documentacion">
+    Navega por las secciones de esta documentacion para descubrir todas las capacidades de la API.
+  </Step>
+</Steps>

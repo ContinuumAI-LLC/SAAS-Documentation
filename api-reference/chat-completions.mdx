@@ -1,0 +1,849 @@
+---
+title: "Chat completions"
+description: "Generate conversational responses from Continuum AI models"
+icon: "message-bot"
+---
+
+<Info>
+  The Chat Completions API is compatible with the OpenAI format. If you are already using OpenAI, you can switch to Continuum by changing the base URL and API key.
+</Info>
+
+## Create a chat completion
+
+Generate a model response for a conversation. Supports text generation, tool calling, vision, JSON mode, and streaming.
+
+```
+POST https://api.continuum-ai.com/v1/chat/completions
+```
+
+---
+
+## Authentication
+
+Include your API key in the `Authorization` header.
+
+```
+Authorization: Bearer sk-proj-...
+```
+
+---
+
+## Request body
+
+<ParamField body="model" type="string" required>
+  The model to use for completion. See the [models endpoint](/api-reference/models) for available models.
+
+  Examples: `continuum-4o`, `continuum-4o-mini`, `continuum-4-turbo`
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  A list of messages representing the conversation so far. Each message has a `role` and `content`.
+
+  <Expandable title="Message object properties">
+    <ParamField body="role" type="string" required>
+      The role of the message author. One of `system`, `user`, `assistant`, or `tool`.
+    </ParamField>
+
+    <ParamField body="content" type="string | array" required>
+      The content of the message. Can be a plain string or an array of content parts for multimodal input.
+
+      <Expandable title="Content part types">
+        <ParamField body="type" type="string" required>
+          Either `text` or `image_url`.
+        </ParamField>
+        <ParamField body="text" type="string">
+          The text content. Required when `type` is `text`.
+        </ParamField>
+        <ParamField body="image_url" type="object">
+          The image URL object. Required when `type` is `image_url`.
+          <Expandable title="image_url properties">
+            <ParamField body="url" type="string" required>
+              The URL of the image, or a base64-encoded data URI.
+            </ParamField>
+            <ParamField body="detail" type="string" default="auto">
+              Image detail level. One of `low`, `high`, or `auto`.
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="name" type="string">
+      An optional name for the participant. Useful for distinguishing between multiple users.
+    </ParamField>
+
+    <ParamField body="tool_call_id" type="string">
+      Required for `tool` role messages. The ID of the tool call this message responds to.
+    </ParamField>
+
+    <ParamField body="tool_calls" type="array">
+      Present on `assistant` role messages when the model invokes tools. Contains the tool call ID, function name, and arguments.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="temperature" type="number" default={1}>
+  Sampling temperature between `0` and `2`. Lower values make output more focused and deterministic. Higher values make output more random and creative.
+</ParamField>
+
+<ParamField body="max_tokens" type="integer">
+  The maximum number of tokens to generate. The model stops when it reaches this limit or a natural stop point.
+</ParamField>
+
+<ParamField body="top_p" type="number" default={1}>
+  Nucleus sampling parameter. The model considers tokens with top_p cumulative probability. An alternative to temperature -- do not use both simultaneously.
+</ParamField>
+
+<ParamField body="frequency_penalty" type="number" default={0}>
+  Number between `-2.0` and `2.0`. Positive values penalize tokens based on their frequency in the text so far, reducing repetition.
+</ParamField>
+
+<ParamField body="presence_penalty" type="number" default={0}>
+  Number between `-2.0` and `2.0`. Positive values penalize tokens that have already appeared, encouraging the model to discuss new topics.
+</ParamField>
+
+<ParamField body="stop" type="string | array">
+  Up to 4 sequences where the model stops generating further tokens.
+</ParamField>
+
+<ParamField body="stream" type="boolean" default={false}>
+  When `true`, partial message deltas are sent as server-sent events (SSE) as they become available.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  A list of tools the model may call. Use this to provide function definitions.
+
+  <Expandable title="Tool object properties">
+    <ParamField body="type" type="string" required>
+      The type of tool. Currently only `function` is supported.
+    </ParamField>
+    <ParamField body="function" type="object" required>
+      <Expandable title="Function properties">
+        <ParamField body="name" type="string" required>
+          The name of the function.
+        </ParamField>
+        <ParamField body="description" type="string">
+          A description of what the function does. The model uses this to decide when to call it.
+        </ParamField>
+        <ParamField body="parameters" type="object">
+          The parameters the function accepts, described as a JSON Schema object.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="tool_choice" type="string | object" default="auto">
+  Controls which tool (if any) the model calls. Options:
+  - `"none"` -- the model will not call tools
+  - `"auto"` -- the model decides whether to call tools
+  - `"required"` -- the model must call at least one tool
+  - `{"type": "function", "function": {"name": "my_function"}}` -- force a specific tool
+</ParamField>
+
+<ParamField body="response_format" type="object">
+  Specifies the output format. Set `{"type": "json_object"}` to enable JSON mode, which guarantees the model outputs valid JSON.
+
+  <Warning>When using JSON mode, you **must** also instruct the model to produce JSON via a system or user message.</Warning>
+</ParamField>
+
+<ParamField body="seed" type="integer">
+  A seed for deterministic generation. If specified with the same parameters, the model attempts to return the same result. Determinism is not guaranteed.
+</ParamField>
+
+<ParamField body="n" type="integer" default={1}>
+  How many completions to generate for each prompt. Returns an array of choices.
+</ParamField>
+
+<ParamField body="user" type="string">
+  A unique identifier for the end-user. Helps Continuum monitor and detect abuse.
+</ParamField>
+
+---
+
+## Basic example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant."
+      },
+      {
+        "role": "user",
+        "content": "Explain quantum computing in three sentences."
+      }
+    ],
+    "temperature": 0.7,
+    "max_tokens": 256
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.chat.completions.create(
+    model="continuum-4o",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Explain quantum computing in three sentences."}
+    ],
+    temperature=0.7,
+    max_tokens=256
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "continuum-4o",
+  messages: [
+    { role: "system", content: "You are a helpful assistant." },
+    { role: "user", content: "Explain quantum computing in three sentences." },
+  ],
+  temperature: 0.7,
+  max_tokens: 256,
+});
+
+console.log(response.choices[0].message.content);
+```
+
+</CodeGroup>
+
+---
+
+## Streaming
+
+Set `stream: true` to receive partial responses as server-sent events. Each event contains a delta with the incremental content.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "messages": [
+      {"role": "user", "content": "Write a haiku about APIs."}
+    ],
+    "stream": true
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+stream = client.chat.completions.create(
+    model="continuum-4o",
+    messages=[
+        {"role": "user", "content": "Write a haiku about APIs."}
+    ],
+    stream=True
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content is not None:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const stream = await client.chat.completions.create({
+  model: "continuum-4o",
+  messages: [{ role: "user", content: "Write a haiku about APIs." }],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content || "";
+  process.stdout.write(content);
+}
+```
+
+</CodeGroup>
+
+**Streaming response format:**
+
+Each SSE event contains a JSON object with the following structure:
+
+```json
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1711600000,"model":"continuum-4o","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1711600000,"model":"continuum-4o","choices":[{"index":0,"delta":{"content":" world"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1711600000,"model":"continuum-4o","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+data: [DONE]
+```
+
+---
+
+## Tool calling (function calling)
+
+Provide tool definitions and let the model decide when to call them. You then execute the tool and return the result.
+
+<Steps>
+  <Step title="Define tools and send the request">
+    Pass your function definitions in the `tools` array.
+  </Step>
+  <Step title="Model returns a tool call">
+    The model responds with `tool_calls` instead of content.
+  </Step>
+  <Step title="Execute the function">
+    Run the function with the arguments the model provided.
+  </Step>
+  <Step title="Return the result">
+    Send the function output back as a `tool` role message.
+  </Step>
+</Steps>
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "messages": [
+      {"role": "user", "content": "What is the weather in San Francisco?"}
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Get the current weather for a given location.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "location": {
+                "type": "string",
+                "description": "City and state, e.g. San Francisco, CA"
+              },
+              "unit": {
+                "type": "string",
+                "enum": ["celsius", "fahrenheit"]
+              }
+            },
+            "required": ["location"]
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto"
+  }'
+```
+
+```python Python
+from openai import OpenAI
+import json
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get the current weather for a given location.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "City and state, e.g. San Francisco, CA"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": ["celsius", "fahrenheit"]
+                    }
+                },
+                "required": ["location"]
+            }
+        }
+    }
+]
+
+# Step 1: Send the request with tools
+response = client.chat.completions.create(
+    model="continuum-4o",
+    messages=[{"role": "user", "content": "What is the weather in San Francisco?"}],
+    tools=tools,
+    tool_choice="auto"
+)
+
+# Step 2: Process the tool call
+message = response.choices[0].message
+tool_call = message.tool_calls[0]
+args = json.loads(tool_call.function.arguments)
+
+# Step 3: Execute your function (simulated here)
+weather_data = {"temperature": 62, "unit": "fahrenheit", "condition": "foggy"}
+
+# Step 4: Return the result to the model
+follow_up = client.chat.completions.create(
+    model="continuum-4o",
+    messages=[
+        {"role": "user", "content": "What is the weather in San Francisco?"},
+        message,
+        {
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "content": json.dumps(weather_data)
+        }
+    ],
+    tools=tools
+)
+
+print(follow_up.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "get_weather",
+      description: "Get the current weather for a given location.",
+      parameters: {
+        type: "object",
+        properties: {
+          location: {
+            type: "string",
+            description: "City and state, e.g. San Francisco, CA",
+          },
+          unit: { type: "string", enum: ["celsius", "fahrenheit"] },
+        },
+        required: ["location"],
+      },
+    },
+  },
+];
+
+// Step 1: Send the request with tools
+const response = await client.chat.completions.create({
+  model: "continuum-4o",
+  messages: [{ role: "user", content: "What is the weather in San Francisco?" }],
+  tools,
+  tool_choice: "auto",
+});
+
+// Step 2: Process the tool call
+const message = response.choices[0].message;
+const toolCall = message.tool_calls[0];
+const args = JSON.parse(toolCall.function.arguments);
+
+// Step 3: Execute your function (simulated here)
+const weatherData = { temperature: 62, unit: "fahrenheit", condition: "foggy" };
+
+// Step 4: Return the result to the model
+const followUp = await client.chat.completions.create({
+  model: "continuum-4o",
+  messages: [
+    { role: "user", content: "What is the weather in San Francisco?" },
+    message,
+    {
+      role: "tool",
+      tool_call_id: toolCall.id,
+      content: JSON.stringify(weatherData),
+    },
+  ],
+  tools,
+});
+
+console.log(followUp.choices[0].message.content);
+```
+
+</CodeGroup>
+
+---
+
+## Vision (image input)
+
+Pass images to the model by providing an array of content parts in the `messages` field.
+
+<Tip>
+  You can pass images as URLs or as base64-encoded data URIs. Use `detail: "high"` for complex images that require close inspection.
+</Tip>
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Describe what you see in this image."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://example.com/photo.jpg",
+              "detail": "high"
+            }
+          }
+        ]
+      }
+    ],
+    "max_tokens": 500
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.chat.completions.create(
+    model="continuum-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Describe what you see in this image."},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "https://example.com/photo.jpg",
+                        "detail": "high"
+                    }
+                }
+            ]
+        }
+    ],
+    max_tokens=500
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "continuum-4o",
+  messages: [
+    {
+      role: "user",
+      content: [
+        { type: "text", text: "Describe what you see in this image." },
+        {
+          type: "image_url",
+          image_url: {
+            url: "https://example.com/photo.jpg",
+            detail: "high",
+          },
+        },
+      ],
+    },
+  ],
+  max_tokens: 500,
+});
+
+console.log(response.choices[0].message.content);
+```
+
+</CodeGroup>
+
+---
+
+## JSON mode
+
+Force the model to output valid JSON by setting `response_format`.
+
+<Warning>
+  When using JSON mode, you **must** include an instruction in the system or user message asking the model to output JSON. Without this, the model may generate an unending stream of whitespace.
+</Warning>
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You extract structured data. Always respond in JSON."
+      },
+      {
+        "role": "user",
+        "content": "Extract the name, age, and occupation from: John Smith is a 34-year-old software engineer."
+      }
+    ],
+    "response_format": { "type": "json_object" },
+    "temperature": 0
+  }'
+```
+
+```python Python
+from openai import OpenAI
+import json
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.chat.completions.create(
+    model="continuum-4o",
+    messages=[
+        {
+            "role": "system",
+            "content": "You extract structured data. Always respond in JSON."
+        },
+        {
+            "role": "user",
+            "content": "Extract the name, age, and occupation from: John Smith is a 34-year-old software engineer."
+        }
+    ],
+    response_format={"type": "json_object"},
+    temperature=0
+)
+
+data = json.loads(response.choices[0].message.content)
+print(data)
+# {"name": "John Smith", "age": 34, "occupation": "software engineer"}
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "continuum-4o",
+  messages: [
+    {
+      role: "system",
+      content: "You extract structured data. Always respond in JSON.",
+    },
+    {
+      role: "user",
+      content:
+        "Extract the name, age, and occupation from: John Smith is a 34-year-old software engineer.",
+    },
+  ],
+  response_format: { type: "json_object" },
+  temperature: 0,
+});
+
+const data = JSON.parse(response.choices[0].message.content);
+console.log(data);
+// { name: "John Smith", age: 34, occupation: "software engineer" }
+```
+
+</CodeGroup>
+
+---
+
+## Response body
+
+<ResponseField name="id" type="string">
+  A unique identifier for the completion, e.g. `chatcmpl-abc123`.
+</ResponseField>
+
+<ResponseField name="object" type="string">
+  Always `chat.completion`.
+</ResponseField>
+
+<ResponseField name="created" type="integer">
+  Unix timestamp (in seconds) of when the completion was created.
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  The model used for the completion.
+</ResponseField>
+
+<ResponseField name="choices" type="array">
+  A list of completion choices. Can contain multiple if `n > 1`.
+
+  <Expandable title="Choice object">
+    <ResponseField name="index" type="integer">
+      The index of this choice in the list.
+    </ResponseField>
+    <ResponseField name="message" type="object">
+      The generated message.
+      <Expandable title="Message properties">
+        <ResponseField name="role" type="string">
+          Always `assistant`.
+        </ResponseField>
+        <ResponseField name="content" type="string | null">
+          The text content of the message. `null` when the model calls tools.
+        </ResponseField>
+        <ResponseField name="tool_calls" type="array">
+          Present when the model invokes tools. Contains the function name and arguments.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="finish_reason" type="string">
+      Why the model stopped generating. One of `stop`, `length`, `tool_calls`, or `content_filter`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+  Token usage statistics for the request.
+  <Expandable title="Usage properties">
+    <ResponseField name="prompt_tokens" type="integer">
+      Number of tokens in the prompt.
+    </ResponseField>
+    <ResponseField name="completion_tokens" type="integer">
+      Number of tokens in the generated completion.
+    </ResponseField>
+    <ResponseField name="total_tokens" type="integer">
+      Total tokens used (`prompt_tokens + completion_tokens`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+**Example response:**
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1711600000,
+  "model": "continuum-4o",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Quantum computing uses qubits that can exist in superposition, allowing them to process multiple possibilities simultaneously. This enables quantum computers to solve certain problems exponentially faster than classical machines. Applications range from cryptography to drug discovery and optimization problems."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 28,
+    "completion_tokens": 52,
+    "total_tokens": 80
+  }
+}
+```
+
+---
+
+## Error handling
+
+<AccordionGroup>
+  <Accordion title="401 - Invalid API key">
+    Your API key is missing, invalid, or revoked. Verify the key in your [dashboard](https://dashboard.continuum-ai.com).
+
+    ```json
+    {
+      "error": {
+        "message": "Invalid API key provided.",
+        "type": "authentication_error",
+        "code": "invalid_api_key"
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="429 - Rate limit exceeded">
+    You have sent too many requests. Implement exponential backoff and retry.
+
+    ```json
+    {
+      "error": {
+        "message": "Rate limit reached. Please retry after 20s.",
+        "type": "rate_limit_error",
+        "code": "rate_limit_exceeded"
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="400 - Invalid request">
+    The request body is malformed or missing required parameters.
+
+    ```json
+    {
+      "error": {
+        "message": "\"messages\" is required.",
+        "type": "invalid_request_error",
+        "code": "missing_required_parameter"
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="500 - Server error">
+    An unexpected error on our end. Retry the request or contact support if it persists.
+
+    ```json
+    {
+      "error": {
+        "message": "An internal server error occurred.",
+        "type": "server_error",
+        "code": "internal_error"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>

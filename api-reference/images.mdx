@@ -1,0 +1,443 @@
+---
+title: "Images"
+description: "Generate, edit, and create variations of images with AI"
+icon: "image"
+---
+
+The Images API provides three capabilities: generating new images from text prompts, editing existing images with text instructions, and creating variations of existing images.
+
+<CardGroup cols={3}>
+  <Card title="Generations" icon="sparkles" href="#generations">
+    Create original images from text descriptions.
+  </Card>
+  <Card title="Edits" icon="pen-to-square" href="#edits">
+    Modify existing images using prompts and masks.
+  </Card>
+  <Card title="Variations" icon="clone" href="#variations">
+    Generate variations of an existing image.
+  </Card>
+</CardGroup>
+
+---
+
+## Authentication
+
+Include your API key in the `Authorization` header for all image endpoints.
+
+```
+Authorization: Bearer sk-proj-...
+```
+
+---
+
+## Available models
+
+| Model | Description | Supported Endpoints |
+|-------|-------------|-------------------|
+| `continuum-vision-hd` | Highest quality, most detailed images | Generations |
+| `continuum-vision` | Fast generation, good quality | Generations, Edits, Variations |
+
+**Available sizes:**
+
+| Size | Aspect Ratio | Best For |
+|------|-------------|----------|
+| `1024x1024` | Square (1:1) | Avatars, icons, social media |
+| `1792x1024` | Landscape (16:9) | Blog headers, presentations |
+| `1024x1792` | Portrait (9:16) | Mobile wallpapers, stories |
+
+---
+
+<Tabs>
+  <Tab title="Generations">
+    ## Create image {#generations}
+
+    Generate one or more images from a text prompt.
+
+    ```
+    POST https://api.continuum-ai.com/v1/images/generations
+    ```
+
+    ### Request body
+
+    <ParamField body="prompt" type="string" required>
+      A text description of the desired image. Maximum 4,000 characters. The more detailed and specific the prompt, the better the result.
+    </ParamField>
+
+    <ParamField body="model" type="string" default="continuum-vision-hd">
+      The model to use. One of `continuum-vision-hd` or `continuum-vision`.
+    </ParamField>
+
+    <ParamField body="n" type="integer" default={1}>
+      The number of images to generate. Between `1` and `10`. Higher values increase response time.
+    </ParamField>
+
+    <ParamField body="size" type="string" default="1024x1024">
+      The size of the generated image. One of `1024x1024`, `1792x1024`, or `1024x1792`.
+    </ParamField>
+
+    <ParamField body="quality" type="string" default="standard">
+      The quality of the generated image. One of:
+      - `standard` -- balanced quality and speed
+      - `hd` -- enhanced detail and coherence (slower, higher cost)
+    </ParamField>
+
+    <ParamField body="style" type="string" default="vivid">
+      The style of the generated image. One of:
+      - `vivid` -- hyper-real, dramatic images
+      - `natural` -- more realistic, less stylized
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="url">
+      The format of the generated image. One of:
+      - `url` -- returns a URL that is valid for 60 minutes
+      - `b64_json` -- returns the image as a base64-encoded JSON string
+    </ParamField>
+
+    <ParamField body="user" type="string">
+      A unique identifier for the end-user.
+    </ParamField>
+
+    ### Examples
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.continuum-ai.com/v1/images/generations \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-proj-..." \
+      -d '{
+        "model": "continuum-vision-hd",
+        "prompt": "A futuristic city skyline at sunset, cyberpunk style, neon lights reflecting off glass buildings, flying cars in the distance",
+        "n": 1,
+        "size": "1792x1024",
+        "quality": "hd",
+        "style": "vivid"
+      }'
+    ```
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-...",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    response = client.images.generate(
+        model="continuum-vision-hd",
+        prompt="A futuristic city skyline at sunset, cyberpunk style, neon lights reflecting off glass buildings, flying cars in the distance",
+        n=1,
+        size="1792x1024",
+        quality="hd",
+        style="vivid"
+    )
+
+    image_url = response.data[0].url
+    print(image_url)
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-...",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const response = await client.images.generate({
+      model: "continuum-vision-hd",
+      prompt:
+        "A futuristic city skyline at sunset, cyberpunk style, neon lights reflecting off glass buildings, flying cars in the distance",
+      n: 1,
+      size: "1792x1024",
+      quality: "hd",
+      style: "vivid",
+    });
+
+    console.log(response.data[0].url);
+    ```
+
+    </CodeGroup>
+
+    ### Response
+
+    <ResponseField name="created" type="integer">
+      Unix timestamp of when the images were generated.
+    </ResponseField>
+
+    <ResponseField name="data" type="array">
+      A list of generated image objects.
+      <Expandable title="Image object">
+        <ResponseField name="url" type="string">
+          The URL of the generated image. Valid for 60 minutes. Present when `response_format` is `url`.
+        </ResponseField>
+        <ResponseField name="b64_json" type="string">
+          The base64-encoded image data. Present when `response_format` is `b64_json`.
+        </ResponseField>
+        <ResponseField name="revised_prompt" type="string">
+          The prompt that was used to generate the image. The model may revise your prompt for safety or quality.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    **Example response:**
+
+    ```json
+    {
+      "created": 1711600000,
+      "data": [
+        {
+          "url": "https://cdn.continuum-ai.com/images/gen-abc123.png",
+          "revised_prompt": "A futuristic cyberpunk city skyline at golden hour sunset, with neon lights in pink and blue reflecting off towering glass skyscrapers, small flying vehicles visible in the hazy distance."
+        }
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Edits">
+    ## Create image edit {#edits}
+
+    Edit an existing image by providing a prompt describing the desired changes. Optionally supply a mask to indicate which areas should be modified.
+
+    ```
+    POST https://api.continuum-ai.com/v1/images/edits
+    ```
+
+    <Note>
+      This endpoint accepts **multipart/form-data** requests, not JSON.
+    </Note>
+
+    ### Request body
+
+    <ParamField body="image" type="file" required>
+      The image to edit. Must be a valid PNG file, less than 4MB, and square.
+    </ParamField>
+
+    <ParamField body="prompt" type="string" required>
+      A text description of the desired edit. Maximum 1,000 characters.
+    </ParamField>
+
+    <ParamField body="mask" type="file">
+      An additional image whose fully transparent areas indicate where `image` should be edited. Must be a valid PNG file with the same dimensions as `image`.
+    </ParamField>
+
+    <ParamField body="model" type="string" default="continuum-vision">
+      The model to use. Currently only `continuum-vision` supports edits.
+    </ParamField>
+
+    <ParamField body="n" type="integer" default={1}>
+      The number of edited images to generate. Between `1` and `10`.
+    </ParamField>
+
+    <ParamField body="size" type="string" default="1024x1024">
+      The size of the generated image. One of `1024x1024`, `1792x1024`, or `1024x1792`.
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="url">
+      The format of the generated image. One of `url` or `b64_json`.
+    </ParamField>
+
+    <ParamField body="user" type="string">
+      A unique identifier for the end-user.
+    </ParamField>
+
+    ### Examples
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.continuum-ai.com/v1/images/edits \
+      -H "Authorization: Bearer sk-proj-..." \
+      -F image="@original.png" \
+      -F mask="@mask.png" \
+      -F prompt="Add a golden retriever sitting on the bench" \
+      -F model="continuum-vision" \
+      -F n=1 \
+      -F size="1024x1024"
+    ```
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-...",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    response = client.images.edit(
+        model="continuum-vision",
+        image=open("original.png", "rb"),
+        mask=open("mask.png", "rb"),
+        prompt="Add a golden retriever sitting on the bench",
+        n=1,
+        size="1024x1024"
+    )
+
+    print(response.data[0].url)
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+    import fs from "fs";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-...",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const response = await client.images.edit({
+      model: "continuum-vision",
+      image: fs.createReadStream("original.png"),
+      mask: fs.createReadStream("mask.png"),
+      prompt: "Add a golden retriever sitting on the bench",
+      n: 1,
+      size: "1024x1024",
+    });
+
+    console.log(response.data[0].url);
+    ```
+
+    </CodeGroup>
+
+    <Tip>
+      **Creating masks:** Use any image editor to create a mask. Paint the areas you want to modify with full transparency (alpha = 0). The opaque areas will be preserved from the original image.
+    </Tip>
+  </Tab>
+
+  <Tab title="Variations">
+    ## Create image variation {#variations}
+
+    Generate variations of a given image. The model creates new images that are visually similar to the input but with creative differences.
+
+    ```
+    POST https://api.continuum-ai.com/v1/images/variations
+    ```
+
+    <Note>
+      This endpoint accepts **multipart/form-data** requests, not JSON.
+    </Note>
+
+    ### Request body
+
+    <ParamField body="image" type="file" required>
+      The image to create variations of. Must be a valid PNG file, less than 4MB, and square.
+    </ParamField>
+
+    <ParamField body="model" type="string" default="continuum-vision">
+      The model to use. Currently only `continuum-vision` supports variations.
+    </ParamField>
+
+    <ParamField body="n" type="integer" default={1}>
+      The number of variations to generate. Between `1` and `10`.
+    </ParamField>
+
+    <ParamField body="size" type="string" default="1024x1024">
+      The size of the generated image. One of `1024x1024`, `1792x1024`, or `1024x1792`.
+    </ParamField>
+
+    <ParamField body="response_format" type="string" default="url">
+      The format of the generated image. One of `url` or `b64_json`.
+    </ParamField>
+
+    <ParamField body="user" type="string">
+      A unique identifier for the end-user.
+    </ParamField>
+
+    ### Examples
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.continuum-ai.com/v1/images/variations \
+      -H "Authorization: Bearer sk-proj-..." \
+      -F image="@original.png" \
+      -F model="continuum-vision" \
+      -F n=3 \
+      -F size="1024x1024"
+    ```
+
+    ```python Python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-proj-...",
+        base_url="https://api.continuum-ai.com/v1"
+    )
+
+    response = client.images.create_variation(
+        model="continuum-vision",
+        image=open("original.png", "rb"),
+        n=3,
+        size="1024x1024"
+    )
+
+    for i, image in enumerate(response.data):
+        print(f"Variation {i + 1}: {image.url}")
+    ```
+
+    ```javascript Node.js
+    import OpenAI from "openai";
+    import fs from "fs";
+
+    const client = new OpenAI({
+      apiKey: "sk-proj-...",
+      baseURL: "https://api.continuum-ai.com/v1",
+    });
+
+    const response = await client.images.createVariation({
+      model: "continuum-vision",
+      image: fs.createReadStream("original.png"),
+      n: 3,
+      size: "1024x1024",
+    });
+
+    response.data.forEach((image, i) => {
+      console.log(`Variation ${i + 1}: ${image.url}`);
+    });
+    ```
+
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Writing effective prompts">
+    - **Be specific:** Instead of "a dog", write "a golden retriever puppy sitting in a field of sunflowers, soft natural lighting, shallow depth of field."
+    - **Specify style:** Include art style references like "oil painting", "watercolor", "photorealistic", "pixel art", or "3D render."
+    - **Describe composition:** Mention camera angle, lighting, and framing: "aerial view", "close-up portrait", "dramatic side lighting."
+    - **Set the mood:** Use descriptive adjectives: "serene", "dramatic", "whimsical", "dark and moody."
+  </Accordion>
+
+  <Accordion title="Choosing quality and style">
+    - Use `quality: "hd"` for images that need fine detail (product shots, architectural renders).
+    - Use `quality: "standard"` for quick iterations and concept exploration.
+    - `style: "vivid"` produces more dramatic, stylized results -- great for creative and marketing assets.
+    - `style: "natural"` produces subtler, more photographic results -- better for realistic compositions.
+  </Accordion>
+
+  <Accordion title="Handling generated URLs">
+    Image URLs returned by the API are temporary and expire after **60 minutes**. Always download and store images in your own storage if you need them long-term. Use `response_format: "b64_json"` if you want to handle storage immediately without a separate download step.
+  </Accordion>
+
+  <Accordion title="Image size and cost">
+    Larger images and higher quality settings consume more credits. Use `1024x1024` with `standard` quality for prototyping, then upgrade to `hd` and larger sizes for production assets.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Error codes
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| `400` | `invalid_size` | The requested size is not supported for the chosen model. |
+| `400` | `invalid_image` | The uploaded image is not a valid PNG, exceeds 4MB, or is not square. |
+| `400` | `prompt_too_long` | The prompt exceeds the maximum character limit. |
+| `401` | `invalid_api_key` | The API key is missing or invalid. |
+| `429` | `rate_limit_exceeded` | Too many image generation requests. Retry with backoff. |
+| `500` | `generation_failed` | The image could not be generated. Retry the request. |

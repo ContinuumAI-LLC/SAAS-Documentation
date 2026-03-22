@@ -1,0 +1,653 @@
+---
+title: 'Chat Completions'
+description: 'Genera respuestas conversacionales con los modelos de lenguaje de Continuum AI'
+---
+
+## POST /v1/chat/completions
+
+Crea una respuesta de chat basada en una lista de mensajes. Este es el endpoint principal para interactuar con los modelos de lenguaje de Continuum AI.
+
+<Info>
+  Este endpoint es compatible con el formato de OpenAI. Si ya usas el SDK de OpenAI, solo necesitas cambiar la URL base y tu API key.
+</Info>
+
+## Parametros de la solicitud
+
+<ParamField body="model" type="string" required>
+  Identificador del modelo a utilizar. Ejemplo: `continuum-ultra`, `continuum-turbo`, `continuum-pro`.
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  Lista de mensajes que componen la conversacion. Cada mensaje tiene un `role` y `content`.
+</ParamField>
+
+<Expandable title="Roles disponibles">
+  | Rol | Descripcion |
+  |-----|-------------|
+  | `system` | Instrucciones iniciales que definen el comportamiento del modelo. |
+  | `user` | Mensajes del usuario final. |
+  | `assistant` | Respuestas previas del modelo (para contexto). |
+  | `tool` | Resultados de llamadas a herramientas (tool calling). |
+</Expandable>
+
+<ParamField body="temperature" type="number" default="1.0">
+  Controla la aleatoriedad de la respuesta. Valores entre `0` y `2`. Valores mas bajos producen respuestas mas deterministas.
+</ParamField>
+
+<ParamField body="top_p" type="number" default="1.0">
+  Muestreo por nucleo. Alternativa a `temperature`. Valores entre `0` y `1`.
+</ParamField>
+
+<ParamField body="max_tokens" type="integer">
+  Numero maximo de tokens a generar en la respuesta. Si no se especifica, el modelo decide la longitud.
+</ParamField>
+
+<ParamField body="stream" type="boolean" default="false">
+  Si es `true`, la respuesta se envia como Server-Sent Events (SSE) en tiempo real.
+</ParamField>
+
+<ParamField body="stop" type="string | array">
+  Una o varias secuencias donde el modelo dejara de generar texto.
+</ParamField>
+
+<ParamField body="frequency_penalty" type="number" default="0">
+  Penalizacion por frecuencia. Valores entre `-2.0` y `2.0`. Valores positivos reducen la repeticion.
+</ParamField>
+
+<ParamField body="presence_penalty" type="number" default="0">
+  Penalizacion por presencia. Valores entre `-2.0` y `2.0`. Valores positivos fomentan temas nuevos.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  Lista de herramientas (funciones) que el modelo puede invocar. Ver la seccion de Tool Calling mas abajo.
+</ParamField>
+
+<ParamField body="tool_choice" type="string | object" default="auto">
+  Controla como el modelo selecciona herramientas. Opciones: `auto`, `none`, `required`, o un objeto especifico.
+</ParamField>
+
+<ParamField body="response_format" type="object">
+  Formato de la respuesta. Usa `{"type": "json_object"}` para forzar salida JSON valida.
+</ParamField>
+
+<ParamField body="seed" type="integer">
+  Semilla para reproducibilidad. Solicitudes con la misma semilla y parametros tienden a producir resultados similares.
+</ParamField>
+
+<ParamField body="n" type="integer" default="1">
+  Numero de respuestas alternativas a generar.
+</ParamField>
+
+<ParamField body="user" type="string">
+  Identificador unico del usuario final. Util para monitoreo y deteccion de abuso.
+</ParamField>
+
+## Ejemplos
+
+### Solicitud basica
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Eres un asistente util y conciso."
+      },
+      {
+        "role": "user",
+        "content": "Que es la inteligencia artificial?"
+      }
+    ],
+    "max_tokens": 500,
+    "temperature": 0.7
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.chat.completions.create(
+    model="continuum-ultra",
+    messages=[
+        {"role": "system", "content": "Eres un asistente util y conciso."},
+        {"role": "user", "content": "Que es la inteligencia artificial?"}
+    ],
+    max_tokens=500,
+    temperature=0.7
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "continuum-ultra",
+  messages: [
+    { role: "system", content: "Eres un asistente util y conciso." },
+    { role: "user", content: "Que es la inteligencia artificial?" },
+  ],
+  max_tokens: 500,
+  temperature: 0.7,
+});
+
+console.log(response.choices[0].message.content);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1711152000,
+  "model": "continuum-ultra",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "La inteligencia artificial (IA) es una rama de la informatica que busca crear sistemas capaces de realizar tareas que normalmente requieren inteligencia humana, como el razonamiento, el aprendizaje y la toma de decisiones."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 28,
+    "completion_tokens": 52,
+    "total_tokens": 80
+  }
+}
+```
+
+<ResponseField name="id" type="string">
+  Identificador unico de la respuesta.
+</ResponseField>
+
+<ResponseField name="choices" type="array">
+  Lista de respuestas generadas. Cada elemento contiene un `message` y un `finish_reason`.
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+  Informacion sobre el consumo de tokens: `prompt_tokens`, `completion_tokens` y `total_tokens`.
+</ResponseField>
+
+### Streaming
+
+Con streaming, la respuesta se transmite en tiempo real token por token usando Server-Sent Events (SSE). Ideal para interfaces de chat donde quieres mostrar la respuesta mientras se genera.
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-turbo",
+    "messages": [
+      {"role": "user", "content": "Escribe un poema corto sobre la tecnologia."}
+    ],
+    "stream": true
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+stream = client.chat.completions.create(
+    model="continuum-turbo",
+    messages=[
+        {"role": "user", "content": "Escribe un poema corto sobre la tecnologia."}
+    ],
+    stream=True
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content is not None:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const stream = await client.chat.completions.create({
+  model: "continuum-turbo",
+  messages: [
+    { role: "user", content: "Escribe un poema corto sobre la tecnologia." },
+  ],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content;
+  if (content) process.stdout.write(content);
+}
+```
+
+</CodeGroup>
+
+**Formato de los eventos SSE:**
+
+```
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":"La"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":" tecnologia"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+data: [DONE]
+```
+
+<Note>
+  El stream termina con el evento `data: [DONE]`. El ultimo chunk con contenido tendra `finish_reason: "stop"`.
+</Note>
+
+### Tool Calling (Llamadas a herramientas)
+
+Permite al modelo invocar funciones definidas por ti. El modelo decide cuando es apropiado llamar a una herramienta y genera los argumentos necesarios.
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "messages": [
+      {"role": "user", "content": "Que clima hace hoy en Madrid?"}
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Obtiene el clima actual de una ciudad",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "city": {
+                "type": "string",
+                "description": "Nombre de la ciudad"
+              },
+              "unit": {
+                "type": "string",
+                "enum": ["celsius", "fahrenheit"],
+                "description": "Unidad de temperatura"
+              }
+            },
+            "required": ["city"]
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto"
+  }'
+```
+
+```python Python
+from openai import OpenAI
+import json
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Obtiene el clima actual de una ciudad",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string",
+                        "description": "Nombre de la ciudad"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": ["celsius", "fahrenheit"],
+                        "description": "Unidad de temperatura"
+                    }
+                },
+                "required": ["city"]
+            }
+        }
+    }
+]
+
+# Paso 1: Enviar la solicitud con herramientas
+response = client.chat.completions.create(
+    model="continuum-ultra",
+    messages=[
+        {"role": "user", "content": "Que clima hace hoy en Madrid?"}
+    ],
+    tools=tools,
+    tool_choice="auto"
+)
+
+# Paso 2: Procesar la llamada a la herramienta
+tool_call = response.choices[0].message.tool_calls[0]
+arguments = json.loads(tool_call.function.arguments)
+print(f"Funcion: {tool_call.function.name}")
+print(f"Argumentos: {arguments}")
+
+# Paso 3: Enviar el resultado de vuelta al modelo
+messages = [
+    {"role": "user", "content": "Que clima hace hoy en Madrid?"},
+    response.choices[0].message,
+    {
+        "role": "tool",
+        "tool_call_id": tool_call.id,
+        "content": json.dumps({"temperature": 22, "condition": "Soleado", "humidity": 45})
+    }
+]
+
+final_response = client.chat.completions.create(
+    model="continuum-ultra",
+    messages=messages,
+    tools=tools
+)
+
+print(final_response.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "get_weather",
+      description: "Obtiene el clima actual de una ciudad",
+      parameters: {
+        type: "object",
+        properties: {
+          city: { type: "string", description: "Nombre de la ciudad" },
+          unit: {
+            type: "string",
+            enum: ["celsius", "fahrenheit"],
+            description: "Unidad de temperatura",
+          },
+        },
+        required: ["city"],
+      },
+    },
+  },
+];
+
+// Paso 1: Enviar la solicitud con herramientas
+const response = await client.chat.completions.create({
+  model: "continuum-ultra",
+  messages: [{ role: "user", content: "Que clima hace hoy en Madrid?" }],
+  tools,
+  tool_choice: "auto",
+});
+
+// Paso 2: Procesar la llamada a la herramienta
+const toolCall = response.choices[0].message.tool_calls[0];
+const args = JSON.parse(toolCall.function.arguments);
+console.log(`Funcion: ${toolCall.function.name}`, args);
+
+// Paso 3: Enviar el resultado de vuelta al modelo
+const finalResponse = await client.chat.completions.create({
+  model: "continuum-ultra",
+  messages: [
+    { role: "user", content: "Que clima hace hoy en Madrid?" },
+    response.choices[0].message,
+    {
+      role: "tool",
+      tool_call_id: toolCall.id,
+      content: JSON.stringify({ temperature: 22, condition: "Soleado", humidity: 45 }),
+    },
+  ],
+  tools,
+});
+
+console.log(finalResponse.choices[0].message.content);
+```
+
+</CodeGroup>
+
+**Respuesta con tool call:**
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_xyz789",
+            "type": "function",
+            "function": {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"Madrid\", \"unit\": \"celsius\"}"
+            }
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ]
+}
+```
+
+### Vision (Imagenes en mensajes)
+
+Los modelos de chat pueden analizar imagenes enviadas como parte de los mensajes. Envia imagenes como URLs o en formato base64.
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Que hay en esta imagen?"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://ejemplo.com/imagen.jpg",
+              "detail": "high"
+            }
+          }
+        ]
+      }
+    ],
+    "max_tokens": 300
+  }'
+```
+
+```python Python
+response = client.chat.completions.create(
+    model="continuum-ultra",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Que hay en esta imagen?"},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "https://ejemplo.com/imagen.jpg",
+                        "detail": "high"
+                    }
+                }
+            ]
+        }
+    ],
+    max_tokens=300
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript Node.js
+const response = await client.chat.completions.create({
+  model: "continuum-ultra",
+  messages: [
+    {
+      role: "user",
+      content: [
+        { type: "text", text: "Que hay en esta imagen?" },
+        {
+          type: "image_url",
+          image_url: {
+            url: "https://ejemplo.com/imagen.jpg",
+            detail: "high",
+          },
+        },
+      ],
+    },
+  ],
+  max_tokens: 300,
+});
+
+console.log(response.choices[0].message.content);
+```
+
+</CodeGroup>
+
+<Tip>
+  El parametro `detail` controla la resolucion del analisis. Usa `"high"` para analisis detallado o `"low"` para un procesamiento mas rapido y economico.
+</Tip>
+
+### Modo JSON
+
+Fuerza al modelo a generar unicamente JSON valido como respuesta. Util para integraciones donde necesitas parsear la salida de forma programatica.
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Responde siempre en formato JSON valido."
+      },
+      {
+        "role": "user",
+        "content": "Dame informacion sobre 3 lenguajes de programacion populares."
+      }
+    ],
+    "response_format": {"type": "json_object"}
+  }'
+```
+
+```python Python
+response = client.chat.completions.create(
+    model="continuum-ultra",
+    messages=[
+        {"role": "system", "content": "Responde siempre en formato JSON valido."},
+        {"role": "user", "content": "Dame informacion sobre 3 lenguajes de programacion populares."}
+    ],
+    response_format={"type": "json_object"}
+)
+
+import json
+data = json.loads(response.choices[0].message.content)
+print(json.dumps(data, indent=2))
+```
+
+```javascript Node.js
+const response = await client.chat.completions.create({
+  model: "continuum-ultra",
+  messages: [
+    { role: "system", content: "Responde siempre en formato JSON valido." },
+    { role: "user", content: "Dame informacion sobre 3 lenguajes de programacion populares." },
+  ],
+  response_format: { type: "json_object" },
+});
+
+const data = JSON.parse(response.choices[0].message.content);
+console.log(JSON.stringify(data, null, 2));
+```
+
+</CodeGroup>
+
+<Warning>
+  Cuando uses el modo JSON, **debes** incluir la palabra "JSON" en el mensaje del sistema. De lo contrario, el modelo podria generar un flujo infinito de espacios en blanco.
+</Warning>
+
+**Ejemplo de respuesta en modo JSON:**
+
+```json
+{
+  "languages": [
+    {
+      "name": "Python",
+      "paradigm": "multiparadigma",
+      "created_year": 1991,
+      "popular_for": ["IA", "ciencia de datos", "web"]
+    },
+    {
+      "name": "JavaScript",
+      "paradigm": "multiparadigma",
+      "created_year": 1995,
+      "popular_for": ["web frontend", "web backend", "mobile"]
+    },
+    {
+      "name": "Go",
+      "paradigm": "concurrente, imperativo",
+      "created_year": 2009,
+      "popular_for": ["sistemas distribuidos", "cloud", "CLI"]
+    }
+  ]
+}
+```

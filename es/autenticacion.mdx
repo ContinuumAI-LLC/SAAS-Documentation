@@ -1,0 +1,210 @@
+---
+title: 'Autenticacion'
+description: 'Configura y gestiona la autenticacion para la API de Continuum AI'
+---
+
+## Autenticacion de la API
+
+Todas las solicitudes a la API de Continuum AI requieren autenticacion mediante una API key. Las keys se generan desde el panel de administracion y estan vinculadas a un proyecto especifico dentro de tu organizacion.
+
+<Info>
+  Las API keys de Continuum AI siguen el formato `sk-proj-...` y estan asociadas a un tenant y proyecto especifico, lo que permite un rastreo granular del uso.
+</Info>
+
+## Obtener tu API Key
+
+<Steps>
+  <Step title="Iniciar sesion">
+    Accede a tu cuenta en [app.continuum-ai.com](https://app.continuum-ai.com) con tus credenciales.
+  </Step>
+  <Step title="Seleccionar tu organizacion">
+    Desde el selector de organizaciones, elige el tenant donde deseas crear la key.
+  </Step>
+  <Step title="Navegar a Proyectos">
+    Ve a la seccion de proyectos y selecciona el proyecto para el cual necesitas una API key, o crea uno nuevo.
+  </Step>
+  <Step title="Generar la API Key">
+    Haz clic en **Crear Proyecto** o **Rotar Key** en un proyecto existente. La API key se mostrara una unica vez al momento de la creacion.
+  </Step>
+  <Step title="Guardar la key de forma segura">
+    Copia y almacena la key en un lugar seguro (por ejemplo, un gestor de secretos o variable de entorno). No podras volver a verla despues de cerrar el dialogo.
+  </Step>
+</Steps>
+
+<Warning>
+  Tu API key se muestra **una sola vez** al momento de crearla. Si la pierdes, tendras que rotar la key del proyecto para generar una nueva. La key anterior dejara de funcionar inmediatamente.
+</Warning>
+
+## Metodos de autenticacion
+
+Continuum AI soporta dos metodos para enviar tu API key en las solicitudes:
+
+<Tabs>
+  <Tab title="Bearer Token (recomendado)">
+    Envia la key en el encabezado `Authorization` con el prefijo `Bearer`:
+
+    ```bash
+    curl https://api.continuum-ai.com/v1/chat/completions \
+      -H "Authorization: Bearer sk-proj-tu-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-ultra",
+        "messages": [{"role": "user", "content": "Hola"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Encabezado X-API-Key">
+    Alternativamente, puedes enviar la key en el encabezado `X-API-Key`:
+
+    ```bash
+    curl https://api.continuum-ai.com/v1/chat/completions \
+      -H "X-API-Key: sk-proj-tu-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-ultra",
+        "messages": [{"role": "user", "content": "Hola"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Ejemplos por lenguaje
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "messages": [
+      {"role": "user", "content": "Explica la computacion cuantica en terminos simples."}
+    ]
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.chat.completions.create(
+    model="continuum-ultra",
+    messages=[
+        {"role": "user", "content": "Explica la computacion cuantica en terminos simples."}
+    ]
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "continuum-ultra",
+  messages: [
+    { role: "user", content: "Explica la computacion cuantica en terminos simples." },
+  ],
+});
+
+console.log(response.choices[0].message.content);
+```
+
+```go Go
+package main
+
+import (
+    "context"
+    "fmt"
+
+    openai "github.com/sashabaranov/go-openai"
+)
+
+func main() {
+    config := openai.DefaultConfig("sk-proj-tu-api-key")
+    config.BaseURL = "https://api.continuum-ai.com/v1"
+    client := openai.NewClientWithConfig(config)
+
+    resp, err := client.CreateChatCompletion(
+        context.Background(),
+        openai.ChatCompletionRequest{
+            Model: "continuum-ultra",
+            Messages: []openai.ChatCompletionMessage{
+                {
+                    Role:    openai.ChatMessageRoleUser,
+                    Content: "Explica la computacion cuantica en terminos simples.",
+                },
+            },
+        },
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Println(resp.Choices[0].Message.Content)
+}
+```
+
+</CodeGroup>
+
+## Buenas practicas de seguridad
+
+<AccordionGroup>
+  <Accordion title="Nunca expongas tu API key en el codigo fuente">
+    No incluyas API keys directamente en tu codigo, especialmente en repositorios publicos. Usa variables de entorno o gestores de secretos como AWS Secrets Manager, HashiCorp Vault o el archivo `.env` con `.gitignore`.
+
+    ```bash
+    # .env (anadido a .gitignore)
+    CONTINUUM_API_KEY=sk-proj-tu-api-key
+    ```
+
+    ```python
+    import os
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key=os.environ["CONTINUUM_API_KEY"],
+        base_url="https://api.continuum-ai.com/v1"
+    )
+    ```
+  </Accordion>
+  <Accordion title="Nunca llames a la API desde el frontend">
+    Las solicitudes a la API deben realizarse siempre desde tu servidor backend. Si expones la key en codigo JavaScript del navegador, cualquiera podra extraerla e incurrir en cargos a tu cuenta.
+  </Accordion>
+  <Accordion title="Rota tus keys periodicamente">
+    Es buena practica rotar tus API keys de forma periodica. Puedes hacerlo desde el panel de proyecto sin tiempo de inactividad: la nueva key se activa inmediatamente mientras la anterior se invalida.
+  </Accordion>
+  <Accordion title="Usa una key por proyecto">
+    Cada proyecto debe tener su propia API key. Esto te permite rastrear el uso de forma individual, aplicar limites por proyecto y revocar acceso de forma granular si es necesario.
+  </Accordion>
+  <Accordion title="Monitorea el uso de tus keys">
+    Revisa regularmente las metricas de uso en el panel de analytics para detectar patrones anomalos que podrian indicar que una key ha sido comprometida.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Si sospechas que una API key ha sido comprometida, **rotala inmediatamente** desde el panel de proyecto. La rotacion invalida la key anterior de forma instantanea y genera una nueva.
+</Warning>
+
+## Errores de autenticacion
+
+| Codigo HTTP | Codigo de error | Descripcion |
+|-------------|-----------------|-------------|
+| `401` | `INVALID_API_KEY` | La API key proporcionada no es valida o ha sido revocada. |
+| `401` | `MISSING_API_KEY` | No se incluyo ninguna API key en la solicitud. |
+| `403` | `PROJECT_INACTIVE` | El proyecto asociado a la API key esta pausado o desactivado. |
+| `429` | `RATE_LIMIT_EXCEEDED` | Se excedio el limite de solicitudes. Espera antes de reintentar. |
+
+<Tip>
+  Para depurar problemas de autenticacion, verifica que tu key comience con `sk-proj-` y que el proyecto asociado este activo en el panel de administracion.
+</Tip>

@@ -1,0 +1,399 @@
+---
+title: "Embeddings"
+description: "Generate vector representations of text for search, clustering, and RAG"
+icon: "brain"
+---
+
+## Create embeddings
+
+Transform text into numerical vector representations that capture semantic meaning. Use embeddings to power search, recommendations, clustering, and retrieval-augmented generation (RAG).
+
+```
+POST https://api.continuum-ai.com/v1/embeddings
+```
+
+---
+
+## Authentication
+
+Include your API key in the `Authorization` header.
+
+```
+Authorization: Bearer sk-proj-...
+```
+
+---
+
+## Request body
+
+<ParamField body="model" type="string" required>
+  The embedding model to use.
+
+  | Model | Dimensions | Max Input | Best For |
+  |-------|-----------|-----------|----------|
+  | `continuum-embed-3` | 1536 | 8,191 tokens | General purpose, balanced cost and performance |
+  | `continuum-embed-3-large` | 3072 | 8,191 tokens | Highest accuracy, complex semantic tasks |
+  | `continuum-embed-2` | 1536 | 8,191 tokens | Legacy support, cost-efficient |
+</ParamField>
+
+<ParamField body="input" type="string | array" required>
+  The text to embed. Can be a single string or an array of strings for batch embedding.
+
+  <Warning>Each string must be under the model's maximum token limit. Exceeding it returns an error.</Warning>
+</ParamField>
+
+<ParamField body="encoding_format" type="string" default="float">
+  The format of the returned embeddings. One of:
+  - `float` -- returns an array of floating-point numbers (default)
+  - `base64` -- returns a base64-encoded string (more compact for transfer)
+</ParamField>
+
+<ParamField body="dimensions" type="integer">
+  The number of dimensions for the output embedding. Only supported by `continuum-embed-3` and `continuum-embed-3-large`. Use this to reduce the embedding size for storage efficiency while retaining most of the semantic quality.
+</ParamField>
+
+<ParamField body="user" type="string">
+  A unique identifier for the end-user for monitoring and abuse detection.
+</ParamField>
+
+---
+
+## Basic example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-embed-3",
+    "input": "Continuum AI makes building intelligent applications effortless."
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.embeddings.create(
+    model="continuum-embed-3",
+    input="Continuum AI makes building intelligent applications effortless."
+)
+
+embedding = response.data[0].embedding
+print(f"Dimensions: {len(embedding)}")
+print(f"First 5 values: {embedding[:5]}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.embeddings.create({
+  model: "continuum-embed-3",
+  input: "Continuum AI makes building intelligent applications effortless.",
+});
+
+const embedding = response.data[0].embedding;
+console.log(`Dimensions: ${embedding.length}`);
+console.log(`First 5 values: ${embedding.slice(0, 5)}`);
+```
+
+</CodeGroup>
+
+---
+
+## Batch embedding
+
+Embed multiple texts in a single request for efficiency. The response contains one embedding per input string in the same order.
+
+<Tip>
+  Batch embedding is significantly faster than making individual requests. Send up to **2,048** strings in a single call.
+</Tip>
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-embed-3",
+    "input": [
+      "How do I reset my password?",
+      "What are your pricing plans?",
+      "Can I export my data?",
+      "How to configure SSO?"
+    ]
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+texts = [
+    "How do I reset my password?",
+    "What are your pricing plans?",
+    "Can I export my data?",
+    "How to configure SSO?"
+]
+
+response = client.embeddings.create(
+    model="continuum-embed-3",
+    input=texts
+)
+
+for i, item in enumerate(response.data):
+    print(f"Text {i}: {len(item.embedding)} dimensions")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const texts = [
+  "How do I reset my password?",
+  "What are your pricing plans?",
+  "Can I export my data?",
+  "How to configure SSO?",
+];
+
+const response = await client.embeddings.create({
+  model: "continuum-embed-3",
+  input: texts,
+});
+
+response.data.forEach((item, i) => {
+  console.log(`Text ${i}: ${item.embedding.length} dimensions`);
+});
+```
+
+</CodeGroup>
+
+---
+
+## Reduced dimensions
+
+Use the `dimensions` parameter with `continuum-embed-3` or `continuum-embed-3-large` to reduce the embedding size. This saves storage and speeds up similarity search while preserving most semantic quality.
+
+<CodeGroup>
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+# Full dimensions (1536)
+full = client.embeddings.create(
+    model="continuum-embed-3",
+    input="Hello world"
+)
+
+# Reduced dimensions (256)
+reduced = client.embeddings.create(
+    model="continuum-embed-3",
+    input="Hello world",
+    dimensions=256
+)
+
+print(f"Full: {len(full.data[0].embedding)} dims")      # 1536
+print(f"Reduced: {len(reduced.data[0].embedding)} dims") # 256
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+// Reduced to 256 dimensions
+const response = await client.embeddings.create({
+  model: "continuum-embed-3",
+  input: "Hello world",
+  dimensions: 256,
+});
+
+console.log(`Dimensions: ${response.data[0].embedding.length}`); // 256
+```
+
+</CodeGroup>
+
+---
+
+## Response body
+
+<ResponseField name="object" type="string">
+  Always `list`.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  A list of embedding objects, one per input string.
+
+  <Expandable title="Embedding object">
+    <ResponseField name="object" type="string">
+      Always `embedding`.
+    </ResponseField>
+    <ResponseField name="index" type="integer">
+      The index of this embedding in the input array.
+    </ResponseField>
+    <ResponseField name="embedding" type="array">
+      The embedding vector as an array of floating-point numbers. The length depends on the model and any `dimensions` override.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  The model used to generate the embeddings.
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+  Token usage statistics.
+  <Expandable title="Usage properties">
+    <ResponseField name="prompt_tokens" type="integer">
+      Number of tokens in the input.
+    </ResponseField>
+    <ResponseField name="total_tokens" type="integer">
+      Total tokens consumed (same as `prompt_tokens` for embeddings).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+**Example response:**
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [
+        0.0023064255,
+        -0.009327292,
+        0.015797347,
+        -0.007598312,
+        0.011042318,
+        "... 1531 more values ..."
+      ]
+    }
+  ],
+  "model": "continuum-embed-3",
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 9
+  }
+}
+```
+
+---
+
+## Use cases
+
+<CardGroup cols={2}>
+  <Card title="Semantic search" icon="magnifying-glass">
+    Embed your documents and user queries, then find the most relevant results using cosine similarity. Far more accurate than keyword matching for natural language queries.
+  </Card>
+
+  <Card title="Retrieval-augmented generation" icon="puzzle-piece">
+    Retrieve relevant context from your knowledge base using embeddings, then pass it to a chat model for grounded, accurate responses with citations.
+  </Card>
+
+  <Card title="Clustering and classification" icon="chart-scatter">
+    Group similar content together automatically. Use embedding vectors as features for classification models or unsupervised clustering algorithms.
+  </Card>
+
+  <Card title="Anomaly detection" icon="triangle-exclamation">
+    Detect outliers in text data by identifying embeddings that are far from any cluster center. Useful for fraud detection and content moderation.
+  </Card>
+</CardGroup>
+
+---
+
+## Similarity search example
+
+A complete example showing how to use embeddings for semantic search with cosine similarity.
+
+```python Python
+import numpy as np
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+# Your knowledge base
+documents = [
+    "Continuum AI provides a unified API for multiple LLM providers.",
+    "Our rate limiting uses a sliding window algorithm per API key.",
+    "You can rotate API keys without downtime using the dashboard.",
+    "Usage analytics are available with per-model and per-endpoint breakdowns.",
+    "Embeddings power semantic search, clustering, and RAG pipelines.",
+]
+
+# Embed all documents
+doc_response = client.embeddings.create(
+    model="continuum-embed-3",
+    input=documents
+)
+doc_embeddings = [d.embedding for d in doc_response.data]
+
+# Embed the query
+query = "How do I manage my API keys?"
+query_response = client.embeddings.create(
+    model="continuum-embed-3",
+    input=query
+)
+query_embedding = query_response.data[0].embedding
+
+# Compute cosine similarity
+def cosine_similarity(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+scores = [cosine_similarity(query_embedding, doc) for doc in doc_embeddings]
+ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)
+
+print("Most relevant documents:")
+for idx, score in ranked[:3]:
+    print(f"  [{score:.4f}] {documents[idx]}")
+```
+
+---
+
+## Model comparison
+
+<Info>
+  All embedding models are optimized for English text. Multilingual support varies by model.
+</Info>
+
+| Feature | continuum-embed-3 | continuum-embed-3-large | continuum-embed-2 |
+|---------|-------------------|------------------------|-------------------|
+| Dimensions | 1,536 (configurable) | 3,072 (configurable) | 1,536 (fixed) |
+| Max tokens | 8,191 | 8,191 | 8,191 |
+| Multilingual | Yes | Yes | Limited |
+| Dimension reduction | Yes | Yes | No |
+| Relative cost | 1x | 2x | 0.5x |
+| Recommended | General use | High-precision tasks | Legacy / budget |

@@ -1,0 +1,377 @@
+---
+title: 'Responses'
+description: 'Endpoint unificado y moderno para interacciones multimodales con Continuum AI'
+---
+
+## POST /v1/responses
+
+El endpoint de Responses es la forma moderna y recomendada de interactuar con los modelos de Continuum AI. Ofrece una interfaz unificada que combina chat, herramientas, vision y streaming en un solo endpoint simplificado.
+
+<Tip>
+  **Endpoint recomendado.** Si estas comenzando un proyecto nuevo, te sugerimos usar `/v1/responses` en lugar de `/v1/chat/completions`. Ofrece una API mas limpia, soporte nativo para herramientas integradas y mejor manejo de conversaciones multiturno.
+</Tip>
+
+## Parametros de la solicitud
+
+<ParamField body="model" type="string" required>
+  Identificador del modelo. Ejemplo: `continuum-ultra`, `continuum-turbo`.
+</ParamField>
+
+<ParamField body="input" type="string | array" required>
+  El contenido de entrada. Puede ser un string simple o un array de mensajes con contenido multimodal.
+</ParamField>
+
+<ParamField body="instructions" type="string">
+  Instrucciones del sistema que definen el comportamiento del modelo. Equivalente al mensaje `system` en chat completions.
+</ParamField>
+
+<ParamField body="max_output_tokens" type="integer">
+  Numero maximo de tokens en la respuesta generada.
+</ParamField>
+
+<ParamField body="temperature" type="number" default="1.0">
+  Controla la aleatoriedad. Valores entre `0` y `2`.
+</ParamField>
+
+<ParamField body="top_p" type="number" default="1.0">
+  Muestreo por nucleo. Valores entre `0` y `1`.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  Lista de herramientas disponibles para el modelo. Soporta funciones personalizadas y herramientas integradas.
+</ParamField>
+
+<ParamField body="tool_choice" type="string | object" default="auto">
+  Controla la seleccion de herramientas: `auto`, `none`, `required`.
+</ParamField>
+
+<ParamField body="stream" type="boolean" default="false">
+  Habilita streaming de la respuesta via Server-Sent Events.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Metadatos personalizados asociados a la solicitud. Se devuelven en la respuesta sin modificaciones.
+</ParamField>
+
+<ParamField body="store" type="boolean" default="true">
+  Si es `true`, la solicitud y respuesta se almacenan para su uso posterior en conversaciones.
+</ParamField>
+
+<ParamField body="previous_response_id" type="string">
+  ID de una respuesta anterior para continuar una conversacion multiturno sin reenviar el historial completo.
+</ParamField>
+
+## Solicitud basica
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/responses \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "input": "Que es el aprendizaje profundo?"
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-tu-api-key",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.responses.create(
+    model="continuum-ultra",
+    input="Que es el aprendizaje profundo?"
+)
+
+print(response.output_text)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-tu-api-key",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.responses.create({
+  model: "continuum-ultra",
+  input: "Que es el aprendizaje profundo?",
+});
+
+console.log(response.output_text);
+```
+
+</CodeGroup>
+
+**Respuesta:**
+
+```json
+{
+  "id": "resp_abc123",
+  "object": "response",
+  "created_at": 1711152000,
+  "model": "continuum-ultra",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "El aprendizaje profundo es una rama del aprendizaje automatico que utiliza redes neuronales con multiples capas para aprender representaciones complejas de datos..."
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 85,
+    "total_tokens": 97
+  }
+}
+```
+
+## Entrada multimodal
+
+Combina texto e imagenes en una sola solicitud usando un array de contenido.
+
+<CodeGroup>
+
+```bash curl
+curl https://api.continuum-ai.com/v1/responses \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {"type": "input_text", "text": "Describe esta imagen en detalle."},
+          {
+            "type": "input_image",
+            "image_url": "https://ejemplo.com/foto.jpg"
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+```python Python
+response = client.responses.create(
+    model="continuum-ultra",
+    input=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "Describe esta imagen en detalle."},
+                {
+                    "type": "input_image",
+                    "image_url": "https://ejemplo.com/foto.jpg"
+                }
+            ]
+        }
+    ]
+)
+
+print(response.output_text)
+```
+
+```javascript Node.js
+const response = await client.responses.create({
+  model: "continuum-ultra",
+  input: [
+    {
+      role: "user",
+      content: [
+        { type: "input_text", text: "Describe esta imagen en detalle." },
+        {
+          type: "input_image",
+          image_url: "https://ejemplo.com/foto.jpg",
+        },
+      ],
+    },
+  ],
+});
+
+console.log(response.output_text);
+```
+
+</CodeGroup>
+
+## Conversaciones multiturno
+
+Usa `previous_response_id` para continuar una conversacion sin reenviar todo el historial. El servidor mantiene el contexto automaticamente.
+
+```python Python
+# Primera solicitud
+response1 = client.responses.create(
+    model="continuum-ultra",
+    input="Mi nombre es Rafael y soy desarrollador de software."
+)
+
+# Segunda solicitud - continua la conversacion
+response2 = client.responses.create(
+    model="continuum-ultra",
+    input="Como me llamo y a que me dedico?",
+    previous_response_id=response1.id
+)
+
+# El modelo recuerda el contexto anterior
+print(response2.output_text)
+```
+
+<Info>
+  El parametro `previous_response_id` elimina la necesidad de enviar todo el historial de mensajes en cada solicitud, lo que reduce el consumo de tokens de entrada y simplifica la logica de tu aplicacion.
+</Info>
+
+## Streaming
+
+<CodeGroup>
+
+```python Python
+stream = client.responses.create(
+    model="continuum-turbo",
+    input="Escribe una guia rapida sobre Docker.",
+    stream=True
+)
+
+for event in stream:
+    if event.type == "response.output_text.delta":
+        print(event.delta, end="", flush=True)
+```
+
+```javascript Node.js
+const stream = await client.responses.create({
+  model: "continuum-turbo",
+  input: "Escribe una guia rapida sobre Docker.",
+  stream: true,
+});
+
+for await (const event of stream) {
+  if (event.type === "response.output_text.delta") {
+    process.stdout.write(event.delta);
+  }
+}
+```
+
+</CodeGroup>
+
+**Tipos de eventos en streaming:**
+
+| Evento | Descripcion |
+|--------|-------------|
+| `response.created` | La respuesta se ha creado e iniciado el procesamiento. |
+| `response.in_progress` | La generacion esta en curso. |
+| `response.output_text.delta` | Fragmento parcial de texto generado. |
+| `response.output_text.done` | La generacion de texto ha finalizado. |
+| `response.completed` | La respuesta completa esta lista. |
+| `response.failed` | Ocurrio un error durante la generacion. |
+
+## Tool Calling con Responses
+
+<CodeGroup>
+
+```python Python
+response = client.responses.create(
+    model="continuum-ultra",
+    input="Busca el precio actual de las acciones de Apple.",
+    tools=[
+        {
+            "type": "function",
+            "name": "get_stock_price",
+            "description": "Obtiene el precio actual de una accion",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "symbol": {
+                        "type": "string",
+                        "description": "Simbolo bursatil (ej. AAPL, GOOGL)"
+                    }
+                },
+                "required": ["symbol"]
+            }
+        }
+    ]
+)
+
+# Verificar si el modelo quiere usar una herramienta
+for item in response.output:
+    if item.type == "function_call":
+        print(f"Herramienta: {item.name}")
+        print(f"Argumentos: {item.arguments}")
+```
+
+```javascript Node.js
+const response = await client.responses.create({
+  model: "continuum-ultra",
+  input: "Busca el precio actual de las acciones de Apple.",
+  tools: [
+    {
+      type: "function",
+      name: "get_stock_price",
+      description: "Obtiene el precio actual de una accion",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol: {
+            type: "string",
+            description: "Simbolo bursatil (ej. AAPL, GOOGL)",
+          },
+        },
+        required: ["symbol"],
+      },
+    },
+  ],
+});
+
+for (const item of response.output) {
+  if (item.type === "function_call") {
+    console.log(`Herramienta: ${item.name}`);
+    console.log(`Argumentos: ${item.arguments}`);
+  }
+}
+```
+
+</CodeGroup>
+
+## Instrucciones del sistema
+
+Usa el parametro `instructions` para definir el comportamiento del modelo de forma limpia y separada del input del usuario.
+
+```python Python
+response = client.responses.create(
+    model="continuum-ultra",
+    instructions="Eres un experto en ciberseguridad. Responde de forma tecnica pero accesible. Incluye ejemplos practicos cuando sea relevante.",
+    input="Como puedo proteger mi aplicacion web contra ataques XSS?"
+)
+
+print(response.output_text)
+```
+
+<Note>
+  La principal ventaja de `instructions` sobre un mensaje `system` en el array `input` es que las instrucciones se mantienen automaticamente en conversaciones multiturno cuando usas `previous_response_id`.
+</Note>
+
+## Comparacion con Chat Completions
+
+| Caracteristica | Chat Completions | Responses |
+|----------------|-----------------|-----------|
+| Endpoint | `/v1/chat/completions` | `/v1/responses` |
+| Entrada | Array de mensajes | String o array |
+| Instrucciones sistema | Mensaje con `role: system` | Parametro `instructions` |
+| Conversacion multiturno | Reenviar historial completo | `previous_response_id` |
+| Herramientas integradas | No | Si |
+| Streaming | SSE | SSE con eventos tipados |
+| Compatibilidad OpenAI | Completa | Completa |
+
+<Tip>
+  Para proyectos nuevos, recomendamos usar el endpoint de Responses. Para proyectos existentes que ya usan Chat Completions, ambos endpoints seguiran siendo soportados a largo plazo.
+</Tip>

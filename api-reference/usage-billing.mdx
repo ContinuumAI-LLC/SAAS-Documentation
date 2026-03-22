@@ -1,0 +1,327 @@
+---
+title: "Usage & billing"
+description: "Monitor API consumption, manage your subscription, and understand rate limits"
+icon: "chart-bar"
+---
+
+The Usage and Billing endpoints give you full visibility into your project's API consumption, current subscription plan, available credits, and enforced rate limits. Use these endpoints to build internal dashboards, set up cost alerts, or programmatically manage your spending.
+
+---
+
+## Authentication
+
+All usage and billing endpoints require a project API key.
+
+```bash
+Authorization: Bearer sk-proj-...
+```
+
+---
+
+## Endpoints
+
+### Get project usage
+
+Returns aggregated usage statistics for the current project within a specified date range. Includes total requests, token consumption broken down by input and output, latency metrics, and error rates.
+
+<ParamField query="from" type="string" optional>
+  Start of the date range in RFC 3339 format. Example: `2026-03-01T00:00:00Z`.
+</ParamField>
+
+<ParamField query="to" type="string" optional>
+  End of the date range in RFC 3339 format. Example: `2026-03-22T23:59:59Z`.
+</ParamField>
+
+<Tip>
+  When `from` and `to` are omitted, the API defaults to the **last 30 days**. This applies to all date-range-filtered endpoints.
+</Tip>
+
+<ParamField query="group_by" type="string" optional>
+  Group results by time period. One of: `hour`, `day`, `week`, `month`. Defaults to `day`.
+</ParamField>
+
+<CodeGroup>
+
+```bash cURL
+curl "https://api.continuum-ai.com/v1/usage?from=2026-03-01T00:00:00Z&to=2026-03-22T23:59:59Z&group_by=day" \
+  -H "Authorization: Bearer sk-proj-..."
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.continuum-ai.com/v1/usage",
+    headers={"Authorization": "Bearer sk-proj-..."},
+    params={
+        "from": "2026-03-01T00:00:00Z",
+        "to": "2026-03-22T23:59:59Z",
+        "group_by": "day"
+    }
+)
+
+usage = response.json()
+```
+
+</CodeGroup>
+
+<Expandable title="Response — 200 OK">
+  ```json
+  {
+    "data": {
+      "total_requests": 15420,
+      "total_input_tokens": 3250000,
+      "total_output_tokens": 1875000,
+      "total_tokens": 5125000,
+      "total_cost_usd": 42.75,
+      "avg_latency_ms": 820,
+      "min_latency_ms": 95,
+      "max_latency_ms": 12400,
+      "error_count": 23,
+      "success_count": 15397,
+      "error_rate": 0.15,
+      "success_rate": 99.85,
+      "breakdown": [
+        {
+          "period": "2026-03-01",
+          "requests": 520,
+          "input_tokens": 108000,
+          "output_tokens": 62000,
+          "total_tokens": 170000,
+          "cost_usd": 1.42
+        },
+        {
+          "period": "2026-03-02",
+          "requests": 485,
+          "input_tokens": 101000,
+          "output_tokens": 58000,
+          "total_tokens": 159000,
+          "cost_usd": 1.33
+        }
+      ],
+      "from": "2026-03-01T00:00:00Z",
+      "to": "2026-03-22T23:59:59Z"
+    },
+    "status": 200
+  }
+  ```
+</Expandable>
+
+<Expandable title="Response fields">
+  <ResponseField name="total_requests" type="integer">
+    Total number of API requests in the date range.
+  </ResponseField>
+
+  <ResponseField name="total_input_tokens" type="integer">
+    Total input (prompt) tokens consumed.
+  </ResponseField>
+
+  <ResponseField name="total_output_tokens" type="integer">
+    Total output (completion) tokens generated.
+  </ResponseField>
+
+  <ResponseField name="total_tokens" type="integer">
+    Sum of input and output tokens.
+  </ResponseField>
+
+  <ResponseField name="total_cost_usd" type="number">
+    Total estimated cost in US dollars.
+  </ResponseField>
+
+  <ResponseField name="avg_latency_ms" type="number">
+    Average response latency in milliseconds.
+  </ResponseField>
+
+  <ResponseField name="error_rate" type="number">
+    Percentage of requests that returned an error (0-100).
+  </ResponseField>
+
+  <ResponseField name="breakdown" type="array">
+    Per-period usage breakdown based on the `group_by` parameter.
+  </ResponseField>
+</Expandable>
+
+---
+
+### Get subscription info
+
+Returns details about the current project's subscription plan, including credit balance, usage limits, and auto-recharge configuration.
+
+<CodeGroup>
+
+```bash cURL
+curl https://api.continuum-ai.com/v1/billing/subscription \
+  -H "Authorization: Bearer sk-proj-..."
+```
+
+```python Python
+response = requests.get(
+    "https://api.continuum-ai.com/v1/billing/subscription",
+    headers={"Authorization": "Bearer sk-proj-..."}
+)
+
+subscription = response.json()
+```
+
+</CodeGroup>
+
+<Expandable title="Response — 200 OK">
+  ```json
+  {
+    "data": {
+      "plan": "pro",
+      "status": "active",
+      "credits_remaining_usd": 247.50,
+      "credits_used_usd": 152.50,
+      "credits_total_usd": 400.00,
+      "auto_recharge": {
+        "enabled": true,
+        "threshold_usd": 50.00,
+        "amount_usd": 200.00
+      },
+      "billing_period": {
+        "start": "2026-03-01T00:00:00Z",
+        "end": "2026-03-31T23:59:59Z"
+      },
+      "payment_method": {
+        "type": "card",
+        "last_four": "4242",
+        "brand": "visa"
+      },
+      "created_at": "2025-06-15T10:00:00Z"
+    },
+    "status": 200
+  }
+  ```
+</Expandable>
+
+<Expandable title="Response fields">
+  <ResponseField name="plan" type="string">
+    Current subscription plan. One of: `free`, `starter`, `pro`, `enterprise`.
+  </ResponseField>
+
+  <ResponseField name="status" type="string">
+    Subscription status. One of: `active`, `past_due`, `cancelled`.
+  </ResponseField>
+
+  <ResponseField name="credits_remaining_usd" type="number">
+    Remaining credit balance in US dollars.
+  </ResponseField>
+
+  <ResponseField name="auto_recharge" type="object">
+    Auto-recharge configuration. When `enabled` is `true`, credits are automatically purchased when the balance drops below `threshold_usd`.
+  </ResponseField>
+
+  <ResponseField name="billing_period" type="object">
+    Current billing cycle start and end dates.
+  </ResponseField>
+</Expandable>
+
+<Warning>
+  When `credits_remaining_usd` reaches zero and auto-recharge is disabled, API requests will return `402 Payment Required` until credits are replenished.
+</Warning>
+
+---
+
+### Get rate limits
+
+Returns the current rate limits and model access restrictions for the project. Limits vary by subscription plan and can be customized for enterprise accounts.
+
+<CodeGroup>
+
+```bash cURL
+curl https://api.continuum-ai.com/v1/billing/limits \
+  -H "Authorization: Bearer sk-proj-..."
+```
+
+```python Python
+response = requests.get(
+    "https://api.continuum-ai.com/v1/billing/limits",
+    headers={"Authorization": "Bearer sk-proj-..."}
+)
+
+limits = response.json()
+```
+
+</CodeGroup>
+
+<Expandable title="Response — 200 OK">
+  ```json
+  {
+    "data": {
+      "rate_limits": {
+        "requests_per_minute": 500,
+        "requests_per_day": 50000,
+        "tokens_per_minute": 200000,
+        "tokens_per_day": 10000000
+      },
+      "allowed_models": [
+        "gpt-4o",
+        "gpt-4o-mini",
+        "gpt-3.5-turbo",
+        "text-embedding-3-small",
+        "text-embedding-3-large"
+      ],
+      "max_context_tokens": 128000,
+      "max_output_tokens": 16384,
+      "batch_limits": {
+        "max_requests_per_batch": 50000,
+        "max_concurrent_batches": 5
+      },
+      "fine_tuning_limits": {
+        "max_concurrent_jobs": 3,
+        "max_training_file_size_bytes": 536870912
+      },
+      "plan": "pro"
+    },
+    "status": 200
+  }
+  ```
+</Expandable>
+
+<Expandable title="Response fields">
+  <ResponseField name="rate_limits" type="object">
+    Request and token rate limits for the current plan.
+  </ResponseField>
+
+  <ResponseField name="allowed_models" type="array">
+    List of model identifiers the project is authorized to use. Fine-tuned models derived from allowed base models are also permitted.
+  </ResponseField>
+
+  <ResponseField name="max_context_tokens" type="integer">
+    Maximum number of tokens (input + output) per request.
+  </ResponseField>
+
+  <ResponseField name="batch_limits" type="object">
+    Constraints for batch processing jobs.
+  </ResponseField>
+
+  <ResponseField name="fine_tuning_limits" type="object">
+    Constraints for fine-tuning jobs.
+  </ResponseField>
+</Expandable>
+
+---
+
+## Plan comparison
+
+| Feature | Free | Starter | Pro | Enterprise |
+|---------|------|---------|-----|------------|
+| Requests per minute | 20 | 100 | 500 | Custom |
+| Tokens per minute | 10,000 | 60,000 | 200,000 | Custom |
+| Models | gpt-4o-mini, gpt-3.5-turbo | All standard | All standard | All + custom |
+| Fine-tuning | -- | 1 concurrent job | 3 concurrent jobs | Unlimited |
+| Batch processing | -- | 10K req/batch | 50K req/batch | Custom |
+| Vector stores | 1 GB | 10 GB | 100 GB | Custom |
+| Support | Community | Email | Priority | Dedicated |
+
+---
+
+## Error codes
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | `UNAUTHORIZED` | Invalid or missing API key |
+| 402 | `PAYMENT_REQUIRED` | Credit balance is zero. Add credits to continue |
+| 429 | `RATE_LIMITED` | Request or token rate limit exceeded. Check `Retry-After` header |
+| 500 | `INTERNAL_ERROR` | An unexpected error occurred |

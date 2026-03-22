@@ -1,0 +1,321 @@
+---
+title: "Models"
+description: "Explore all models available through the Continuum AI API"
+icon: "robot"
+---
+
+# Models
+
+Continuum AI provides access to a diverse catalog of models optimized for different tasks. Each model is tuned for specific workloads -- from fast, cost-efficient chat to deep reasoning, high-fidelity image generation, and real-time audio processing.
+
+<Info>
+  All models are accessed through the same base URL and authentication method. Specify the model name in your request body to route to the right model.
+</Info>
+
+## List models
+
+Retrieve the list of all models available to your API key.
+
+### GET /v1/models
+
+```bash
+curl https://api.continuum-ai.com/v1/models \
+  -H "Authorization: Bearer sk-proj-your-api-key"
+```
+
+```json Response
+{
+  "data": [
+    {
+      "id": "continuum-ultra",
+      "object": "model",
+      "created": 1709251200,
+      "owned_by": "continuum-ai",
+      "capabilities": ["chat", "function_calling", "vision"],
+      "context_window": 200000,
+      "max_output_tokens": 16384
+    },
+    {
+      "id": "continuum-turbo",
+      "object": "model",
+      "created": 1709251200,
+      "owned_by": "continuum-ai",
+      "capabilities": ["chat", "function_calling"],
+      "context_window": 128000,
+      "max_output_tokens": 8192
+    }
+  ],
+  "status": 200
+}
+```
+
+### GET /v1/models/\{model\}
+
+Retrieve details for a specific model.
+
+```bash
+curl https://api.continuum-ai.com/v1/models/continuum-ultra \
+  -H "Authorization: Bearer sk-proj-your-api-key"
+```
+
+```json Response
+{
+  "data": {
+    "id": "continuum-ultra",
+    "object": "model",
+    "created": 1709251200,
+    "owned_by": "continuum-ai",
+    "capabilities": ["chat", "function_calling", "vision", "structured_output"],
+    "context_window": 200000,
+    "max_output_tokens": 16384,
+    "training_cutoff": "2025-12-01",
+    "pricing": {
+      "input_per_1m_tokens": 10.00,
+      "output_per_1m_tokens": 30.00
+    }
+  },
+  "status": 200
+}
+```
+
+---
+
+## Model catalog
+
+<Tabs>
+  <Tab title="Chat">
+    Chat models generate conversational responses, support function calling, structured output, and multi-turn dialogue.
+
+    | Model | Context window | Max output | Capabilities | Description |
+    |-------|---------------:|-----------:|--------------|-------------|
+    | `continuum-ultra` | 200K | 16,384 | Chat, Vision, Function calling, Structured output | Flagship model. Best overall quality for complex tasks, analysis, and creative work. |
+    | `continuum-ultra-mini` | 200K | 16,384 | Chat, Vision, Function calling, Structured output | Compact version of Ultra. Near-flagship quality at significantly lower cost. |
+    | `continuum-turbo` | 128K | 8,192 | Chat, Function calling, Structured output | High-speed model optimized for low latency. Ideal for real-time applications. |
+    | `continuum-pro` | 128K | 8,192 | Chat, Function calling, Structured output | Balanced performance and cost. Great default choice for most production workloads. |
+    | `continuum-lite` | 32K | 4,096 | Chat, Function calling | Lightweight and fast. Best for simple tasks, classification, and high-volume processing. |
+    | `continuum-reason` | 128K | 32,768 | Chat, Reasoning, Function calling, Structured output | Advanced reasoning model with extended thinking. Excels at math, logic, and multi-step problems. |
+    | `continuum-reason-mini` | 128K | 16,384 | Chat, Reasoning, Function calling | Compact reasoning model. Good reasoning capability at lower cost and latency. |
+
+    <Tip>
+      **Which chat model should I use?** Start with `continuum-pro` for general use. Upgrade to `continuum-ultra` for tasks requiring the highest quality. Use `continuum-reason` for math, coding, and logical reasoning tasks. Use `continuum-lite` for simple, high-throughput workloads.
+    </Tip>
+
+    ### Pricing
+
+    | Model | Input (per 1M tokens) | Output (per 1M tokens) |
+    |-------|----------------------:|-----------------------:|
+    | `continuum-ultra` | $10.00 | $30.00 |
+    | `continuum-ultra-mini` | $2.50 | $10.00 |
+    | `continuum-turbo` | $1.00 | $3.00 |
+    | `continuum-pro` | $2.00 | $8.00 |
+    | `continuum-lite` | $0.10 | $0.30 |
+    | `continuum-reason` | $8.00 | $32.00 |
+    | `continuum-reason-mini` | $1.50 | $6.00 |
+  </Tab>
+
+  <Tab title="Embeddings">
+    Embedding models convert text into dense vector representations for search, clustering, and classification.
+
+    | Model | Dimensions | Max input | Description |
+    |-------|----------:|---------:|-------------|
+    | `continuum-embed-3` | 1,536 | 8,191 tokens | Latest generation embedding model. Best balance of quality and cost. |
+    | `continuum-embed-3-large` | 3,072 | 8,191 tokens | High-dimensional embeddings for maximum retrieval accuracy. |
+    | `continuum-embed-2` | 1,536 | 8,191 tokens | Previous generation. Still supported for backward compatibility. |
+
+    <Tip>
+      **Which embedding model should I use?** Use `continuum-embed-3` for most use cases. Use `continuum-embed-3-large` when retrieval accuracy is critical and you can afford the larger vector size.
+    </Tip>
+
+    ### Pricing
+
+    | Model | Price (per 1M tokens) |
+    |-------|----------------------:|
+    | `continuum-embed-3` | $0.02 |
+    | `continuum-embed-3-large` | $0.13 |
+    | `continuum-embed-2` | $0.10 |
+
+    ### Example
+
+    ```bash
+    curl https://api.continuum-ai.com/v1/embeddings \
+      -H "Authorization: Bearer sk-proj-your-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-embed-3",
+        "input": "Continuum AI makes building with LLMs easy."
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Images">
+    Image models generate and understand visual content from text descriptions.
+
+    | Model | Max resolution | Capabilities | Description |
+    |-------|---------------|--------------|-------------|
+    | `continuum-vision-hd` | 2048x2048 | Generation, Editing, Variations | High-definition image generation with photorealistic quality and fine detail. |
+    | `continuum-vision` | 1024x1024 | Generation, Editing, Variations | Standard image generation. Fast and cost-effective for most use cases. |
+
+    ### Pricing
+
+    | Model | Resolution | Price per image |
+    |-------|-----------|----------------:|
+    | `continuum-vision-hd` | 1024x1024 | $0.040 |
+    | `continuum-vision-hd` | 2048x2048 | $0.080 |
+    | `continuum-vision` | 1024x1024 | $0.020 |
+
+    ### Example
+
+    ```bash
+    curl https://api.continuum-ai.com/v1/images/generations \
+      -H "Authorization: Bearer sk-proj-your-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-vision-hd",
+        "prompt": "A futuristic city skyline at sunset, neon green accents",
+        "n": 1,
+        "size": "1024x1024"
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Audio">
+    Audio models handle speech-to-text transcription, text-to-speech generation, and audio translation.
+
+    | Model | Type | Languages | Description |
+    |-------|------|----------:|-------------|
+    | `continuum-listen` | Speech-to-text | 50+ | Transcribe audio into text. Supports multiple languages and automatic language detection. |
+    | `continuum-voice` | Text-to-speech | 30+ | Generate natural-sounding speech from text. Multiple voices available. |
+    | `continuum-voice-hd` | Text-to-speech | 30+ | High-definition voice synthesis with enhanced prosody and emotional range. |
+
+    ### Pricing
+
+    | Model | Price |
+    |-------|------:|
+    | `continuum-listen` | $0.006 / minute |
+    | `continuum-voice` | $15.00 / 1M characters |
+    | `continuum-voice-hd` | $30.00 / 1M characters |
+
+    ### Transcription example
+
+    ```bash
+    curl https://api.continuum-ai.com/v1/audio/transcriptions \
+      -H "Authorization: Bearer sk-proj-your-api-key" \
+      -F "model=continuum-listen" \
+      -F "file=@recording.mp3"
+    ```
+
+    ### Text-to-speech example
+
+    ```bash
+    curl https://api.continuum-ai.com/v1/audio/speech \
+      -H "Authorization: Bearer sk-proj-your-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-voice-hd",
+        "input": "Welcome to Continuum AI.",
+        "voice": "nova"
+      }' \
+      --output speech.mp3
+    ```
+  </Tab>
+
+  <Tab title="Moderation">
+    Moderation models classify content against safety policies without generating new content.
+
+    | Model | Categories | Description |
+    |-------|----------:|-------------|
+    | `continuum-shield` | 11 | Latest moderation model. Classifies text across harassment, violence, sexual content, self-harm, and more. |
+    | `continuum-shield-stable` | 11 | Stable release with fixed behavior. Use when you need deterministic classification results over time. |
+
+    ### Pricing
+
+    | Model | Price |
+    |-------|------:|
+    | `continuum-shield` | Free |
+    | `continuum-shield-stable` | Free |
+
+    Moderation endpoints are free to use and do not count against your rate limits.
+
+    ### Example
+
+    ```bash
+    curl https://api.continuum-ai.com/v1/moderations \
+      -H "Authorization: Bearer sk-proj-your-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "continuum-shield",
+        "input": "This is a test message."
+      }'
+    ```
+
+    ```json Response
+    {
+      "data": {
+        "id": "modr-abc123",
+        "model": "continuum-shield",
+        "results": [
+          {
+            "flagged": false,
+            "categories": {
+              "harassment": false,
+              "violence": false,
+              "sexual": false,
+              "self-harm": false,
+              "hate": false
+            },
+            "category_scores": {
+              "harassment": 0.00012,
+              "violence": 0.00003,
+              "sexual": 0.00001,
+              "self-harm": 0.00000,
+              "hate": 0.00002
+            }
+          }
+        ]
+      },
+      "status": 200
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Model versioning
+
+Continuum AI models are versioned with dated snapshots. When you specify a model name like `continuum-ultra`, you are automatically routed to the latest stable version.
+
+To pin a specific version, append the date suffix:
+
+```
+continuum-ultra-2026-03-15
+```
+
+<Note>
+  Model versions are supported for at least 6 months after a newer version is released. You will receive deprecation notices via email and the API response headers at least 60 days before a version is retired.
+</Note>
+
+## Context window tips
+
+<AccordionGroup>
+  <Accordion title="What counts toward the context window?" icon="ruler">
+    The context window includes everything in your request: the system prompt, all messages in the conversation history, any tool definitions, and the model's response. Plan your prompts accordingly.
+  </Accordion>
+  <Accordion title="What happens if I exceed the context window?" icon="triangle-exclamation">
+    The API returns a `400 Bad Request` error with code `INVALID_REQUEST_BODY` and a message indicating the input exceeds the model's maximum context length. Truncate your input or switch to a model with a larger context window.
+  </Accordion>
+  <Accordion title="How do I estimate token count?" icon="calculator">
+    As a rough guide, 1 token is approximately 4 characters or 0.75 words in English. Use the tokenizer endpoint or client library utilities to get exact counts before sending requests.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Completions" icon="message-bot" href="/api-reference/endpoint/chat-completions">
+    Start generating responses with your chosen model.
+  </Card>
+  <Card title="Embeddings" icon="brain" href="/api-reference/endpoint/embeddings">
+    Build search and retrieval systems with vector embeddings.
+  </Card>
+</CardGroup>

@@ -1,0 +1,614 @@
+---
+title: "Responses"
+description: "The modern unified endpoint for generating AI responses"
+icon: "wand-magic-sparkles"
+---
+
+<Tip>
+  The Responses API is the **recommended** way to interact with Continuum AI models. It unifies text generation, tool use, and multimodal input into a single, streamlined interface with a simpler request format than Chat Completions.
+</Tip>
+
+## Create a response
+
+Generate a model response from a text or multimodal input. Supports tool calling, structured output, and streaming.
+
+```
+POST https://api.continuum-ai.com/v1/responses
+```
+
+---
+
+## Authentication
+
+Include your API key in the `Authorization` header.
+
+```
+Authorization: Bearer sk-proj-...
+```
+
+---
+
+## Request body
+
+<ParamField body="model" type="string" required>
+  The model to use for generating the response.
+
+  Examples: `continuum-4o`, `continuum-4o-mini`, `continuum-4-turbo`
+</ParamField>
+
+<ParamField body="input" type="string | array" required>
+  The input to the model. Can be a simple string for text-only requests, or an array of input items for multi-turn and multimodal interactions.
+
+  <Expandable title="Input item types">
+    When `input` is an array, each item is a message object:
+
+    <ParamField body="role" type="string" required>
+      The role of the message author. One of `system`, `user`, `assistant`, or `tool`.
+    </ParamField>
+
+    <ParamField body="content" type="string | array" required>
+      The content of the message. A string for text, or an array of content parts for multimodal input.
+
+      <Expandable title="Content part types">
+        <ParamField body="type" type="string" required>
+          The content type: `input_text`, `input_image`, or `input_file`.
+        </ParamField>
+        <ParamField body="text" type="string">
+          The text content. Required when `type` is `input_text`.
+        </ParamField>
+        <ParamField body="image_url" type="string">
+          A URL or base64 data URI. Required when `type` is `input_image`.
+        </ParamField>
+        <ParamField body="detail" type="string" default="auto">
+          Image detail level: `low`, `high`, or `auto`.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="instructions" type="string">
+  System-level instructions that guide the model's behavior. This replaces the need for a separate system message in the input array.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  A list of tools the model may invoke during response generation.
+
+  <Expandable title="Tool definition">
+    <ParamField body="type" type="string" required>
+      The type of tool. Currently `function` is supported.
+    </ParamField>
+    <ParamField body="name" type="string" required>
+      The name of the function.
+    </ParamField>
+    <ParamField body="description" type="string">
+      A description of the function that helps the model decide when to call it.
+    </ParamField>
+    <ParamField body="parameters" type="object">
+      A JSON Schema object describing the function's parameters.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="response_format" type="object">
+  Specifies the output format. Use `{"type": "json_object"}` for JSON mode or `{"type": "json_schema", "json_schema": {...}}` for structured outputs with a strict schema.
+</ParamField>
+
+<ParamField body="temperature" type="number" default={1}>
+  Sampling temperature between `0` and `2`.
+</ParamField>
+
+<ParamField body="max_tokens" type="integer">
+  Maximum number of output tokens to generate.
+</ParamField>
+
+<ParamField body="stream" type="boolean" default={false}>
+  When `true`, the response is streamed back via server-sent events.
+</ParamField>
+
+<ParamField body="user" type="string">
+  A unique identifier for the end-user for monitoring and abuse detection.
+</ParamField>
+
+---
+
+## Simple text example
+
+The simplest usage -- pass a string as `input` and get a response.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "input": "What are the three laws of thermodynamics?"
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.responses.create(
+    model="continuum-4o",
+    input="What are the three laws of thermodynamics?"
+)
+
+print(response.output_text)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.responses.create({
+  model: "continuum-4o",
+  input: "What are the three laws of thermodynamics?",
+});
+
+console.log(response.output_text);
+```
+
+</CodeGroup>
+
+---
+
+## With instructions
+
+Use `instructions` to set system-level behavior without adding a system message to the input array.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "instructions": "You are a concise technical writer. Respond in bullet points.",
+    "input": "Explain microservices architecture.",
+    "temperature": 0.5
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.responses.create(
+    model="continuum-4o",
+    instructions="You are a concise technical writer. Respond in bullet points.",
+    input="Explain microservices architecture.",
+    temperature=0.5
+)
+
+print(response.output_text)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.responses.create({
+  model: "continuum-4o",
+  instructions: "You are a concise technical writer. Respond in bullet points.",
+  input: "Explain microservices architecture.",
+  temperature: 0.5,
+});
+
+console.log(response.output_text);
+```
+
+</CodeGroup>
+
+---
+
+## Multimodal (vision)
+
+Analyze images by passing content parts in the input array.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "What breed of dog is in this photo?"
+          },
+          {
+            "type": "input_image",
+            "image_url": "https://example.com/golden-retriever.jpg",
+            "detail": "high"
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.responses.create(
+    model="continuum-4o",
+    input=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "What breed of dog is in this photo?"},
+                {
+                    "type": "input_image",
+                    "image_url": "https://example.com/golden-retriever.jpg",
+                    "detail": "high"
+                }
+            ]
+        }
+    ]
+)
+
+print(response.output_text)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.responses.create({
+  model: "continuum-4o",
+  input: [
+    {
+      role: "user",
+      content: [
+        { type: "input_text", text: "What breed of dog is in this photo?" },
+        {
+          type: "input_image",
+          image_url: "https://example.com/golden-retriever.jpg",
+          detail: "high",
+        },
+      ],
+    },
+  ],
+});
+
+console.log(response.output_text);
+```
+
+</CodeGroup>
+
+---
+
+## Tool calling
+
+Define tools that the model can invoke. The response includes tool call output items that you can process and feed back.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "input": "What is the stock price of AAPL?",
+    "tools": [
+      {
+        "type": "function",
+        "name": "get_stock_price",
+        "description": "Retrieves the current stock price for a given ticker symbol.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "ticker": {
+              "type": "string",
+              "description": "The stock ticker symbol, e.g. AAPL"
+            }
+          },
+          "required": ["ticker"]
+        }
+      }
+    ]
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+response = client.responses.create(
+    model="continuum-4o",
+    input="What is the stock price of AAPL?",
+    tools=[
+        {
+            "type": "function",
+            "name": "get_stock_price",
+            "description": "Retrieves the current stock price for a given ticker symbol.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol, e.g. AAPL"
+                    }
+                },
+                "required": ["ticker"]
+            }
+        }
+    ]
+)
+
+# Process tool calls from the output
+for item in response.output:
+    if item.type == "function_call":
+        print(f"Tool: {item.name}, Args: {item.arguments}")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.responses.create({
+  model: "continuum-4o",
+  input: "What is the stock price of AAPL?",
+  tools: [
+    {
+      type: "function",
+      name: "get_stock_price",
+      description: "Retrieves the current stock price for a given ticker symbol.",
+      parameters: {
+        type: "object",
+        properties: {
+          ticker: {
+            type: "string",
+            description: "The stock ticker symbol, e.g. AAPL",
+          },
+        },
+        required: ["ticker"],
+      },
+    },
+  ],
+});
+
+// Process tool calls from the output
+for (const item of response.output) {
+  if (item.type === "function_call") {
+    console.log(`Tool: ${item.name}, Args: ${item.arguments}`);
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+## Streaming
+
+Stream the response as it is generated using server-sent events.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.continuum-ai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-proj-..." \
+  -d '{
+    "model": "continuum-4o",
+    "input": "Tell me a short story about a robot learning to paint.",
+    "stream": true
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-proj-...",
+    base_url="https://api.continuum-ai.com/v1"
+)
+
+stream = client.responses.create(
+    model="continuum-4o",
+    input="Tell me a short story about a robot learning to paint.",
+    stream=True
+)
+
+for event in stream:
+    if event.type == "response.output_text.delta":
+        print(event.delta, end="")
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-proj-...",
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const stream = await client.responses.create({
+  model: "continuum-4o",
+  input: "Tell me a short story about a robot learning to paint.",
+  stream: true,
+});
+
+for await (const event of stream) {
+  if (event.type === "response.output_text.delta") {
+    process.stdout.write(event.delta);
+  }
+}
+```
+
+</CodeGroup>
+
+**Streaming event types:**
+
+| Event | Description |
+|-------|-------------|
+| `response.created` | The response object has been created. |
+| `response.in_progress` | Generation has started. |
+| `response.output_item.added` | A new output item (text or tool call) was added. |
+| `response.output_text.delta` | A text content delta. Contains `delta` with the incremental text. |
+| `response.output_text.done` | Text generation for an output item is complete. |
+| `response.output_item.done` | An output item is fully generated. |
+| `response.completed` | The full response is complete. Contains the final response object. |
+
+---
+
+## Response body
+
+<ResponseField name="id" type="string">
+  A unique identifier for the response, e.g. `resp_abc123`.
+</ResponseField>
+
+<ResponseField name="object" type="string">
+  Always `response`.
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  The model used to generate the response.
+</ResponseField>
+
+<ResponseField name="output" type="array">
+  The list of output items generated by the model. Each item has a `type` field.
+
+  <Expandable title="Output item types">
+    <ResponseField name="type" type="string">
+      The type of output item. One of `message` or `function_call`.
+    </ResponseField>
+
+    <ResponseField name="role" type="string">
+      Present on `message` items. Always `assistant`.
+    </ResponseField>
+
+    <ResponseField name="content" type="array">
+      Present on `message` items. An array of content parts.
+      <Expandable title="Content part">
+        <ResponseField name="type" type="string">
+          Always `output_text` for text content.
+        </ResponseField>
+        <ResponseField name="text" type="string">
+          The generated text.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      Present on `function_call` items. The function name.
+    </ResponseField>
+
+    <ResponseField name="arguments" type="string">
+      Present on `function_call` items. The JSON-encoded arguments.
+    </ResponseField>
+
+    <ResponseField name="call_id" type="string">
+      Present on `function_call` items. The unique ID for this tool call.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+  Token usage statistics.
+  <Expandable title="Usage properties">
+    <ResponseField name="input_tokens" type="integer">
+      Number of input tokens consumed.
+    </ResponseField>
+    <ResponseField name="output_tokens" type="integer">
+      Number of output tokens generated.
+    </ResponseField>
+    <ResponseField name="total_tokens" type="integer">
+      Total tokens used.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp of when the response was created.
+</ResponseField>
+
+**Example response:**
+
+```json
+{
+  "id": "resp_abc123",
+  "object": "response",
+  "model": "continuum-4o",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "The three laws of thermodynamics are:\n\n1. **First Law (Conservation of Energy):** Energy cannot be created or destroyed, only transformed from one form to another.\n\n2. **Second Law (Entropy):** In any energy transfer, the total entropy of an isolated system always increases over time.\n\n3. **Third Law (Absolute Zero):** As temperature approaches absolute zero, the entropy of a perfect crystal approaches zero."
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 15,
+    "output_tokens": 98,
+    "total_tokens": 113
+  },
+  "created_at": "2026-03-22T10:30:00Z"
+}
+```
+
+---
+
+## Comparing Responses vs Chat Completions
+
+<Note>
+  Both endpoints are fully supported. Choose the one that fits your use case best.
+</Note>
+
+| Feature | Responses API | Chat Completions API |
+|---------|--------------|---------------------|
+| Input format | String or message array | Message array only |
+| System instructions | Dedicated `instructions` field | System message in array |
+| Output format | Structured `output` array | `choices[].message` |
+| Tool call output | Inline in `output` array | Separate `tool_calls` field |
+| Streaming events | Granular typed events | SSE with delta chunks |
+| Recommended for | New projects, modern workflows | Migration from OpenAI, legacy code |

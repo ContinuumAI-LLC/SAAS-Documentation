@@ -1,0 +1,270 @@
+---
+title: "Authentication"
+description: "Secure your API requests with Continuum AI API keys"
+icon: "shield-halved"
+---
+
+# Authentication
+
+Every request to the Continuum AI API must include a valid API key. Keys are scoped to a specific project within your organization, giving you fine-grained control over access and usage tracking.
+
+## Get your API key
+
+<Steps>
+  <Step title="Create an account">
+    Sign up at [dashboard.continuum-ai.com](https://dashboard.continuum-ai.com) using your email or SSO provider. Your account is created automatically on first login.
+  </Step>
+  <Step title="Create or join an organization">
+    Organizations are the top-level container for all your projects and team members. Create a new organization from the dashboard or accept an invitation to join an existing one.
+  </Step>
+  <Step title="Create a project">
+    Projects isolate API keys, usage tracking, and billing. Navigate to **Projects** and click **Create Project**. Give it a name and an optional description.
+  </Step>
+  <Step title="Generate an API key">
+    Inside your project, go to **API Keys** and click **Create Key**. Your key is displayed once -- copy it immediately and store it securely.
+
+    ```
+    sk-proj-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+    ```
+
+    <Warning>
+      Your API key is shown only once at creation time. If you lose it, you will need to rotate the key and generate a new one. There is no way to retrieve an existing key.
+    </Warning>
+  </Step>
+</Steps>
+
+## Authentication methods
+
+Continuum AI supports two methods for passing your API key. Both are equally valid -- choose whichever fits your workflow.
+
+<Tabs>
+  <Tab title="Bearer token (recommended)">
+    Pass your API key in the standard `Authorization` header with the `Bearer` scheme:
+
+    ```bash
+    Authorization: Bearer sk-proj-your-api-key
+    ```
+
+    This is the recommended approach and is compatible with OpenAI client libraries.
+  </Tab>
+  <Tab title="X-API-Key header">
+    Alternatively, pass your key in a custom header:
+
+    ```bash
+    X-API-Key: sk-proj-your-api-key
+    ```
+
+    This is useful when the `Authorization` header is reserved by a proxy or gateway in front of your application.
+  </Tab>
+</Tabs>
+
+## Code examples
+
+<CodeGroup>
+
+```bash cURL
+curl https://api.continuum-ai.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "continuum-ultra",
+    "messages": [
+      {"role": "user", "content": "Hello, Continuum!"}
+    ]
+  }'
+```
+
+```python Python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["CONTINUUM_API_KEY"],
+    base_url="https://api.continuum-ai.com/v1",
+)
+
+response = client.chat.completions.create(
+    model="continuum-ultra",
+    messages=[
+        {"role": "user", "content": "Hello, Continuum!"}
+    ],
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.CONTINUUM_API_KEY,
+  baseURL: "https://api.continuum-ai.com/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "continuum-ultra",
+  messages: [
+    { role: "user", content: "Hello, Continuum!" },
+  ],
+});
+
+console.log(response.choices[0].message.content);
+```
+
+```go Go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	openai "github.com/sashabaranov/go-openai"
+)
+
+func main() {
+	config := openai.DefaultConfig(os.Getenv("CONTINUUM_API_KEY"))
+	config.BaseURL = "https://api.continuum-ai.com/v1"
+	client := openai.NewClientWithConfig(config)
+
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: "continuum-ultra",
+			Messages: []openai.ChatCompletionMessage{
+				{Role: openai.ChatMessageRoleUser, Content: "Hello, Continuum!"},
+			},
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(resp.Choices[0].Message.Content)
+}
+```
+
+</CodeGroup>
+
+## Environment variables
+
+Store your API key in an environment variable to keep it out of your source code.
+
+<Tabs>
+  <Tab title="macOS / Linux">
+    ```bash
+    export CONTINUUM_API_KEY="sk-proj-your-api-key"
+    ```
+
+    Add this line to your `~/.bashrc`, `~/.zshrc`, or `~/.profile` to persist it across sessions.
+  </Tab>
+  <Tab title="Windows">
+    ```powershell
+    setx CONTINUUM_API_KEY "sk-proj-your-api-key"
+    ```
+
+    Restart your terminal after running this command.
+  </Tab>
+  <Tab title=".env file">
+    Create a `.env` file in your project root:
+
+    ```env
+    CONTINUUM_API_KEY=sk-proj-your-api-key
+    ```
+
+    Load it with a library like `python-dotenv` (Python) or `dotenv` (Node.js).
+
+    <Warning>
+      Add `.env` to your `.gitignore` file. Never commit API keys to version control.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Security best practices
+
+<AccordionGroup>
+  <Accordion title="Never expose keys in client-side code" icon="eye-slash">
+    API keys must only be used in server-side code. Never embed them in JavaScript bundles, mobile apps, or any code that runs in the browser. Use a backend proxy to relay requests to the Continuum API.
+  </Accordion>
+  <Accordion title="Use environment variables" icon="lock">
+    Store keys in environment variables or a secrets manager (such as AWS Secrets Manager, HashiCorp Vault, or Doppler). Avoid hardcoding keys in source files, configuration files, or CI/CD pipelines.
+  </Accordion>
+  <Accordion title="Rotate keys regularly" icon="rotate">
+    Rotate your API keys periodically and immediately if you suspect a key has been compromised. Use the **Rotate Key** option in your project settings. The old key is invalidated instantly.
+  </Accordion>
+  <Accordion title="Use separate keys per environment" icon="layer-group">
+    Create separate projects (and therefore separate keys) for development, staging, and production. This limits the blast radius if a key is leaked and makes it easier to track usage per environment.
+  </Accordion>
+  <Accordion title="Monitor usage for anomalies" icon="chart-line">
+    Review your project's usage dashboard regularly. Unexpected spikes in token consumption or requests from unknown IPs may indicate a compromised key.
+  </Accordion>
+</AccordionGroup>
+
+## Error responses
+
+When authentication fails, the API returns one of the following errors:
+
+<Tabs>
+  <Tab title="401 Unauthorized">
+    Returned when no API key is provided, or the key is invalid or expired.
+
+    ```json
+    {
+      "error": {
+        "message": "Invalid API key provided.",
+        "code": "UNAUTHORIZED"
+      },
+      "status": 401
+    }
+    ```
+
+    **Common causes:**
+    - Missing `Authorization` or `X-API-Key` header
+    - Typo in the API key
+    - Key was rotated and the old key is no longer valid
+    - Key was deleted from the dashboard
+  </Tab>
+  <Tab title="403 Forbidden">
+    Returned when the API key is valid but does not have permission for the requested resource or action.
+
+    ```json
+    {
+      "error": {
+        "message": "This API key does not have access to the requested resource.",
+        "code": "FORBIDDEN"
+      },
+      "status": 403
+    }
+    ```
+
+    **Common causes:**
+    - The project associated with the key has been paused or deactivated
+    - The model you requested is not available on your plan
+    - Organization-level restrictions apply
+  </Tab>
+</Tabs>
+
+## Key format
+
+Continuum AI API keys follow a consistent format for easy identification:
+
+| Component | Value | Description |
+|-----------|-------|-------------|
+| Prefix    | `sk-proj-` | Identifies the key as a Continuum project key |
+| Body      | 40 characters | Base64url-encoded random bytes |
+| Total     | ~48 characters | Full key length |
+
+<Info>
+  Continuum API keys are compatible with tools that expect OpenAI-format keys. Any client library that supports custom base URLs will work with Continuum AI.
+</Info>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Explore models" icon="robot" href="/api-reference/models">
+    See which models are available and choose the right one for your task.
+  </Card>
+  <Card title="Error handling" icon="triangle-exclamation" href="/api-reference/errors">
+    Learn how to handle errors and implement retry logic.
+  </Card>
+</CardGroup>
