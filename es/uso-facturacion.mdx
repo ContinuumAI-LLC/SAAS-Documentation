@@ -43,15 +43,8 @@ curl "https://api.continuumai.technology/v1/usage?start_date=2026-03-01&end_date
 ```
 
 ```python Python
-from openai import OpenAI
 import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
-
-# Consulta directa al endpoint de uso
 headers = {"Authorization": "Bearer sk-proj-tu-api-key"}
 params = {
     "start_date": "2026-03-01",

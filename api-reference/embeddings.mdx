@@ -73,37 +73,41 @@ curl -X POST https://api.continuumai.technology/v1/embeddings \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/embeddings",
+    headers={
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-embed-3",
+        "input": "Continuum AI makes building intelligent applications effortless.",
+    },
 )
 
-response = client.embeddings.create(
-    model="continuum-embed-3",
-    input="Continuum AI makes building intelligent applications effortless."
-)
-
-embedding = response.data[0].embedding
+data = response.json()
+embedding = data["data"][0]["embedding"]
 print(f"Dimensions: {len(embedding)}")
 print(f"First 5 values: {embedding[:5]}")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/embeddings", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-embed-3",
+    input: "Continuum AI makes building intelligent applications effortless.",
+  }),
 });
 
-const response = await client.embeddings.create({
-  model: "continuum-embed-3",
-  input: "Continuum AI makes building intelligent applications effortless.",
-});
-
-const embedding = response.data[0].embedding;
+const data = await response.json();
+const embedding = data.data[0].embedding;
 console.log(`Dimensions: ${embedding.length}`);
 console.log(`First 5 values: ${embedding.slice(0, 5)}`);
 ```
@@ -157,12 +161,7 @@ curl -X POST https://api.continuumai.technology/v1/embeddings \
 ```
 
 ```python Python
-from openai import OpenAI
-
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
-)
+import requests
 
 texts = [
     "How do I reset my password?",
@@ -171,23 +170,24 @@ texts = [
     "How to configure SSO?"
 ]
 
-response = client.embeddings.create(
-    model="continuum-embed-3",
-    input=texts
+response = requests.post(
+    "https://api.continuumai.technology/v1/embeddings",
+    headers={
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-embed-3",
+        "input": texts,
+    },
 )
 
-for i, item in enumerate(response.data):
-    print(f"Text {i}: {len(item.embedding)} dimensions")
+data = response.json()
+for i, item in enumerate(data["data"]):
+    print(f"Text {i}: {len(item['embedding'])} dimensions")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
-});
-
 const texts = [
   "How do I reset my password?",
   "What are your pricing plans?",
@@ -195,12 +195,20 @@ const texts = [
   "How to configure SSO?",
 ];
 
-const response = await client.embeddings.create({
-  model: "continuum-embed-3",
-  input: texts,
+const response = await fetch("https://api.continuumai.technology/v1/embeddings", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-embed-3",
+    input: texts,
+  }),
 });
 
-response.data.forEach((item, i) => {
+const data = await response.json();
+data.data.forEach((item, i) => {
   console.log(`Text ${i}: ${item.embedding.length} dimensions`);
 });
 ```
@@ -216,46 +224,50 @@ Use the `dimensions` parameter with `continuum-embed-3` or `continuum-embed-3-la
 <CodeGroup>
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
-)
+headers = {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+}
 
 # Full dimensions (1536)
-full = client.embeddings.create(
-    model="continuum-embed-3",
-    input="Hello world"
-)
+full = requests.post(
+    "https://api.continuumai.technology/v1/embeddings",
+    headers=headers,
+    json={"model": "continuum-embed-3", "input": "Hello world"},
+).json()
 
 # Reduced dimensions (256)
-reduced = client.embeddings.create(
-    model="continuum-embed-3",
-    input="Hello world",
-    dimensions=256
-)
+reduced = requests.post(
+    "https://api.continuumai.technology/v1/embeddings",
+    headers=headers,
+    json={"model": "continuum-embed-3", "input": "Hello world", "dimensions": 256},
+).json()
 
-print(f"Full: {len(full.data[0].embedding)} dims")      # 1536
-print(f"Reduced: {len(reduced.data[0].embedding)} dims") # 256
+print(f"Full: {len(full['data'][0]['embedding'])} dims")      # 1536
+print(f"Reduced: {len(reduced['data'][0]['embedding'])} dims") # 256
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
-});
+const headers = {
+  "Authorization": "Bearer sk-proj-...",
+  "Content-Type": "application/json",
+};
 
 // Reduced to 256 dimensions
-const response = await client.embeddings.create({
-  model: "continuum-embed-3",
-  input: "Hello world",
-  dimensions: 256,
+const response = await fetch("https://api.continuumai.technology/v1/embeddings", {
+  method: "POST",
+  headers,
+  body: JSON.stringify({
+    model: "continuum-embed-3",
+    input: "Hello world",
+    dimensions: 256,
+  }),
 });
 
-console.log(`Dimensions: ${response.data[0].embedding.length}`); // 256
+const data = await response.json();
+console.log(`Dimensions: ${data.data[0].embedding.length}`); // 256
 ```
 
 </CodeGroup>
@@ -357,12 +369,12 @@ A complete example showing how to use embeddings for semantic search with cosine
 
 ```python Python
 import numpy as np
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
-)
+headers = {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+}
 
 # Your knowledge base
 documents = [
@@ -374,19 +386,21 @@ documents = [
 ]
 
 # Embed all documents
-doc_response = client.embeddings.create(
-    model="continuum-embed-3",
-    input=documents
-)
-doc_embeddings = [d.embedding for d in doc_response.data]
+doc_response = requests.post(
+    "https://api.continuumai.technology/v1/embeddings",
+    headers=headers,
+    json={"model": "continuum-embed-3", "input": documents},
+).json()
+doc_embeddings = [d["embedding"] for d in doc_response["data"]]
 
 # Embed the query
 query = "How do I manage my API keys?"
-query_response = client.embeddings.create(
-    model="continuum-embed-3",
-    input=query
-)
-query_embedding = query_response.data[0].embedding
+query_response = requests.post(
+    "https://api.continuumai.technology/v1/embeddings",
+    headers=headers,
+    json={"model": "continuum-embed-3", "input": query},
+).json()
+query_embedding = query_response["data"][0]["embedding"]
 
 # Compute cosine similarity
 def cosine_similarity(a, b):

@@ -85,74 +85,43 @@ curl https://api.continuumai.technology/v1/chat/completions \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/chat/completions",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-ultra",
+        "messages": [
+            {"role": "user", "content": "Explica la computacion cuantica en terminos simples."}
+        ],
+    },
 )
 
-response = client.chat.completions.create(
-    model="continuum-ultra",
-    messages=[
-        {"role": "user", "content": "Explica la computacion cuantica en terminos simples."}
-    ]
-)
-
-print(response.choices[0].message.content)
+data = response.json()
+print(data["choices"][0]["message"]["content"])
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-ultra",
+    messages: [
+      { role: "user", content: "Explica la computacion cuantica en terminos simples." },
+    ],
+  }),
 });
 
-const response = await client.chat.completions.create({
-  model: "continuum-ultra",
-  messages: [
-    { role: "user", content: "Explica la computacion cuantica en terminos simples." },
-  ],
-});
-
-console.log(response.choices[0].message.content);
-```
-
-```go Go
-package main
-
-import (
-    "context"
-    "fmt"
-
-    openai "github.com/sashabaranov/go-openai"
-)
-
-func main() {
-    config := openai.DefaultConfig("sk-proj-tu-api-key")
-    config.BaseURL = "https://api.continuumai.technology/v1"
-    client := openai.NewClientWithConfig(config)
-
-    resp, err := client.CreateChatCompletion(
-        context.Background(),
-        openai.ChatCompletionRequest{
-            Model: "continuum-ultra",
-            Messages: []openai.ChatCompletionMessage{
-                {
-                    Role:    openai.ChatMessageRoleUser,
-                    Content: "Explica la computacion cuantica en terminos simples.",
-                },
-            },
-        },
-    )
-    if err != nil {
-        panic(err)
-    }
-
-    fmt.Println(resp.Choices[0].Message.Content)
-}
+const data = await response.json();
+console.log(data.choices[0].message.content);
 ```
 
 </CodeGroup>
@@ -170,12 +139,12 @@ func main() {
 
     ```python
     import os
-    from openai import OpenAI
+    import requests
 
-    client = OpenAI(
-        api_key=os.environ["CONTINUUM_API_KEY"],
-        base_url="https://api.continuumai.technology/v1"
-    )
+    headers = {
+        "Authorization": f"Bearer {os.environ['CONTINUUM_API_KEY']}",
+        "Content-Type": "application/json",
+    }
     ```
   </Accordion>
   <Accordion title="Nunca llames a la API desde el frontend">

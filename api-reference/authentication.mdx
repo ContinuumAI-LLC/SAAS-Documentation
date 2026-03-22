@@ -45,7 +45,7 @@ Continuum AI supports two methods for passing your API key. Both are equally val
     Authorization: Bearer sk-proj-your-api-key
     ```
 
-    This is the recommended approach and is compatible with OpenAI client libraries.
+    This is the recommended approach.
   </Tab>
   <Tab title="X-API-Key header">
     Alternatively, pass your key in a custom header:
@@ -76,72 +76,43 @@ curl https://api.continuumai.technology/v1/chat/completions \
 
 ```python Python
 import os
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key=os.environ["CONTINUUM_API_KEY"],
-    base_url="https://api.continuumai.technology/v1",
+response = requests.post(
+    "https://api.continuumai.technology/v1/chat/completions",
+    headers={
+        "Authorization": f"Bearer {os.environ['CONTINUUM_API_KEY']}",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-ultra",
+        "messages": [
+            {"role": "user", "content": "Hello, Continuum!"}
+        ],
+    },
 )
 
-response = client.chat.completions.create(
-    model="continuum-ultra",
-    messages=[
-        {"role": "user", "content": "Hello, Continuum!"}
-    ],
-)
-
-print(response.choices[0].message.content)
+data = response.json()
+print(data["choices"][0]["message"]["content"])
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: process.env.CONTINUUM_API_KEY,
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${process.env.CONTINUUM_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-ultra",
+    messages: [
+      { role: "user", content: "Hello, Continuum!" },
+    ],
+  }),
 });
 
-const response = await client.chat.completions.create({
-  model: "continuum-ultra",
-  messages: [
-    { role: "user", content: "Hello, Continuum!" },
-  ],
-});
-
-console.log(response.choices[0].message.content);
-```
-
-```go Go
-package main
-
-import (
-	"context"
-	"fmt"
-	"os"
-
-	openai "github.com/sashabaranov/go-openai"
-)
-
-func main() {
-	config := openai.DefaultConfig(os.Getenv("CONTINUUM_API_KEY"))
-	config.BaseURL = "https://api.continuumai.technology/v1"
-	client := openai.NewClientWithConfig(config)
-
-	resp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model: "continuum-ultra",
-			Messages: []openai.ChatCompletionMessage{
-				{Role: openai.ChatMessageRoleUser, Content: "Hello, Continuum!"},
-			},
-		},
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(resp.Choices[0].Message.Content)
-}
+const data = await response.json();
+console.log(data.choices[0].message.content);
 ```
 
 </CodeGroup>
@@ -255,7 +226,7 @@ Continuum AI API keys follow a consistent format for easy identification:
 | Total     | ~48 characters | Full key length |
 
 <Info>
-  Continuum API keys are compatible with tools that expect OpenAI-format keys. Any client library that supports custom base URLs will work with Continuum AI.
+  Continuum API keys follow the `sk-proj-` prefix format. All requests are made directly to the Continuum AI REST API.
 </Info>
 
 ## Next steps

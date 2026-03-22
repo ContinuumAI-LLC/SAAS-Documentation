@@ -129,35 +129,39 @@ curl -X POST https://api.continuumai.technology/v1/responses \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-4o",
+        "input": "What are the three laws of thermodynamics?",
+    },
 )
 
-response = client.responses.create(
-    model="continuum-4o",
-    input="What are the three laws of thermodynamics?"
-)
-
-print(response.output_text)
+data = response.json()
+print(data["output"][0]["content"][0]["text"])
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-4o",
+    input: "What are the three laws of thermodynamics?",
+  }),
 });
 
-const response = await client.responses.create({
-  model: "continuum-4o",
-  input: "What are the three laws of thermodynamics?",
-});
-
-console.log(response.output_text);
+const data = await response.json();
+console.log(data.output[0].content[0].text);
 ```
 </RequestExample>
 
@@ -209,39 +213,43 @@ curl -X POST https://api.continuumai.technology/v1/responses \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-4o",
+        "instructions": "You are a concise technical writer. Respond in bullet points.",
+        "input": "Explain microservices architecture.",
+        "temperature": 0.5,
+    },
 )
 
-response = client.responses.create(
-    model="continuum-4o",
-    instructions="You are a concise technical writer. Respond in bullet points.",
-    input="Explain microservices architecture.",
-    temperature=0.5
-)
-
-print(response.output_text)
+data = response.json()
+print(data["output"][0]["content"][0]["text"])
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-4o",
+    instructions: "You are a concise technical writer. Respond in bullet points.",
+    input: "Explain microservices architecture.",
+    temperature: 0.5,
+  }),
 });
 
-const response = await client.responses.create({
-  model: "continuum-4o",
-  instructions: "You are a concise technical writer. Respond in bullet points.",
-  input: "Explain microservices architecture.",
-  temperature: 0.5,
-});
-
-console.log(response.output_text);
+const data = await response.json();
+console.log(data.output[0].content[0].text);
 ```
 
 </CodeGroup>
@@ -280,59 +288,63 @@ curl -X POST https://api.continuumai.technology/v1/responses \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-4o",
+        "input": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": "What breed of dog is in this photo?"},
+                    {
+                        "type": "input_image",
+                        "image_url": "https://example.com/golden-retriever.jpg",
+                        "detail": "high"
+                    }
+                ]
+            }
+        ],
+    },
 )
 
-response = client.responses.create(
-    model="continuum-4o",
-    input=[
-        {
-            "role": "user",
-            "content": [
-                {"type": "input_text", "text": "What breed of dog is in this photo?"},
-                {
-                    "type": "input_image",
-                    "image_url": "https://example.com/golden-retriever.jpg",
-                    "detail": "high"
-                }
-            ]
-        }
-    ]
-)
-
-print(response.output_text)
+data = response.json()
+print(data["output"][0]["content"][0]["text"])
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-4o",
+    input: [
+      {
+        role: "user",
+        content: [
+          { type: "input_text", text: "What breed of dog is in this photo?" },
+          {
+            type: "input_image",
+            image_url: "https://example.com/golden-retriever.jpg",
+            detail: "high",
+          },
+        ],
+      },
+    ],
+  }),
 });
 
-const response = await client.responses.create({
-  model: "continuum-4o",
-  input: [
-    {
-      role: "user",
-      content: [
-        { type: "input_text", text: "What breed of dog is in this photo?" },
-        {
-          type: "input_image",
-          image_url: "https://example.com/golden-retriever.jpg",
-          detail: "high",
-        },
-      ],
-    },
-  ],
-});
-
-console.log(response.output_text);
+const data = await response.json();
+console.log(data.output[0].content[0].text);
 ```
 
 </CodeGroup>
@@ -373,73 +385,79 @@ curl -X POST https://api.continuumai.technology/v1/responses \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
-)
-
-response = client.responses.create(
-    model="continuum-4o",
-    input="What is the stock price of AAPL?",
-    tools=[
-        {
-            "type": "function",
-            "name": "get_stock_price",
-            "description": "Retrieves the current stock price for a given ticker symbol.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "ticker": {
-                        "type": "string",
-                        "description": "The stock ticker symbol, e.g. AAPL"
-                    }
-                },
-                "required": ["ticker"]
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-4o",
+        "input": "What is the stock price of AAPL?",
+        "tools": [
+            {
+                "type": "function",
+                "name": "get_stock_price",
+                "description": "Retrieves the current stock price for a given ticker symbol.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "ticker": {
+                            "type": "string",
+                            "description": "The stock ticker symbol, e.g. AAPL"
+                        }
+                    },
+                    "required": ["ticker"]
+                }
             }
-        }
-    ]
+        ],
+    },
 )
+
+data = response.json()
 
 # Process tool calls from the output
-for item in response.output:
-    if item.type == "function_call":
-        print(f"Tool: {item.name}, Args: {item.arguments}")
+for item in data["output"]:
+    if item["type"] == "function_call":
+        print(f"Tool: {item['name']}, Args: {item['arguments']}")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
-});
-
-const response = await client.responses.create({
-  model: "continuum-4o",
-  input: "What is the stock price of AAPL?",
-  tools: [
-    {
-      type: "function",
-      name: "get_stock_price",
-      description: "Retrieves the current stock price for a given ticker symbol.",
-      parameters: {
-        type: "object",
-        properties: {
-          ticker: {
-            type: "string",
-            description: "The stock ticker symbol, e.g. AAPL",
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-4o",
+    input: "What is the stock price of AAPL?",
+    tools: [
+      {
+        type: "function",
+        name: "get_stock_price",
+        description: "Retrieves the current stock price for a given ticker symbol.",
+        parameters: {
+          type: "object",
+          properties: {
+            ticker: {
+              type: "string",
+              description: "The stock ticker symbol, e.g. AAPL",
+            },
           },
+          required: ["ticker"],
         },
-        required: ["ticker"],
       },
-    },
-  ],
+    ],
+  }),
 });
+
+const data = await response.json();
 
 // Process tool calls from the output
-for (const item of response.output) {
+for (const item of data.output) {
   if (item.type === "function_call") {
     console.log(`Tool: ${item.name}, Args: ${item.arguments}`);
   }
@@ -468,41 +486,60 @@ curl -X POST https://api.continuumai.technology/v1/responses \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
+import json
 
-client = OpenAI(
-    api_key="sk-proj-...",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-4o",
+        "input": "Tell me a short story about a robot learning to paint.",
+        "stream": True,
+    },
+    stream=True,
 )
 
-stream = client.responses.create(
-    model="continuum-4o",
-    input="Tell me a short story about a robot learning to paint.",
-    stream=True
-)
-
-for event in stream:
-    if event.type == "response.output_text.delta":
-        print(event.delta, end="")
+for line in response.iter_lines():
+    if line:
+        text = line.decode("utf-8")
+        if text.startswith("data: ") and text != "data: [DONE]":
+            event = json.loads(text[6:])
+            if event.get("type") == "response.output_text.delta":
+                print(event["delta"], end="")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-...",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-4o",
+    input: "Tell me a short story about a robot learning to paint.",
+    stream: true,
+  }),
 });
 
-const stream = await client.responses.create({
-  model: "continuum-4o",
-  input: "Tell me a short story about a robot learning to paint.",
-  stream: true,
-});
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
 
-for await (const event of stream) {
-  if (event.type === "response.output_text.delta") {
-    process.stdout.write(event.delta);
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  const text = decoder.decode(value);
+  for (const line of text.split("\n")) {
+    if (line.startsWith("data: ") && line !== "data: [DONE]") {
+      const event = JSON.parse(line.slice(6));
+      if (event.type === "response.output_text.delta") {
+        process.stdout.write(event.delta);
+      }
+    }
   }
 }
 ```

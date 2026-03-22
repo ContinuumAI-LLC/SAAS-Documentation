@@ -109,44 +109,46 @@ Authorization: Bearer sk-proj-...
     ```
 
     ```python Python
-    from openai import OpenAI
-    from pathlib import Path
+    import requests
 
-    client = OpenAI(
-        api_key="sk-proj-...",
-        base_url="https://api.continuumai.technology/v1"
-    )
-
-    response = client.audio.speech.create(
-        model="continuum-voice-hd",
-        input="Welcome to Continuum AI. We are building the future of intelligent applications, one API call at a time.",
-        voice="nova",
-        response_format="mp3",
-        speed=1.0
+    response = requests.post(
+        "https://api.continuumai.technology/v1/audio/speech",
+        headers={
+            "Authorization": "Bearer sk-proj-...",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "continuum-voice-hd",
+            "input": "Welcome to Continuum AI. We are building the future of intelligent applications, one API call at a time.",
+            "voice": "nova",
+            "response_format": "mp3",
+            "speed": 1.0,
+        },
     )
 
     # Save to file
-    speech_file = Path("speech.mp3")
-    response.stream_to_file(speech_file)
-    print(f"Audio saved to {speech_file}")
+    with open("speech.mp3", "wb") as f:
+        f.write(response.content)
+    print("Audio saved to speech.mp3")
     ```
 
     ```javascript Node.js
-    import OpenAI from "openai";
     import fs from "fs";
 
-    const client = new OpenAI({
-      apiKey: "sk-proj-...",
-      baseURL: "https://api.continuumai.technology/v1",
-    });
-
-    const response = await client.audio.speech.create({
-      model: "continuum-voice-hd",
-      input:
-        "Welcome to Continuum AI. We are building the future of intelligent applications, one API call at a time.",
-      voice: "nova",
-      response_format: "mp3",
-      speed: 1.0,
+    const response = await fetch("https://api.continuumai.technology/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "continuum-voice-hd",
+        input:
+          "Welcome to Continuum AI. We are building the future of intelligent applications, one API call at a time.",
+        voice: "nova",
+        response_format: "mp3",
+        speed: 1.0,
+      }),
     });
 
     // Save to file
@@ -166,21 +168,27 @@ Authorization: Bearer sk-proj-...
     The speech endpoint supports streaming audio. Read from the response body as it arrives:
 
     ```python Python
-    from openai import OpenAI
+    import requests
 
-    client = OpenAI(
-        api_key="sk-proj-...",
-        base_url="https://api.continuumai.technology/v1"
+    response = requests.post(
+        "https://api.continuumai.technology/v1/audio/speech",
+        headers={
+            "Authorization": "Bearer sk-proj-...",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "continuum-voice",
+            "input": "This audio is being streamed in real time as it is generated.",
+            "voice": "alloy",
+            "response_format": "opus",
+        },
+        stream=True,
     )
 
     # Stream audio to file in chunks
-    with client.audio.speech.with_streaming_response.create(
-        model="continuum-voice",
-        input="This audio is being streamed in real time as it is generated.",
-        voice="alloy",
-        response_format="opus"
-    ) as response:
-        response.stream_to_file("streamed_speech.opus")
+    with open("streamed_speech.opus", "wb") as f:
+        for chunk in response.iter_content(chunk_size=4096):
+            f.write(chunk)
     ```
   </Tab>
 
@@ -248,46 +256,51 @@ Authorization: Bearer sk-proj-...
     ```
 
     ```python Python
-    from openai import OpenAI
-
-    client = OpenAI(
-        api_key="sk-proj-...",
-        base_url="https://api.continuumai.technology/v1"
-    )
+    import requests
 
     with open("meeting-recording.mp3", "rb") as audio_file:
-        transcription = client.audio.transcriptions.create(
-            model="continuum-listen",
-            file=audio_file,
-            language="en",
-            response_format="verbose_json",
-            timestamp_granularities=["word", "segment"]
+        response = requests.post(
+            "https://api.continuumai.technology/v1/audio/transcriptions",
+            headers={
+                "Authorization": "Bearer sk-proj-...",
+            },
+            files={"file": audio_file},
+            data={
+                "model": "continuum-listen",
+                "language": "en",
+                "response_format": "verbose_json",
+                "timestamp_granularities[]": ["word", "segment"],
+            },
         )
 
-    print(transcription.text)
+    transcription = response.json()
+    print(transcription["text"])
 
     # Access word-level timestamps
-    for word in transcription.words:
-        print(f"[{word.start:.2f}s - {word.end:.2f}s] {word.word}")
+    for word in transcription["words"]:
+        print(f"[{word['start']:.2f}s - {word['end']:.2f}s] {word['word']}")
     ```
 
     ```javascript Node.js
-    import OpenAI from "openai";
     import fs from "fs";
 
-    const client = new OpenAI({
-      apiKey: "sk-proj-...",
-      baseURL: "https://api.continuumai.technology/v1",
+    const formData = new FormData();
+    formData.append("file", new Blob([fs.readFileSync("meeting-recording.mp3")]));
+    formData.append("model", "continuum-listen");
+    formData.append("language", "en");
+    formData.append("response_format", "verbose_json");
+    formData.append("timestamp_granularities[]", "word");
+    formData.append("timestamp_granularities[]", "segment");
+
+    const response = await fetch("https://api.continuumai.technology/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-proj-...",
+      },
+      body: formData,
     });
 
-    const transcription = await client.audio.transcriptions.create({
-      model: "continuum-listen",
-      file: fs.createReadStream("meeting-recording.mp3"),
-      language: "en",
-      response_format: "verbose_json",
-      timestamp_granularities: ["word", "segment"],
-    });
-
+    const transcription = await response.json();
     console.log(transcription.text);
     ```
 
@@ -426,39 +439,43 @@ Authorization: Bearer sk-proj-...
     ```
 
     ```python Python
-    from openai import OpenAI
-
-    client = OpenAI(
-        api_key="sk-proj-...",
-        base_url="https://api.continuumai.technology/v1"
-    )
+    import requests
 
     with open("interview-spanish.mp3", "rb") as audio_file:
-        translation = client.audio.translations.create(
-            model="continuum-listen",
-            file=audio_file,
-            response_format="json"
+        response = requests.post(
+            "https://api.continuumai.technology/v1/audio/translations",
+            headers={
+                "Authorization": "Bearer sk-proj-...",
+            },
+            files={"file": audio_file},
+            data={
+                "model": "continuum-listen",
+                "response_format": "json",
+            },
         )
 
-    print(translation.text)
+    translation = response.json()
+    print(translation["text"])
     # Output is always in English, regardless of the source language
     ```
 
     ```javascript Node.js
-    import OpenAI from "openai";
     import fs from "fs";
 
-    const client = new OpenAI({
-      apiKey: "sk-proj-...",
-      baseURL: "https://api.continuumai.technology/v1",
+    const formData = new FormData();
+    formData.append("file", new Blob([fs.readFileSync("interview-spanish.mp3")]));
+    formData.append("model", "continuum-listen");
+    formData.append("response_format", "json");
+
+    const response = await fetch("https://api.continuumai.technology/v1/audio/translations", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-proj-...",
+      },
+      body: formData,
     });
 
-    const translation = await client.audio.translations.create({
-      model: "continuum-listen",
-      file: fs.createReadStream("interview-spanish.mp3"),
-      response_format: "json",
-    });
-
+    const translation = await response.json();
     console.log(translation.text);
     // Output is always in English, regardless of the source language
     ```
@@ -536,14 +553,18 @@ Authorization: Bearer sk-proj-...
     Use `response_format: "srt"` or `response_format: "vtt"` to get ready-to-use subtitle files:
 
     ```python
-    transcription = client.audio.transcriptions.create(
-        model="continuum-listen",
-        file=open("video-audio.mp3", "rb"),
-        response_format="srt"
-    )
+    import requests
+
+    with open("video-audio.mp3", "rb") as audio_file:
+        response = requests.post(
+            "https://api.continuumai.technology/v1/audio/transcriptions",
+            headers={"Authorization": "Bearer sk-proj-..."},
+            files={"file": audio_file},
+            data={"model": "continuum-listen", "response_format": "srt"},
+        )
 
     with open("subtitles.srt", "w") as f:
-        f.write(transcription)
+        f.write(response.text)
     ```
   </Accordion>
 </AccordionGroup>

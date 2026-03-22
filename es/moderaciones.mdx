@@ -43,42 +43,46 @@ curl https://api.continuumai.technology/v1/moderations \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/moderations",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-shield",
+        "input": "Este es un texto de ejemplo para analizar.",
+    },
 )
 
-response = client.moderations.create(
-    model="continuum-shield",
-    input="Este es un texto de ejemplo para analizar."
-)
-
-result = response.results[0]
-print(f"Marcado: {result.flagged}")
+data = response.json()
+result = data["results"][0]
+print(f"Marcado: {result['flagged']}")
 
 # Revisar cada categoria
-for category, flagged in result.categories:
+for category, flagged in result["categories"].items():
     if flagged:
-        score = result.category_scores[category]
+        score = result["category_scores"][category]
         print(f"  {category}: {score:.4f}")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/moderations", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-shield",
+    input: "Este es un texto de ejemplo para analizar.",
+  }),
 });
 
-const response = await client.moderations.create({
-  model: "continuum-shield",
-  input: "Este es un texto de ejemplo para analizar.",
-});
-
-const result = response.results[0];
+const data = await response.json();
+const result = data.results[0];
 console.log(`Marcado: ${result.flagged}`);
 
 for (const [category, flagged] of Object.entries(result.categories)) {
@@ -169,20 +173,21 @@ texts = [
     "Texto potencialmente problematico aqui..."
 ]
 
-response = client.moderations.create(
-    model="continuum-shield",
-    input=texts
-)
+response = requests.post(
+    "https://api.continuumai.technology/v1/moderations",
+    headers=headers,
+    json={"model": "continuum-shield", "input": texts},
+).json()
 
-for i, result in enumerate(response.results):
-    status = "MARCADO" if result.flagged else "OK"
+for i, result in enumerate(response["results"]):
+    status = "MARCADO" if result["flagged"] else "OK"
     print(f"Texto {i + 1}: {status}")
 
-    if result.flagged:
+    if result["flagged"]:
         # Mostrar categorias detectadas
-        for category, flagged in result.categories.items() if hasattr(result.categories, 'items') else []:
-            if flagged:
-                score = getattr(result.category_scores, category, 0)
+        for category, is_flagged in result["categories"].items():
+            if is_flagged:
+                score = result["category_scores"].get(category, 0)
                 print(f"  - {category}: {score:.4f}")
 ```
 
@@ -206,29 +211,41 @@ for i, result in enumerate(response.results):
 ### Ejemplo de integracion completa
 
 ```python Python
+import requests
+
+headers = {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+}
+
 def process_user_message(user_input: str) -> str:
     """Procesa un mensaje del usuario con moderacion previa."""
 
     # 1. Verificar el contenido con moderacion
-    moderation = client.moderations.create(
-        model="continuum-shield",
-        input=user_input
-    )
+    moderation = requests.post(
+        "https://api.continuumai.technology/v1/moderations",
+        headers=headers,
+        json={"model": "continuum-shield", "input": user_input},
+    ).json()
 
-    if moderation.results[0].flagged:
+    if moderation["results"][0]["flagged"]:
         # Contenido inapropiado detectado
         return "Lo siento, tu mensaje contiene contenido que no podemos procesar. Por favor, reformula tu solicitud."
 
     # 2. Contenido seguro: procesar con el modelo de chat
-    response = client.chat.completions.create(
-        model="continuum-turbo",
-        messages=[
-            {"role": "system", "content": "Eres un asistente util."},
-            {"role": "user", "content": user_input}
-        ]
-    )
+    response = requests.post(
+        "https://api.continuumai.technology/v1/chat/completions",
+        headers=headers,
+        json={
+            "model": "continuum-turbo",
+            "messages": [
+                {"role": "system", "content": "Eres un asistente util."},
+                {"role": "user", "content": user_input}
+            ],
+        },
+    ).json()
 
-    return response.choices[0].message.content
+    return response["choices"][0]["message"]["content"]
 ```
 
 <Tip>
@@ -249,12 +266,12 @@ THRESHOLDS = {
     "self-harm": 0.1,  # Umbral mas bajo para mayor sensibilidad
 }
 
-def is_content_safe(moderation_result) -> bool:
+def is_content_safe(moderation_result: dict) -> bool:
     """Evalua si el contenido es seguro segun umbrales personalizados."""
-    scores = moderation_result.category_scores
+    scores = moderation_result["category_scores"]
 
     for category, threshold in THRESHOLDS.items():
-        score = getattr(scores, category, 0)
+        score = scores.get(category, 0)
         if score > threshold:
             return False
 

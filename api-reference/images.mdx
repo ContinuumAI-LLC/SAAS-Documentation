@@ -116,45 +116,48 @@ Authorization: Bearer sk-proj-...
     ```
 
     ```python Python
-    from openai import OpenAI
+    import requests
 
-    client = OpenAI(
-        api_key="sk-proj-...",
-        base_url="https://api.continuumai.technology/v1"
+    response = requests.post(
+        "https://api.continuumai.technology/v1/images/generations",
+        headers={
+            "Authorization": "Bearer sk-proj-...",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "continuum-vision-hd",
+            "prompt": "A futuristic city skyline at sunset, cyberpunk style, neon lights reflecting off glass buildings, flying cars in the distance",
+            "n": 1,
+            "size": "1792x1024",
+            "quality": "hd",
+            "style": "vivid",
+        },
     )
 
-    response = client.images.generate(
-        model="continuum-vision-hd",
-        prompt="A futuristic city skyline at sunset, cyberpunk style, neon lights reflecting off glass buildings, flying cars in the distance",
-        n=1,
-        size="1792x1024",
-        quality="hd",
-        style="vivid"
-    )
-
-    image_url = response.data[0].url
-    print(image_url)
+    data = response.json()
+    print(data["data"][0]["url"])
     ```
 
     ```javascript Node.js
-    import OpenAI from "openai";
-
-    const client = new OpenAI({
-      apiKey: "sk-proj-...",
-      baseURL: "https://api.continuumai.technology/v1",
+    const response = await fetch("https://api.continuumai.technology/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-proj-...",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "continuum-vision-hd",
+        prompt:
+          "A futuristic city skyline at sunset, cyberpunk style, neon lights reflecting off glass buildings, flying cars in the distance",
+        n: 1,
+        size: "1792x1024",
+        quality: "hd",
+        style: "vivid",
+      }),
     });
 
-    const response = await client.images.generate({
-      model: "continuum-vision-hd",
-      prompt:
-        "A futuristic city skyline at sunset, cyberpunk style, neon lights reflecting off glass buildings, flying cars in the distance",
-      n: 1,
-      size: "1792x1024",
-      quality: "hd",
-      style: "vivid",
-    });
-
-    console.log(response.data[0].url);
+    const data = await response.json();
+    console.log(data.data[0].url);
     ```
 
     </CodeGroup>
@@ -258,44 +261,50 @@ Authorization: Bearer sk-proj-...
     ```
 
     ```python Python
-    from openai import OpenAI
+    import requests
 
-    client = OpenAI(
-        api_key="sk-proj-...",
-        base_url="https://api.continuumai.technology/v1"
+    response = requests.post(
+        "https://api.continuumai.technology/v1/images/edits",
+        headers={
+            "Authorization": "Bearer sk-proj-...",
+        },
+        files={
+            "image": open("original.png", "rb"),
+            "mask": open("mask.png", "rb"),
+        },
+        data={
+            "prompt": "Add a golden retriever sitting on the bench",
+            "model": "continuum-vision",
+            "n": "1",
+            "size": "1024x1024",
+        },
     )
 
-    response = client.images.edit(
-        model="continuum-vision",
-        image=open("original.png", "rb"),
-        mask=open("mask.png", "rb"),
-        prompt="Add a golden retriever sitting on the bench",
-        n=1,
-        size="1024x1024"
-    )
-
-    print(response.data[0].url)
+    data = response.json()
+    print(data["data"][0]["url"])
     ```
 
     ```javascript Node.js
-    import OpenAI from "openai";
     import fs from "fs";
 
-    const client = new OpenAI({
-      apiKey: "sk-proj-...",
-      baseURL: "https://api.continuumai.technology/v1",
+    const formData = new FormData();
+    formData.append("image", new Blob([fs.readFileSync("original.png")]));
+    formData.append("mask", new Blob([fs.readFileSync("mask.png")]));
+    formData.append("prompt", "Add a golden retriever sitting on the bench");
+    formData.append("model", "continuum-vision");
+    formData.append("n", "1");
+    formData.append("size", "1024x1024");
+
+    const response = await fetch("https://api.continuumai.technology/v1/images/edits", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-proj-...",
+      },
+      body: formData,
     });
 
-    const response = await client.images.edit({
-      model: "continuum-vision",
-      image: fs.createReadStream("original.png"),
-      mask: fs.createReadStream("mask.png"),
-      prompt: "Add a golden retriever sitting on the bench",
-      n: 1,
-      size: "1024x1024",
-    });
-
-    console.log(response.data[0].url);
+    const data = await response.json();
+    console.log(data.data[0].url);
     ```
 
     </CodeGroup>
@@ -358,41 +367,47 @@ Authorization: Bearer sk-proj-...
     ```
 
     ```python Python
-    from openai import OpenAI
+    import requests
 
-    client = OpenAI(
-        api_key="sk-proj-...",
-        base_url="https://api.continuumai.technology/v1"
+    response = requests.post(
+        "https://api.continuumai.technology/v1/images/variations",
+        headers={
+            "Authorization": "Bearer sk-proj-...",
+        },
+        files={
+            "image": open("original.png", "rb"),
+        },
+        data={
+            "model": "continuum-vision",
+            "n": "3",
+            "size": "1024x1024",
+        },
     )
 
-    response = client.images.create_variation(
-        model="continuum-vision",
-        image=open("original.png", "rb"),
-        n=3,
-        size="1024x1024"
-    )
-
-    for i, image in enumerate(response.data):
-        print(f"Variation {i + 1}: {image.url}")
+    data = response.json()
+    for i, image in enumerate(data["data"]):
+        print(f"Variation {i + 1}: {image['url']}")
     ```
 
     ```javascript Node.js
-    import OpenAI from "openai";
     import fs from "fs";
 
-    const client = new OpenAI({
-      apiKey: "sk-proj-...",
-      baseURL: "https://api.continuumai.technology/v1",
+    const formData = new FormData();
+    formData.append("image", new Blob([fs.readFileSync("original.png")]));
+    formData.append("model", "continuum-vision");
+    formData.append("n", "3");
+    formData.append("size", "1024x1024");
+
+    const response = await fetch("https://api.continuumai.technology/v1/images/variations", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-proj-...",
+      },
+      body: formData,
     });
 
-    const response = await client.images.createVariation({
-      model: "continuum-vision",
-      image: fs.createReadStream("original.png"),
-      n: 3,
-      size: "1024x1024",
-    });
-
-    response.data.forEach((image, i) => {
+    const data = await response.json();
+    data.data.forEach((image, i) => {
       console.log(`Variation ${i + 1}: ${image.url}`);
     });
     ```

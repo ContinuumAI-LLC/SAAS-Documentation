@@ -176,19 +176,20 @@ La API aplica limites de tasa para garantizar un servicio estable para todos los
 
 ## Compatibilidad con OpenAI
 
-La API de Continuum AI es completamente compatible con el formato de OpenAI. Si ya usas el SDK de OpenAI, solo necesitas cambiar la URL base y tu API key:
+La API de Continuum AI es completamente compatible con el formato de OpenAI. Solo necesitas cambiar la URL base y tu API key:
 
-```python
-from openai import OpenAI
-
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+```bash
+curl -X POST https://api.continuumai.technology/v1/chat/completions \
+  -H "Authorization: Bearer sk-proj-tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "Hola!"}]
+  }'
 ```
 
 <Tip>
-  Puedes migrar desde OpenAI sin cambiar una sola linea de logica en tu aplicacion. Solo actualiza las credenciales y la URL base.
+  Todas las solicitudes se hacen directamente a la API via HTTP. No se requiere ningun SDK.
 </Tip>
 
 ## Primeros pasos

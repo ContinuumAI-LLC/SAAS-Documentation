@@ -76,35 +76,39 @@ curl https://api.continuumai.technology/v1/responses \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-ultra",
+        "input": "Que es el aprendizaje profundo?",
+    },
 )
 
-response = client.responses.create(
-    model="continuum-ultra",
-    input="Que es el aprendizaje profundo?"
-)
-
-print(response.output_text)
+data = response.json()
+print(data["output"][0]["content"][0]["text"])
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-ultra",
+    input: "Que es el aprendizaje profundo?",
+  }),
 });
 
-const response = await client.responses.create({
-  model: "continuum-ultra",
-  input: "Que es el aprendizaje profundo?",
-});
-
-console.log(response.output_text);
+const data = await response.json();
+console.log(data.output[0].content[0].text);
 ```
 
 </CodeGroup>
@@ -165,43 +169,61 @@ curl https://api.continuumai.technology/v1/responses \
 ```
 
 ```python Python
-response = client.responses.create(
-    model="continuum-ultra",
-    input=[
-        {
-            "role": "user",
-            "content": [
-                {"type": "input_text", "text": "Describe esta imagen en detalle."},
-                {
-                    "type": "input_image",
-                    "image_url": "https://ejemplo.com/foto.jpg"
-                }
-            ]
-        }
-    ]
+import requests
+
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-ultra",
+        "input": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": "Describe esta imagen en detalle."},
+                    {
+                        "type": "input_image",
+                        "image_url": "https://ejemplo.com/foto.jpg"
+                    }
+                ]
+            }
+        ],
+    },
 )
 
-print(response.output_text)
+data = response.json()
+print(data["output"][0]["content"][0]["text"])
 ```
 
 ```javascript Node.js
-const response = await client.responses.create({
-  model: "continuum-ultra",
-  input: [
-    {
-      role: "user",
-      content: [
-        { type: "input_text", text: "Describe esta imagen en detalle." },
-        {
-          type: "input_image",
-          image_url: "https://ejemplo.com/foto.jpg",
-        },
-      ],
-    },
-  ],
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-ultra",
+    input: [
+      {
+        role: "user",
+        content: [
+          { type: "input_text", text: "Describe esta imagen en detalle." },
+          {
+            type: "input_image",
+            image_url: "https://ejemplo.com/foto.jpg",
+          },
+        ],
+      },
+    ],
+  }),
 });
 
-console.log(response.output_text);
+const data = await response.json();
+console.log(data.output[0].content[0].text);
 ```
 
 </CodeGroup>
@@ -211,21 +233,36 @@ console.log(response.output_text);
 Usa `previous_response_id` para continuar una conversacion sin reenviar todo el historial. El servidor mantiene el contexto automaticamente.
 
 ```python Python
+import requests
+
+headers = {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+}
+
 # Primera solicitud
-response1 = client.responses.create(
-    model="continuum-ultra",
-    input="Mi nombre es Rafael y soy desarrollador de software."
-)
+response1 = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers=headers,
+    json={
+        "model": "continuum-ultra",
+        "input": "Mi nombre es Rafael y soy desarrollador de software.",
+    },
+).json()
 
 # Segunda solicitud - continua la conversacion
-response2 = client.responses.create(
-    model="continuum-ultra",
-    input="Como me llamo y a que me dedico?",
-    previous_response_id=response1.id
-)
+response2 = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers=headers,
+    json={
+        "model": "continuum-ultra",
+        "input": "Como me llamo y a que me dedico?",
+        "previous_response_id": response1["id"],
+    },
+).json()
 
 # El modelo recuerda el contexto anterior
-print(response2.output_text)
+print(response2["output"][0]["content"][0]["text"])
 ```
 
 <Info>
@@ -237,27 +274,60 @@ print(response2.output_text)
 <CodeGroup>
 
 ```python Python
-stream = client.responses.create(
-    model="continuum-turbo",
-    input="Escribe una guia rapida sobre Docker.",
-    stream=True
+import requests
+import json
+
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-turbo",
+        "input": "Escribe una guia rapida sobre Docker.",
+        "stream": True,
+    },
+    stream=True,
 )
 
-for event in stream:
-    if event.type == "response.output_text.delta":
-        print(event.delta, end="", flush=True)
+for line in response.iter_lines():
+    if line:
+        text = line.decode("utf-8")
+        if text.startswith("data: ") and text != "data: [DONE]":
+            event = json.loads(text[6:])
+            if event.get("type") == "response.output_text.delta":
+                print(event["delta"], end="", flush=True)
 ```
 
 ```javascript Node.js
-const stream = await client.responses.create({
-  model: "continuum-turbo",
-  input: "Escribe una guia rapida sobre Docker.",
-  stream: true,
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-turbo",
+    input: "Escribe una guia rapida sobre Docker.",
+    stream: true,
+  }),
 });
 
-for await (const event of stream) {
-  if (event.type === "response.output_text.delta") {
-    process.stdout.write(event.delta);
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  const text = decoder.decode(value);
+  for (const line of text.split("\n")) {
+    if (line.startsWith("data: ") && line !== "data: [DONE]") {
+      const event = JSON.parse(line.slice(6));
+      if (event.type === "response.output_text.delta") {
+        process.stdout.write(event.delta);
+      }
+    }
   }
 }
 ```
@@ -280,59 +350,79 @@ for await (const event of stream) {
 <CodeGroup>
 
 ```python Python
-response = client.responses.create(
-    model="continuum-ultra",
-    input="Busca el precio actual de las acciones de Apple.",
-    tools=[
-        {
-            "type": "function",
-            "name": "get_stock_price",
-            "description": "Obtiene el precio actual de una accion",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "symbol": {
-                        "type": "string",
-                        "description": "Simbolo bursatil (ej. AAPL, GOOGL)"
-                    }
-                },
-                "required": ["symbol"]
+import requests
+
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-ultra",
+        "input": "Busca el precio actual de las acciones de Apple.",
+        "tools": [
+            {
+                "type": "function",
+                "name": "get_stock_price",
+                "description": "Obtiene el precio actual de una accion",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "symbol": {
+                            "type": "string",
+                            "description": "Simbolo bursatil (ej. AAPL, GOOGL)"
+                        }
+                    },
+                    "required": ["symbol"]
+                }
             }
-        }
-    ]
+        ],
+    },
 )
 
+data = response.json()
+
 # Verificar si el modelo quiere usar una herramienta
-for item in response.output:
-    if item.type == "function_call":
-        print(f"Herramienta: {item.name}")
-        print(f"Argumentos: {item.arguments}")
+for item in data["output"]:
+    if item["type"] == "function_call":
+        print(f"Herramienta: {item['name']}")
+        print(f"Argumentos: {item['arguments']}")
 ```
 
 ```javascript Node.js
-const response = await client.responses.create({
-  model: "continuum-ultra",
-  input: "Busca el precio actual de las acciones de Apple.",
-  tools: [
-    {
-      type: "function",
-      name: "get_stock_price",
-      description: "Obtiene el precio actual de una accion",
-      parameters: {
-        type: "object",
-        properties: {
-          symbol: {
-            type: "string",
-            description: "Simbolo bursatil (ej. AAPL, GOOGL)",
+const response = await fetch("https://api.continuumai.technology/v1/responses", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "continuum-ultra",
+    input: "Busca el precio actual de las acciones de Apple.",
+    tools: [
+      {
+        type: "function",
+        name: "get_stock_price",
+        description: "Obtiene el precio actual de una accion",
+        parameters: {
+          type: "object",
+          properties: {
+            symbol: {
+              type: "string",
+              description: "Simbolo bursatil (ej. AAPL, GOOGL)",
+            },
           },
+          required: ["symbol"],
         },
-        required: ["symbol"],
       },
-    },
-  ],
+    ],
+  }),
 });
 
-for (const item of response.output) {
+const data = await response.json();
+
+for (const item of data.output) {
   if (item.type === "function_call") {
     console.log(`Herramienta: ${item.name}`);
     console.log(`Argumentos: ${item.arguments}`);
@@ -347,13 +437,23 @@ for (const item of response.output) {
 Usa el parametro `instructions` para definir el comportamiento del modelo de forma limpia y separada del input del usuario.
 
 ```python Python
-response = client.responses.create(
-    model="continuum-ultra",
-    instructions="Eres un experto en ciberseguridad. Responde de forma tecnica pero accesible. Incluye ejemplos practicos cuando sea relevante.",
-    input="Como puedo proteger mi aplicacion web contra ataques XSS?"
+import requests
+
+response = requests.post(
+    "https://api.continuumai.technology/v1/responses",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "continuum-ultra",
+        "instructions": "Eres un experto en ciberseguridad. Responde de forma tecnica pero accesible. Incluye ejemplos practicos cuando sea relevante.",
+        "input": "Como puedo proteger mi aplicacion web contra ataques XSS?",
+    },
 )
 
-print(response.output_text)
+data = response.json()
+print(data["output"][0]["content"][0]["text"])
 ```
 
 <Note>
@@ -370,7 +470,7 @@ print(response.output_text)
 | Conversacion multiturno | Reenviar historial completo | `previous_response_id` |
 | Herramientas integradas | No | Si |
 | Streaming | SSE | SSE con eventos tipados |
-| Compatibilidad OpenAI | Completa | Completa |
+| API REST directa | Si | Si |
 
 <Tip>
   Para proyectos nuevos, recomendamos usar el endpoint de Responses. Para proyectos existentes que ya usan Chat Completions, ambos endpoints seguiran siendo soportados a largo plazo.

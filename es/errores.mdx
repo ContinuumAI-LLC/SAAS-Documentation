@@ -207,111 +207,88 @@ Todas las respuestas de error siguen este formato consistente:
 ```python Python
 import time
 import random
-from openai import OpenAI, RateLimitError, APIError
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+API_KEY = "sk-proj-tu-api-key"
+BASE_URL = "https://api.continuumai.technology/v1"
 
-def call_with_retry(func, max_retries=5, base_delay=1.0):
-    """Ejecuta una funcion con reintentos y backoff exponencial."""
+def call_with_retry(endpoint, payload, max_retries=5, base_delay=1.0):
+    """Ejecuta una solicitud HTTP con reintentos y backoff exponencial."""
     for attempt in range(max_retries):
-        try:
-            return func()
-        except RateLimitError as e:
+        response = requests.post(
+            f"{BASE_URL}{endpoint}",
+            headers={
+                "Authorization": f"Bearer {API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+        )
+
+        if response.status_code == 200:
+            return response.json()
+
+        if response.status_code == 429:
             if attempt == max_retries - 1:
-                raise
-            # Backoff exponencial con jitter
+                response.raise_for_status()
             delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
             print(f"Rate limit alcanzado. Reintentando en {delay:.1f}s... (intento {attempt + 1})")
             time.sleep(delay)
-        except APIError as e:
-            if e.status_code in [500, 502, 503] and attempt < max_retries - 1:
-                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
-                print(f"Error del servidor ({e.status_code}). Reintentando en {delay:.1f}s...")
-                time.sleep(delay)
-            else:
-                raise
+        elif response.status_code in [500, 502, 503] and attempt < max_retries - 1:
+            delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+            print(f"Error del servidor ({response.status_code}). Reintentando en {delay:.1f}s...")
+            time.sleep(delay)
+        else:
+            response.raise_for_status()
 
 # Uso
-response = call_with_retry(
-    lambda: client.chat.completions.create(
-        model="continuum-turbo",
-        messages=[{"role": "user", "content": "Hola, como estas?"}]
-    )
+result = call_with_retry(
+    "/chat/completions",
+    {
+        "model": "continuum-turbo",
+        "messages": [{"role": "user", "content": "Hola, como estas?"}],
+    }
 )
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
+const API_KEY = "sk-proj-tu-api-key";
+const BASE_URL = "https://api.continuumai.technology/v1";
 
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
-});
-
-async function callWithRetry(fn, maxRetries = 5, baseDelay = 1000) {
+async function callWithRetry(endpoint, payload, maxRetries = 5, baseDelay = 1000) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      const status = error.status;
-      const isRetryable = [429, 500, 502, 503].includes(status);
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-      if (!isRetryable || attempt === maxRetries - 1) {
-        throw error;
-      }
-
-      // Backoff exponencial con jitter
-      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
-      console.log(
-        `Error ${status}. Reintentando en ${(delay / 1000).toFixed(1)}s... (intento ${attempt + 1})`
-      );
-      await new Promise((resolve) => setTimeout(resolve, delay));
+    if (response.ok) {
+      return await response.json();
     }
+
+    const isRetryable = [429, 500, 502, 503].includes(response.status);
+    if (!isRetryable || attempt === maxRetries - 1) {
+      const error = await response.json();
+      throw new Error(error.error?.message || `HTTP ${response.status}`);
+    }
+
+    // Backoff exponencial con jitter
+    const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+    console.log(
+      `Error ${response.status}. Reintentando en ${(delay / 1000).toFixed(1)}s... (intento ${attempt + 1})`
+    );
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 }
 
 // Uso
-const response = await callWithRetry(() =>
-  client.chat.completions.create({
-    model: "continuum-turbo",
-    messages: [{ role: "user", content: "Hola, como estas?" }],
-  })
-);
-```
-
-```go Go
-package main
-
-import (
-    "context"
-    "fmt"
-    "math"
-    "math/rand"
-    "time"
-
-    openai "github.com/sashabaranov/go-openai"
-)
-
-func callWithRetry(client *openai.Client, req openai.ChatCompletionRequest, maxRetries int) (openai.ChatCompletionResponse, error) {
-    var lastErr error
-    for attempt := 0; attempt < maxRetries; attempt++ {
-        resp, err := client.CreateChatCompletion(context.Background(), req)
-        if err == nil {
-            return resp, nil
-        }
-
-        lastErr = err
-        // Backoff exponencial con jitter
-        delay := time.Duration(math.Pow(2, float64(attempt)))*time.Second +
-            time.Duration(rand.Intn(1000))*time.Millisecond
-        fmt.Printf("Error. Reintentando en %v... (intento %d)\n", delay, attempt+1)
-        time.Sleep(delay)
-    }
-    return openai.ChatCompletionResponse{}, lastErr
-}
+const result = await callWithRetry("/chat/completions", {
+  model: "continuum-turbo",
+  messages: [{ role: "user", content: "Hola, como estas?" }],
+});
 ```
 
 </CodeGroup>

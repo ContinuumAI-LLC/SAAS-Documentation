@@ -47,29 +47,29 @@ Get up and running with the Continuum AI API and make your first request.
 
     You should receive a JSON response with the model's completion.
   </Accordion>
-  <Accordion icon="brands python" title="Use the Python SDK">
-    Install the Continuum AI Python SDK and make a request:
+  <Accordion icon="brands python" title="Use Python">
+    Make a request using Python's `requests` library:
 
     ```python
-    import openai
+    import requests
 
-    client = openai.OpenAI(
-        api_key="your-api-key-here",
-        base_url="https://api.continuumai.technology/v1"
+    response = requests.post(
+        "https://api.continuumai.technology/v1/chat/completions",
+        headers={
+            "Authorization": "Bearer your-api-key-here",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "gpt-4o",
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hello, Continuum AI!"}
+            ]
+        }
     )
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Hello, Continuum AI!"}
-        ]
-    )
-
-    print(response.choices[0].message.content)
+    print(response.json()["choices"][0]["message"]["content"])
     ```
-
-    <Tip>Continuum AI is compatible with the OpenAI SDK. Just point the `base_url` to our API endpoint.</Tip>
   </Accordion>
 </AccordionGroup>
 

@@ -386,46 +386,42 @@ wait_time = min(base_delay * 2^attempt + random_jitter, max_delay)
     ```python
     import time
     import random
-    from openai import OpenAI, APIError, RateLimitError, APIConnectionError
+    import requests
 
-    client = OpenAI(
-        api_key="sk-proj-your-api-key",
-        base_url="https://api.continuumai.technology/v1",
-    )
+    API_KEY = "sk-proj-your-api-key"
+    BASE_URL = "https://api.continuumai.technology/v1"
 
     def chat_with_retry(messages, model="continuum-ultra", max_retries=5):
         for attempt in range(max_retries):
-            try:
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                )
-                return response
+            response = requests.post(
+                f"{BASE_URL}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={"model": model, "messages": messages},
+            )
 
-            except RateLimitError as e:
-                # 429: wait and retry
-                retry_after = float(
-                    e.response.headers.get("Retry-After", 2 ** attempt)
-                )
+            if response.status_code == 200:
+                return response.json()
+
+            if response.status_code == 429:
+                # Rate limited: wait and retry
+                retry_after = float(response.headers.get("Retry-After", 2 ** attempt))
                 print(f"Rate limited. Retrying in {retry_after}s...")
                 time.sleep(retry_after)
 
-            except APIConnectionError:
-                # Network error: retry with backoff
+            elif response.status_code in (500, 502):
+                # Server error: retry with backoff
                 wait = min(2 ** attempt + random.random(), 60)
-                print(f"Connection error. Retrying in {wait:.1f}s...")
+                print(f"Server error ({response.status_code}). Retrying in {wait:.1f}s...")
                 time.sleep(wait)
 
-            except APIError as e:
-                if e.status_code in (500, 502):
-                    # Server error: retry with backoff
-                    wait = min(2 ** attempt + random.random(), 60)
-                    print(f"Server error ({e.status_code}). Retrying in {wait:.1f}s...")
-                    time.sleep(wait)
-                else:
-                    # Client error (400, 401, 403, 404): do not retry
-                    print(f"Client error: {e.message}")
-                    raise
+            else:
+                # Client error (400, 401, 403, 404): do not retry
+                error = response.json()
+                print(f"Client error: {error['error']['message']}")
+                response.raise_for_status()
 
         raise Exception(f"Failed after {max_retries} retries")
 
@@ -434,57 +430,49 @@ wait_time = min(base_delay * 2^attempt + random_jitter, max_delay)
     result = chat_with_retry(
         messages=[{"role": "user", "content": "Hello!"}]
     )
-    print(result.choices[0].message.content)
+    print(result["choices"][0]["message"]["content"])
     ```
   </Tab>
 
   <Tab title="Node.js">
     ```javascript
-    import OpenAI from "openai";
-
-    const client = new OpenAI({
-      apiKey: process.env.CONTINUUM_API_KEY,
-      baseURL: "https://api.continuumai.technology/v1",
-    });
+    const API_KEY = process.env.CONTINUUM_API_KEY;
+    const BASE_URL = "https://api.continuumai.technology/v1";
 
     async function chatWithRetry(messages, model = "continuum-ultra", maxRetries = 5) {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-          const response = await client.chat.completions.create({
-            model,
-            messages,
-          });
-          return response;
+        const response = await fetch(`${BASE_URL}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ model, messages }),
+        });
 
-        } catch (error) {
-          if (error instanceof OpenAI.RateLimitError) {
-            // 429: wait and retry
-            const retryAfter = parseFloat(
-              error.headers?.["retry-after"] ?? Math.pow(2, attempt)
-            );
-            console.log(`Rate limited. Retrying in ${retryAfter}s...`);
-            await sleep(retryAfter * 1000);
+        if (response.ok) {
+          return await response.json();
+        }
 
-          } else if (error instanceof OpenAI.APIConnectionError) {
-            // Network error: retry with backoff
-            const wait = Math.min(Math.pow(2, attempt) + Math.random(), 60);
-            console.log(`Connection error. Retrying in ${wait.toFixed(1)}s...`);
-            await sleep(wait * 1000);
+        if (response.status === 429) {
+          // Rate limited: wait and retry
+          const retryAfter = parseFloat(
+            response.headers.get("retry-after") ?? Math.pow(2, attempt)
+          );
+          console.log(`Rate limited. Retrying in ${retryAfter}s...`);
+          await sleep(retryAfter * 1000);
 
-          } else if (
-            error instanceof OpenAI.APIError &&
-            [500, 502].includes(error.status)
-          ) {
-            // Server error: retry with backoff
-            const wait = Math.min(Math.pow(2, attempt) + Math.random(), 60);
-            console.log(`Server error (${error.status}). Retrying in ${wait.toFixed(1)}s...`);
-            await sleep(wait * 1000);
+        } else if ([500, 502].includes(response.status)) {
+          // Server error: retry with backoff
+          const wait = Math.min(Math.pow(2, attempt) + Math.random(), 60);
+          console.log(`Server error (${response.status}). Retrying in ${wait.toFixed(1)}s...`);
+          await sleep(wait * 1000);
 
-          } else {
-            // Client error (400, 401, 403, 404): do not retry
-            console.error(`Client error: ${error.message}`);
-            throw error;
-          }
+        } else {
+          // Client error (400, 401, 403, 404): do not retry
+          const error = await response.json();
+          console.error(`Client error: ${error.error.message}`);
+          throw new Error(error.error.message);
         }
       }
 

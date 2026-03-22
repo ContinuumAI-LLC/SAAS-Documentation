@@ -109,45 +109,48 @@ curl https://api.continuumai.technology/v1/fine_tuning/jobs \
 ```
 
 ```python Python
-from openai import OpenAI
+import requests
 
-client = OpenAI(
-    api_key="sk-proj-tu-api-key",
-    base_url="https://api.continuumai.technology/v1"
-)
+job = requests.post(
+    "https://api.continuumai.technology/v1/fine_tuning/jobs",
+    headers={
+        "Authorization": "Bearer sk-proj-tu-api-key",
+        "Content-Type": "application/json",
+    },
+    json={
+        "training_file": "file-abc123",
+        "model": "continuum-turbo",
+        "suffix": "soporte-v1",
+        "hyperparameters": {
+            "n_epochs": 3,
+            "learning_rate_multiplier": 0.1,
+        },
+    },
+).json()
 
-job = client.fine_tuning.jobs.create(
-    training_file="file-abc123",
-    model="continuum-turbo",
-    suffix="soporte-v1",
-    hyperparameters={
-        "n_epochs": 3,
-        "learning_rate_multiplier": 0.1
-    }
-)
-
-print(f"Job creado: {job.id}")
-print(f"Estado: {job.status}")
+print(f"Job creado: {job['id']}")
+print(f"Estado: {job['status']}")
 ```
 
 ```javascript Node.js
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: "sk-proj-tu-api-key",
-  baseURL: "https://api.continuumai.technology/v1",
-});
-
-const job = await client.fineTuning.jobs.create({
-  training_file: "file-abc123",
-  model: "continuum-turbo",
-  suffix: "soporte-v1",
-  hyperparameters: {
-    n_epochs: 3,
-    learning_rate_multiplier: 0.1,
+const response = await fetch("https://api.continuumai.technology/v1/fine_tuning/jobs", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-proj-tu-api-key",
+    "Content-Type": "application/json",
   },
+  body: JSON.stringify({
+    training_file: "file-abc123",
+    model: "continuum-turbo",
+    suffix: "soporte-v1",
+    hyperparameters: {
+      n_epochs: 3,
+      learning_rate_multiplier: 0.1,
+    },
+  }),
 });
 
+const job = await response.json();
 console.log(`Job creado: ${job.id}`);
 console.log(`Estado: ${job.status}`);
 ```
