@@ -144,7 +144,7 @@ response = requests.post(
 )
 
 data = response.json()
-print(data["output"][0]["content"][0]["text"])
+print(data["output"][0]["text"])
 ```
 
 ```javascript Node.js
@@ -161,31 +161,25 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
 });
 
 const data = await response.json();
-console.log(data.output[0].content[0].text);
+console.log(data.output[0].text);
 ```
 </RequestExample>
 
 <ResponseExample>
 ```json 200
 {
-  "id": "resp_abc123",
+  "id": "cont-abc123",
   "object": "response",
   "model": "continuum-ultra",
   "output": [
     {
-      "type": "message",
-      "role": "assistant",
-      "content": [
-        {
-          "type": "output_text",
-          "text": "The three laws of thermodynamics are:\n\n1. **First Law:** Energy cannot be created or destroyed.\n2. **Second Law:** Entropy always increases.\n3. **Third Law:** Entropy approaches zero at absolute zero."
-        }
-      ]
+      "type": "text",
+      "text": "The three laws of thermodynamics are:\n\n1. **First Law:** Energy cannot be created or destroyed.\n2. **Second Law:** Entropy always increases.\n3. **Third Law:** Entropy approaches zero at absolute zero."
     }
   ],
   "usage": {
-    "input_tokens": 15,
-    "output_tokens": 98,
+    "prompt_tokens": 15,
+    "completion_tokens": 98,
     "total_tokens": 113
   }
 }
@@ -230,7 +224,7 @@ response = requests.post(
 )
 
 data = response.json()
-print(data["output"][0]["content"][0]["text"])
+print(data["output"][0]["text"])
 ```
 
 ```javascript Node.js
@@ -249,7 +243,7 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
 });
 
 const data = await response.json();
-console.log(data.output[0].content[0].text);
+console.log(data.output[0].text);
 ```
 
 </CodeGroup>
@@ -315,7 +309,7 @@ response = requests.post(
 )
 
 data = response.json()
-print(data["output"][0]["content"][0]["text"])
+print(data["output"][0]["text"])
 ```
 
 ```javascript Node.js
@@ -344,7 +338,7 @@ const response = await fetch("https://api.continuumai.technology/v1/responses", 
 });
 
 const data = await response.json();
-console.log(data.output[0].content[0].text);
+console.log(data.output[0].text);
 ```
 
 </CodeGroup>
@@ -563,7 +557,7 @@ while (true) {
 ## Response body
 
 <ResponseField name="id" type="string">
-  A unique identifier for the response, e.g. `resp_abc123`.
+  A unique identifier for the response, e.g. `cont-abc123`.
 </ResponseField>
 
 <ResponseField name="object" type="string">
@@ -579,35 +573,15 @@ while (true) {
 
   <Expandable title="Output item types">
     <ResponseField name="type" type="string">
-      The type of output item. One of `message` or `function_call`.
+      The type of output item. One of `text` or `tool_calls`.
     </ResponseField>
 
-    <ResponseField name="role" type="string">
-      Present on `message` items. Always `assistant`.
+    <ResponseField name="text" type="string">
+      Present on `text` items. The generated text content.
     </ResponseField>
 
-    <ResponseField name="content" type="array">
-      Present on `message` items. An array of content parts.
-      <Expandable title="Content part">
-        <ResponseField name="type" type="string">
-          Always `output_text` for text content.
-        </ResponseField>
-        <ResponseField name="text" type="string">
-          The generated text.
-        </ResponseField>
-      </Expandable>
-    </ResponseField>
-
-    <ResponseField name="name" type="string">
-      Present on `function_call` items. The function name.
-    </ResponseField>
-
-    <ResponseField name="arguments" type="string">
-      Present on `function_call` items. The JSON-encoded arguments.
-    </ResponseField>
-
-    <ResponseField name="call_id" type="string">
-      Present on `function_call` items. The unique ID for this tool call.
+    <ResponseField name="tool_calls" type="array">
+      Present on `tool_calls` items. The tool calls the model wants to invoke.
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -615,10 +589,10 @@ while (true) {
 <ResponseField name="usage" type="object">
   Token usage statistics.
   <Expandable title="Usage properties">
-    <ResponseField name="input_tokens" type="integer">
+    <ResponseField name="prompt_tokens" type="integer">
       Number of input tokens consumed.
     </ResponseField>
-    <ResponseField name="output_tokens" type="integer">
+    <ResponseField name="completion_tokens" type="integer">
       Number of output tokens generated.
     </ResponseField>
     <ResponseField name="total_tokens" type="integer">
@@ -635,24 +609,18 @@ while (true) {
 
 ```json
 {
-  "id": "resp_abc123",
+  "id": "cont-abc123",
   "object": "response",
   "model": "continuum-ultra",
   "output": [
     {
-      "type": "message",
-      "role": "assistant",
-      "content": [
-        {
-          "type": "output_text",
-          "text": "The three laws of thermodynamics are:\n\n1. **First Law (Conservation of Energy):** Energy cannot be created or destroyed, only transformed from one form to another.\n\n2. **Second Law (Entropy):** In any energy transfer, the total entropy of an isolated system always increases over time.\n\n3. **Third Law (Absolute Zero):** As temperature approaches absolute zero, the entropy of a perfect crystal approaches zero."
-        }
-      ]
+      "type": "text",
+      "text": "The three laws of thermodynamics are:\n\n1. **First Law (Conservation of Energy):** Energy cannot be created or destroyed, only transformed from one form to another.\n\n2. **Second Law (Entropy):** In any energy transfer, the total entropy of an isolated system always increases over time.\n\n3. **Third Law (Absolute Zero):** As temperature approaches absolute zero, the entropy of a perfect crystal approaches zero."
     }
   ],
   "usage": {
-    "input_tokens": 15,
-    "output_tokens": 98,
+    "prompt_tokens": 15,
+    "completion_tokens": 98,
     "total_tokens": 113
   },
   "created_at": "2026-03-22T10:30:00Z"

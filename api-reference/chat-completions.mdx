@@ -236,8 +236,8 @@ console.log(data.choices[0].message.content);
 <ResponseExample>
 ```json 200
 {
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
+  "id": "cont-abc123",
+  "object": "continuum.completion",
   "created": 1711600000,
   "model": "continuum-ultra",
   "choices": [
@@ -347,11 +347,11 @@ while (true) {
 Each SSE event contains a JSON object with the following structure:
 
 ```json
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1711600000,"model":"continuum-ultra","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
+data: {"id":"cont-abc123","object":"continuum.completion.chunk","created":1711600000,"model":"continuum-ultra","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
 
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1711600000,"model":"continuum-ultra","choices":[{"index":0,"delta":{"content":" world"},"finish_reason":null}]}
+data: {"id":"cont-abc123","object":"continuum.completion.chunk","created":1711600000,"model":"continuum-ultra","choices":[{"index":0,"delta":{"content":" world"},"finish_reason":null}]}
 
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1711600000,"model":"continuum-ultra","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+data: {"id":"cont-abc123","object":"continuum.completion.chunk","created":1711600000,"model":"continuum-ultra","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
 
 data: [DONE]
 ```
@@ -779,11 +779,11 @@ console.log(data);
 ## Response body
 
 <ResponseField name="id" type="string">
-  A unique identifier for the completion, e.g. `chatcmpl-abc123`.
+  A unique identifier for the completion, e.g. `cont-abc123`.
 </ResponseField>
 
 <ResponseField name="object" type="string">
-  Always `chat.completion`.
+  Always `continuum.completion`.
 </ResponseField>
 
 <ResponseField name="created" type="integer">
@@ -840,8 +840,8 @@ console.log(data);
 
 ```json
 {
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
+  "id": "cont-abc123",
+  "object": "continuum.completion",
   "created": 1711600000,
   "model": "continuum-ultra",
   "choices": [
