@@ -28,19 +28,11 @@ Authorization: Bearer sk-proj-...
 ## Request body
 
 <ParamField body="model" type="string" required>
-  The embedding model to use.
-
-  | Model | Dimensions | Max Input | Best For |
-  |-------|-----------|-----------|----------|
-  | `continuum-embed-3` | 1536 | 8,191 tokens | General purpose, balanced cost and performance |
-  | `continuum-embed-3-large` | 3072 | 8,191 tokens | Highest accuracy, complex semantic tasks |
-  | `continuum-embed-2` | 1536 | 8,191 tokens | Legacy support, cost-efficient |
+  The embedding model to use. Examples: `continuum-embed-3`, `continuum-embed-3-large`, `continuum-embed-2`
 </ParamField>
 
-<ParamField body="input" type="string | array" required>
-  The text to embed. Can be a single string or an array of strings for batch embedding.
-
-  <Warning>Each string must be under the model's maximum token limit. Exceeding it returns an error.</Warning>
+<ParamField body="input" type="string" required>
+  The text to embed. Pass a single string, or an array of strings for batch embedding (up to 2,048 items).
 </ParamField>
 
 <ParamField body="encoding_format" type="string" default="float">
