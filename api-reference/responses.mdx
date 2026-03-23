@@ -37,35 +37,8 @@ Authorization: Bearer sk-proj-...
   Examples: `continuum-ultra`, `continuum-lite`, `continuum-turbo`
 </ParamField>
 
-<ParamField body="input" type="string | array" required>
-  The input to the model. Can be a simple string for text-only requests, or an array of input items for multi-turn and multimodal interactions.
-
-  <Expandable title="Input item types">
-    When `input` is an array, each item is a message object:
-
-    <ParamField body="role" type="string" required>
-      The role of the message author. One of `system`, `user`, `assistant`, or `tool`.
-    </ParamField>
-
-    <ParamField body="content" type="string | array" required>
-      The content of the message. A string for text, or an array of content parts for multimodal input.
-
-      <Expandable title="Content part types">
-        <ParamField body="type" type="string" required>
-          The content type: `input_text`, `input_image`, or `input_file`.
-        </ParamField>
-        <ParamField body="text" type="string">
-          The text content. Required when `type` is `input_text`.
-        </ParamField>
-        <ParamField body="image_url" type="string">
-          A URL or base64 data URI. Required when `type` is `input_image`.
-        </ParamField>
-        <ParamField body="detail" type="string" default="auto">
-          Image detail level: `low`, `high`, or `auto`.
-        </ParamField>
-      </Expandable>
-    </ParamField>
-  </Expandable>
+<ParamField body="input" type="string" required>
+  The input to the model. Pass a plain text string for simple requests (e.g. `"What is quantum computing?"`). For multi-turn conversations and multimodal input, pass a JSON array of message objects — see the [multimodal example](#multimodal-vision) below.
 </ParamField>
 
 <ParamField body="instructions" type="string">

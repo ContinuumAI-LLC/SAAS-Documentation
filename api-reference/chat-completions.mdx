@@ -37,48 +37,16 @@ Authorization: Bearer sk-proj-...
   Examples: `continuum-ultra`, `continuum-lite`, `continuum-turbo`
 </ParamField>
 
-<ParamField body="messages" type="array" required>
-  A list of messages representing the conversation so far. Each message has a `role` and `content`.
+<ParamField body="messages" type="object[]" required>
+  A list of messages representing the conversation so far.
 
   <Expandable title="Message object properties">
     <ParamField body="role" type="string" required>
       The role of the message author. One of `system`, `user`, `assistant`, or `tool`.
     </ParamField>
 
-    <ParamField body="content" type="string | array" required>
-      The content of the message. Can be a plain string or an array of content parts for multimodal input.
-
-      <Expandable title="Content part types">
-        <ParamField body="type" type="string" required>
-          Either `text` or `image_url`.
-        </ParamField>
-        <ParamField body="text" type="string">
-          The text content. Required when `type` is `text`.
-        </ParamField>
-        <ParamField body="image_url" type="object">
-          The image URL object. Required when `type` is `image_url`.
-          <Expandable title="image_url properties">
-            <ParamField body="url" type="string" required>
-              The URL of the image, or a base64-encoded data URI.
-            </ParamField>
-            <ParamField body="detail" type="string" default="auto">
-              Image detail level. One of `low`, `high`, or `auto`.
-            </ParamField>
-          </Expandable>
-        </ParamField>
-      </Expandable>
-    </ParamField>
-
-    <ParamField body="name" type="string">
-      An optional name for the participant. Useful for distinguishing between multiple users.
-    </ParamField>
-
-    <ParamField body="tool_call_id" type="string">
-      Required for `tool` role messages. The ID of the tool call this message responds to.
-    </ParamField>
-
-    <ParamField body="tool_calls" type="array">
-      Present on `assistant` role messages when the model invokes tools. Contains the tool call ID, function name, and arguments.
+    <ParamField body="content" type="string" required>
+      The content of the message as a plain text string. For multimodal input (images), pass an array of content parts instead — see the [vision example](#vision-image-input) below.
     </ParamField>
   </Expandable>
 </ParamField>
